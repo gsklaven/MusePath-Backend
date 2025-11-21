@@ -1,0 +1,124 @@
+{
+  "project": {
+    "name": "MusePath SE2",
+    "exportDate": "2025-11-20T12:08:31.137Z"
+  },
+  "stories": [
+    {
+      "id": "S-1",
+      "title": "Display and Calculate Route",
+      "text": "Feature: Display and Calculate Route\r\nThe system calculates and displays the suggested route and the estimated arrival time to the selected destination.\r\n\r\n    Scenario: User creates route and the system calculates it \r\n        Given the user has selected a destination\r\n        And the user has selected \"Route\"\r\n        When the user creates their route\r\n        And the user selects \"Navigate\"\r\n        Then the system calculates the route to the destination\r\n        And the system calculates the arrival time to the destination\r\n        And the system displays the calculated route on the map\r\n        And the system displays the directions to the destination\r\n        And the system displays the calculated arrival time to the final destination\r\n\r\n    Scenario: User selects different starting point and the system calculates the route \r\n        Given the user has selected a destination\r\n        And the user has selected \"Route\"\r\n        When the user selects the new starting point\r\n        And the user selects \"Navigate\"\r\n        Then the system calculates the route to the destination \r\n        And the system calculates the arrival time to the destination\r\n        And the system displays the calculated route on the map\r\n        And the system displays the directions to the destination\r\n        And the system displays the calculated arrival time to the final destination\r\n\r\n    Scenario: User selects multiple stops and the system calculates the route\r\n        Given the user has selected a destination\r\n        And the user has selected \"Route\"\r\n        When the user selects \"Add Stops\"\r\n        And the user selects the stops \r\n        And the user selects \"Navigate\"\r\n        Then the system calculates the route to the destination with all selected stops (with the optimal order to visit the points based on time, distance and crowdedness)\r\n        And the system calculates the arrival time to the destination\r\n        And the system displays the calculated route on the map\r\n        And the system displays the directions to the destination\r\n        And the system displays the calculated arrival time to the final destination\r\n\r\n    Scenario: User cancels navigation\r\n        Given the user has selected \"Navigate\" to a destination\r\n        When the user cancels the navigation by selecting the \"X\" icon\r\n        Then the system stops navigation to the destination\r\n        Then the system removes the route from the map\r\n        And the system returns to the museum map screen\r\n\r\n    Scenario: Inaccessible destination\r\n        Given the user is on the museum map screen\r\n        When the user selects a destination that is inaccessible (e.g., an exhibit is closed)\r\n        Then the system notifies the user that no route is available\r\n        And the system suggests an alternative destination\r\n        And the system suggests different visiting times\r\n\r\n    Scenario: System fails to calculate a route\r\n        Given the user is on the museum map screen\r\n        And the user has selected \"Navigate\" to a destination\r\n        When the user requests navigation to that point\r\n        But the system fails to calculate a route within 5 seconds\r\n        Then the system displays error \"Unable to calculate route at this time\"\r\n        And the system suggests troubleshooting steps (e.g., \"Check your internet connection or try another destination\")\r\n        And the system allows the user to try again\r\n\r\n    Scenario: User loses GPS signal during navigation\r\n        Given the user is following a route on the map\r\n        When the GPS signal is lost\r\n        Then the system notifies the user of the issue\r\n        And the system pauses navigation until the connection is restored\r\n\r\n    Scenario: User checks traffic levels during route planning\r\n        Given the user is planning a route with multiple destinations\r\n        When the user checks the real-time traffic levels for each destination\r\n        Then the system displays the current traffic level at each destination\r\n        And the system suggests the optimal order to visit the destinations based on traffic and estimated wait times\r\n        And the system updates the calculated route and arrival times accordingly.\r\n\r\n    Scenario: Personalized Route Generation\r\n        Given the user has completed the profile setup\r\n        And the user is on the museum map screen\r\n        When the user selects \"Generate Personalized Route\"\r\n        Then the system generates a route based on the user's saved preferences\r\n        And the system displays the suggested route on the museum map screen\r\n\r\n    Scenario: User Has No Saved Preferences \r\n        Given the user has not completed the profile setup  \r\n        And the user is on the museum map screen  \r\n        When the user selects \"Generate Personalized Route\"  \r\n        Then the system informs the user that no personalized route can be generated  \r\n        And suggests completing their profile setup\r\n",
+      "linkedRequirements": [
+        {
+          "id": "R-1",
+          "text": "The user must be able to open the museum map."
+        },
+        {
+          "id": "R-3",
+          "text": "The user must be able to see their current location on the map."
+        },
+        {
+          "id": "R-4",
+          "text": "The user must be able to select a destination on the map."
+        },
+        {
+          "id": "R-5",
+          "text": "The system must calculate the suggested route to the selected destination within 5 seconds."
+        },
+        {
+          "id": "R-6",
+          "text": "The system must display the suggested route to the selected destination within 5 seconds."
+        },
+        {
+          "id": "R-7",
+          "text": "The system must estimate the user's arrival time based on their average walking speed of 5 km/h"
+        },
+        {
+          "id": "R-12",
+          "text": "The system must have access to the GPS signal of the device for accurate location tracking."
+        },
+        {
+          "id": "R-9",
+          "text": "The system must update the status of the available destinations in real time."
+        },
+        {
+          "id": "R-21",
+          "text": "The system must create personalized routes based on the user's provided preferences."
+        },
+        {
+          "id": "R-10",
+          "text": "The system must be able to suggest alternative destinations or different visiting times if the destination is inaccesible."
+        },
+        {
+          "id": "R-8",
+          "text": "The user must be able to modify the stops of the generated route."
+        }
+      ]
+    },
+    {
+      "id": "S-2",
+      "title": "Exhibit Information",
+      "text": "Feature: Exhibit Information\r\nThe user can search for exhibits and view information about them.\r\n\r\n  Scenario: User searches for an exhibit in the map\r\n    Given the user is in the museum map screen\r\n    When the user selects an exhibit from the map\r\n    Then the system displays information about the exhibit\r\n\r\n  Scenario: User searches for an exhibit by category\r\n    Given the user is in the museum map screen\r\n    When the user selects a category (e.g., \"Art\", \"History\")\r\n    Then the system displays a list of exhibits in that category\r\n\r\n  Scenario: User searches for an exhibit by keyword\r\n    Given the user is in the museum map screen\r\n    When the user enters a keyword in the search bar\r\n    Then the system displays a list of exhibits related to the keyword\r\n\r\n  Scenario: User searches for an exhibit that does not exist\r\n    Given the user is in the museum map screen\r\n    When the user enters a non-existing exhibit name in the search bar\r\n    Then the system displays \"No results found\"\r\n    And the system suggests checking the spelling or trying a different search term\r\n\r\n  Scenario: User searches for exhibit information in offline mode\r\n    Given the user is in offline mode\r\n    When the user searches for exhibit information\r\n    Then the system displays pre-downloaded exhibit information\r\n    And the system allows the user to view exhibit details\r\n\r\n  Scenario: User views exhibit information\r\n    Given the user is viewing information about an exhibit\r\n    When the user selects \"More Details\"\r\n    Then the system displays additional information about the exhibit\r\n    And the system allows the user to listen to an audio transcript of the exhibit\r\n",
+      "linkedRequirements": [
+        {
+          "id": "R-13",
+          "text": "The user must be able to view information about the exhibits."
+        },
+        {
+          "id": "R-14",
+          "text": "The user must be able to listen to an audio transcript of an exhibit."
+        },
+        {
+          "id": "R-15",
+          "text": "The user must be able to search for exhibits by category or keyword."
+        }
+      ]
+    },
+    {
+      "id": "S-3",
+      "title": "Offline Mode Functionality",
+      "text": "Feature: Offline Mode Functionality\r\nThe system must provide an Offline mode allowing users to access basic features without internet connectivity.\r\n\r\n    Scenario: User downloads museum content for offline use\r\n        Given the user has internet connectivity\r\n        When the user selects the \"Download for Offline Use\" option\r\n        Then the system displays available content categories for download\r\n        And the system shows the estimated storage space required\r\n        And the system downloads the selected museum content to the device\r\n        And the system confirms successful completion of the download\r\n\r\n    Scenario: User navigates the museum in Offline mode\r\n        Given the user has previously downloaded museum content\r\n        When the user loses internet connectivity\r\n        Then the system automatically switches to Offline mode\r\n        And the system displays a notification about limited functionality\r\n        And the system continues to display the museum map and pre-downloaded exhibit information\r\n\r\n    Scenario: System detects Offline mode and provides guidance\r\n        Given the user has not downloaded museum content\r\n        When the user loses internet connectivity\r\n        Then the system automatically switches to Offline mode\r\n        And the system displays \"Unavailable data\"\r\n\r\n    Scenario: User attempts to access online-only features while offline\r\n        Given the user is in Offline mode\r\n        When the user attempts to access a feature requiring connectivity (e.g., Exhibit Traffic updates)\r\n        Then the system displays \"This feature is unavailable!\"\r\n        And the system provides an option to retry when connectivity is restored\r\n\r\n    Scenario: System synchronizes data when returning online\r\n        Given the user has been using the application in Offline mode\r\n        When internet connectivity is restored\r\n        Then the system detects the connection and notifies the user\r\n        And the system synchronizes any user activity data (e.g., favourites, ratings) with the server\r\n        And the system updates any changed museum information\r\n\r\n    Scenario: User views offline map with limited functionality\r\n        Given the user is in Offline mode\r\n        When the user views the museum map\r\n        Then the system displays the pre-downloaded map with basic navigation\r\n        And the system indicates that real-time features are unavailable\r\n        And the system continues to show the user's last known position\r\n        And the system allows basic path planning using pre-downloaded data\r\n\r\n    Scenario: User manages offline content storage\r\n        Given the user has downloaded content for offline use\r\n        When the user accesses the \"Manage Offline Content\" settings\r\n        Then the system displays all downloaded content categories with their storage usage\r\n        And the system allows the user to delete specific content to free up space\r\n        And the system provides an option to update outdated offline content when online\t",
+      "linkedRequirements": [
+        {
+          "id": "R-22",
+          "text": "The system must provide an offline mode."
+        },
+        {
+          "id": "R-23",
+          "text": "The user must be able to download exhibit information and maps."
+        },
+        {
+          "id": "R-24",
+          "text": "The user must be able to use basic map and pre-downloaded exhibit information in offline mode."
+        },
+        {
+          "id": "R-25",
+          "text": "The system must sychronize the user's data when the user goes online."
+        }
+      ]
+    },
+    {
+      "id": "S-4",
+      "title": "Profile Personalization",
+      "text": "Feature: Profile Personalization\r\n\r\n    Scenario: Successful Profile Setup\r\n        Given the user is on the museum map screen\r\n        And the user is using the app for the first time after registration\r\n        When the system displays the personalization prompt\r\n        Then the user selects \"Yes, I would love to!\"\r\n        And the user answers all the displayed questions\r\n        And the system creates the user's profile\r\n        And the system returns to the museum map screen\r\n\r\n    Scenario: User Skips Profile Setup Questions\r\n        Given the user is on the museum map screen\r\n        And the user is using the app for the first time after registration  \r\n        When the system displays the personalization prompt \r\n        Then the user selects \"No, thank you\"\r\n        And the system returns to the museum map screen\r\n\r\n    Scenario: System Fails to Create Profile \r\n        Given the user has completed answering all profile setup questions  \r\n        When the system attempts to create the user's profile  \r\n        And an unexpected error occurs  \r\n        Then the system displays \"Unable to create profile\"\r\n        And prompts the user to try again  \r\n\r\n    Scenario: User updates preferences on profile\r\n        Given the user has completed the profile setup  \r\n        And the user is on the profile settings screen  \r\n        When the user selects \"Change my Preferences\"  \r\n        Then the system displays a fixed set of questions about cultural and historical preferences\r\n        And the user answers all the displayed questions  \r\n        And the system updates the user's profile\r\n        And the system returns to the museum map screen\r\n\r\n    Scenario: User adds exhibit to favourites \r\n        Given the user is on the information screen of an exhibit  \r\n        When the user selects \"Heart\" icon to add the exhibit to their favourites  \r\n        Then the system adds the exhibit to the user's favourites list\r\n        Then the system updates the user's favourites list  \r\n\r\n    Scenario: User rates exhibit \r\n        Given the user is on the information screen of an exhibit  \r\n        When the user selects a rating for the exhibit  \r\n        Then the system updates the user's rating for the exhibit  \r\n        And the system updates the exhibit's average rating accordingly     \r\n\r\n\r\n\r\n",
+      "linkedRequirements": [
+        {
+          "id": "R-16",
+          "text": "The user must be able to rate exhibits."
+        },
+        {
+          "id": "R-17",
+          "text": "The user must be able to add exhibits to their favorites."
+        },
+        {
+          "id": "R-19",
+          "text": "The system must create a profile for the user based on their preferences."
+        },
+        {
+          "id": "R-20",
+          "text": "The user must be able to update their preferences on the profile."
+        }
+      ]
+    }
+  ]
+}

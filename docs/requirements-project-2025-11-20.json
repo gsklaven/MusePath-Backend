@@ -1,0 +1,272 @@
+{
+  "project": {
+    "name": "project",
+    "exportDate": "2025-11-20T12:08:18.479Z"
+  },
+  "requirements": [
+    {
+      "id": "R-1",
+      "text": "The user must be able to open the museum map.",
+      "description": "The user should be able to access an interactive map to view the layout of the museum.  \nIt is one of the most important features to open the map",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-2",
+      "text": "The user must be able to zoom and rotate the map.",
+      "description": "The map must allow users to zoom in and out and rotate for better visibility and orientation. \nIt is not necessary functionality but it is required for better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-3",
+      "text": "The user must be able to see their current location on the map.",
+      "description": "The map should display the user's precise location using GPS. \nIt is very important for the app to work and the user to know how to navigate.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-4",
+      "text": "The user must be able to select a destination on the map.",
+      "description": "Users must be able to select points of interest, such as exhibits, restrooms, or exits, on the map. \nIt is one of the important features of the app for the user to select the destination we wants to go to.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-5",
+      "text": "The system must calculate the suggested route to the selected destination within 5 seconds.",
+      "description": "The system must determine the optimal path to the selected destination quickly, within 5 seconds. \nIt is important for the system to calculate quickly the route and for the user to not wait long to see where to go.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-6",
+      "text": "The system must display the suggested route to the selected destination within 5 seconds.",
+      "description": "Once calculated, the route must be visually displayed on the map within 5 seconds.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-7",
+      "text": "The system must estimate the user's arrival time based on their average walking speed of 5 km/h",
+      "description": "Based on a walking speed of 5 km/h, the system should provide an estimated time to reach the destination. \nIt is not important to see the arrival time and thus calculate it.",
+      "type": "Functional",
+      "userPriority": "Low",
+      "systemPriority": "Low"
+    },
+    {
+      "id": "R-8",
+      "text": "The user must be able to modify the stops of the generated route.",
+      "description": "Users must have the ability to add or remove stops to customize their journey within the museum. \nIt is not an important functionality of the app, but it is necessary for a better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-9",
+      "text": "The system must update the status of the available destinations in real time.",
+      "description": "The system should update the status of destinations (e.g., open, closed, crowded) to ensure accurate navigation.\nIt is important for the user to know if the destination is accessible, so the system must update the status regularly.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-10",
+      "text": "The system must be able to suggest alternative destinations or different visiting times if the destination is inaccesible.",
+      "description": "If a destination is unavailable, for example, closed, or crowded, the system must provide alternative suggestions or recommend different visiting times.\nThe user must be able to have a route to follow when the destination is not available.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-11",
+      "text": "The system must warn the user if they deviate 50 meters from the optimal route.",
+      "description": "Users must be alerted if they stray more than 50 meters from the calculated route.\nThe navigation of the user is high priority and the user must be informed quickly when deviating.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-12",
+      "text": "The system must have access to the GPS signal of the device for accurate location tracking.",
+      "description": "The system must utilize the device's GPS to enable accurate real-time location tracking.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-13",
+      "text": "The user must be able to view information about the exhibits.",
+      "description": "Users must be able to access detailed descriptions, history, and context for any exhibit.\nIt is one of the basic functionalities of the application, so the system must display the information and the user must me able to access them.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-14",
+      "text": "The user must be able to listen to an audio transcript of an exhibit.",
+      "description": "The system must allow users to listen to audio guides for the exhibits.\nIt is an extra feature, not necessary for the functionality of the app.",
+      "type": "Functional",
+      "userPriority": "Low",
+      "systemPriority": "Low"
+    },
+    {
+      "id": "R-15",
+      "text": "The user must be able to search for exhibits by category or keyword.",
+      "description": "Users should be able to find exhibits by category or keyword to match their interests.\nIt is not an important functionality of the app, but it is necessary for better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-16",
+      "text": "The user must be able to rate exhibits.",
+      "description": "Users should be able to provide ratings for exhibits they visit to express their preferences.\nIt is not an important functionality of the app, but it is necessary for better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-17",
+      "text": "The user must be able to add exhibits to their favorites.",
+      "description": "Users can save exhibits to a favorites list for quick access later.\nIt is not an important functionality of the app, but it is necessary for better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-18",
+      "text": "The user must be able to change the application's language.",
+      "description": "The app must allow users to switch between supported languages.\nIt is not required for the application to work and it is not blocking its functionality.",
+      "type": "Functional",
+      "userPriority": "Low",
+      "systemPriority": "Low"
+    },
+    {
+      "id": "R-19",
+      "text": "The system must create a profile for the user based on their preferences.",
+      "description": "The system should generate personalized profiles based on user behavior and preferences.\nIt is not important for the user to have a profile to navigate but it is necessary for the system to create a profile so that a personalized route is generated.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-20",
+      "text": "The user must be able to update their preferences on the profile.",
+      "description": "Users must be able to modify their preferences to ensure an improved experience.\nIt is not an important functionality of the app, but it is necessary for a better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-21",
+      "text": "The system must create personalized routes based on the user's provided preferences.",
+      "description": "The system should create tailored routes for users based on their preferences and interests.\nIt is an important feature for the user, so the system must be able to support it.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-22",
+      "text": "The system must provide an offline mode.",
+      "description": "The system must provide basic functionality even without an internet connection.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-23",
+      "text": "The user must be able to download exhibit information and maps.",
+      "description": "Users should be able to pre-download maps and exhibit data for offline use.\nIt is needed for the functionality of the offline mode.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-24",
+      "text": "The user must be able to use basic map and pre-downloaded exhibit information in offline mode.",
+      "description": "The app must allow users to access downloaded maps and exhibit information in offline mode.\nIt is an important feature of the offline mode. The user shouldn't lose basic map navigation so the system must support it.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-25",
+      "text": "The system must sychronize the user's data when the user goes online.",
+      "description": "User data, such as preferences or saved routes during offline mode, must synchronize with the cloud when online.\nIt is not an important functionality of the app, but it is necessary for a better user experience.",
+      "type": "Functional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-26",
+      "text": "The system must support at least 10,000 concurrent users without degradation in service.",
+      "description": "The system must function smoothly with at least 10,000 simultaneous users.",
+      "type": "NonFunctional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-27",
+      "text": "The system must encrypt all user data during transmission and storage according to the GDPR.",
+      "description": "All user data must be encrypted during storage and transmission to meet GDPR compliance.\nIt is very important for the users to feel safe and the system to use encrypted data.",
+      "type": "NonFunctional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-28",
+      "text": "The system must implement data backup procedures to prevent information loss.",
+      "description": "Regular backups should ensure no loss of user data, even in unforeseen circumstances.\nIt is not an important functionality of the app, but it is necessary for a better user experience.",
+      "type": "NonFunctional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-29",
+      "text": "The system must automatically recover from crashes without requiring user intervention.",
+      "description": "The system must restart automatically after crashes without manual intervention.\nIt is not an important functionality of the app, but it is necessary for a better user experience.",
+      "type": "NonFunctional",
+      "userPriority": "Medium",
+      "systemPriority": "Medium"
+    },
+    {
+      "id": "R-30",
+      "text": "The system must be compatible with iOS and Android operating systems.",
+      "description": "The application must run seamlessly on both iOS and Android platforms.\nIt is necessary for the app to work on both smartphone Operating Systems.",
+      "type": "NonFunctional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-31",
+      "text": "The system must not use more than 1GB of RAM of the device.",
+      "description": "The app must not exceed 1GB of RAM usage to ensure smooth performance on mobile devices.\nIt is not important for the basic functionality of the application.",
+      "type": "NonFunctional",
+      "userPriority": "Low",
+      "systemPriority": "Low"
+    },
+    {
+      "id": "R-32",
+      "text": "The museum must provide the map in a format compatible with the system.",
+      "description": "The museum must supply the map in a format that the system can process and display.\nThe application can't work if the information is not available.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    },
+    {
+      "id": "R-33",
+      "text": "The museum must provide the exhibit information in a format compatible with the system.",
+      "description": "The museum must supply exhibit data in a format that the system can process and display.\nThe application can't work if the information is not available.",
+      "type": "Functional",
+      "userPriority": "High",
+      "systemPriority": "High"
+    }
+  ]
+}

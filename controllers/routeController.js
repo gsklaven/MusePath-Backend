@@ -1,0 +1,108 @@
+import * as routeService from '../services/routeService.js';
+import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
+
+/**
+ * Route Controller
+ * Handles HTTP requests for route operations
+ */
+
+/**
+ * Calculate route
+ * POST /routes
+ */
+export const calculateRoute = async (req, res) => {
+  try {
+    const routeData = req.body;
+    
+    const route = await routeService.calculateRoute(routeData);
+    
+    return sendSuccess(res, route, 'Route calculated successfully');
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return sendNotFound(res, error.message);
+    }
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Get route details
+ * GET /routes/:route_id
+ */
+export const getRouteDetails = async (req, res) => {
+  try {
+    const { route_id } = req.params;
+    const { walkingSpeed } = req.query;
+    
+    const route = await routeService.getRouteDetails(route_id, walkingSpeed);
+    
+    if (!route) {
+      return sendNotFound(res, 'Route not found');
+    }
+    
+    return sendSuccess(res, route, 'Route details retrieved successfully');
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Update route stops
+ * PUT /routes/:route_id
+ */
+export const updateRouteStops = async (req, res) => {
+  try {
+    const { route_id } = req.params;
+    const updateData = req.body;
+    
+    const result = await routeService.updateRouteStops(route_id, updateData);
+    
+    if (!result) {
+      return sendNotFound(res, 'Route not found');
+    }
+    
+    return sendSuccess(res, result, 'Route updated successfully');
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Recalculate route
+ * POST /routes/:route_id
+ */
+export const recalculateRoute = async (req, res) => {
+  try {
+    const { route_id } = req.params;
+    
+    const route = await routeService.recalculateRoute(route_id);
+    
+    if (!route) {
+      return sendNotFound(res, 'Route not found');
+    }
+    
+    return sendSuccess(res, route, 'Route recalculated successfully');
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Delete route
+ * DELETE /routes/:route_id
+ */
+export const deleteRoute = async (req, res) => {
+  try {
+    const { route_id } = req.params;
+    
+    const deleted = await routeService.deleteRoute(route_id);
+    
+    if (!deleted) {
+      return sendNotFound(res, 'Route not found');
+    }
+    
+    return sendNoContent(res);
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
