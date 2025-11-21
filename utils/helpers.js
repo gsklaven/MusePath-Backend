@@ -165,3 +165,12 @@ export const isRouteDeviated = (currentPos, routePath, threshold = 50) => {
   const minDistance = Math.min(...distances);
   return minDistance > threshold;
 };
+
+/**
+ * Sanitize search term for consistent comparison
+ * @param {string} term - The search term
+ * @returns {string} Sanitized term
+ */
+export const sanitizeSearchTerm = (term = '') => {
+  return String(term).trim().toLowerCase();
+};
