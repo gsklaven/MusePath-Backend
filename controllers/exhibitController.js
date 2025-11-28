@@ -21,14 +21,17 @@ export const viewExhibitInfo = async (req, res) => {
       return sendNotFound(res, 'Exhibit not found');
     }
     
-    const response = {
-      exhibit_id: exhibit.exhibitId,
-      title: exhibit.title,
-      rating: exhibit.averageRating,
-      location: exhibit.location,
-      features: exhibit.features,
-      status: exhibit.status
-    };
+  const response = {
+    exhibit_id: exhibit.exhibitId,
+    title: exhibit.title,
+    name: exhibit.name,
+    rating: exhibit.averageRating,
+    location: exhibit.location,
+    features: exhibit.features,
+    status: exhibit.status,
+    description: exhibit.description,
+    audioGuideUrl: exhibit.audioGuideUrl,
+  };
     
     return sendSuccess(res, response, 'Exhibit information retrieved successfully');
   } catch (error) {
