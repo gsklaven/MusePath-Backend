@@ -1,0 +1,1989 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Combined Museum Navigation API",
+    "version": "2",
+    "description": "Unified RESTful API for museum visitor navigation, map interaction, destination routing, and exhibit management."
+  },
+  "servers": [
+    {
+      "url": "https://api.server.test/v1"
+    }
+  ],
+  "paths": {
+    "/coordinates/{user_id}": {
+      "get": {
+        "summary": "Get current user coordinates",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current location retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Coordinate"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update current user coordinates",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoordinateUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Coordinates updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "integer"
+                    },
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid coordinates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/destinations": {
+      "get": {
+        "summary": "List all destinations",
+        "parameters": [
+          {
+            "name": "map_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of destinations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Destination"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload destinations data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Destinations uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "destinationsId": {
+                      "type": "integer"
+                    },
+                    "destinationData": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid destination data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/destinations/{destination_id}": {
+      "get": {
+        "summary": "Get destination info, status, or alternative suggestions",
+        "parameters": [
+          {
+            "name": "destination_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "currentTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeAlternatives",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destination data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Destination not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/downloads/exhibits/{exhibit_id}": {
+      "get": {
+        "summary": "Download exhibit information for offline use",
+        "description": "FR24. The user must be able to download exhibit information and maps.",
+        "operationId": "downloadExhibitInfo",
+        "parameters": [
+          {
+            "name": "exhibit_id",
+            "in": "path",
+            "description": "ID of the exhibit to download",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exhibit data file",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exhibit not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/downloads/maps/{map_id}": {
+      "get": {
+        "summary": "Download map file for offline use",
+        "description": "FR24. The user must be able to download exhibit information and maps.",
+        "operationId": "downloadMap",
+        "parameters": [
+          {
+            "name": "map_id",
+            "in": "path",
+            "description": "ID of the map to download",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Map image file",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Map not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exhibits/{exhibit_id}": {
+      "get": {
+        "summary": "View the information page of an exhibit",
+        "description": "FR14. The user must be able to view information about the exhibits.\n\nFR25. The user must be able to use basic map and pre-downloaded exhibit information in offline mode.",
+        "operationId": "viewInfo",
+        "parameters": [
+          {
+            "name": "exhibit_id",
+            "in": "path",
+            "description": "Id of the specific exhibit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Mode of access - online or offline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "online",
+              "enum": [
+                "online",
+                "offline"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exhibit information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exhibits/{exhibit_id}/audio": {
+      "get": {
+        "summary": "Get audio guide for an exhibit",
+        "description": "FR15. The user must be able to listen to an audio transcript of an exhibit.",
+        "operationId": "getAudioGuide",
+        "parameters": [
+          {
+            "name": "exhibit_id",
+            "in": "path",
+            "description": "Id of the specific exhibit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Mode of access - online or offline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "online",
+              "enum": [
+                "online",
+                "offline"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio guide retrieved successfully",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Audio guide not available offline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exhibit not found or no audio guide available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exhibits/{exhibit_id}/ratings": {
+      "post": {
+        "summary": "Rate an exhibit",
+        "description": "FR17. The user must be able to rate exhibits.",
+        "operationId": "rateExhibit",
+        "parameters": [
+          {
+            "name": "exhibit_id",
+            "in": "path",
+            "description": "Id of the specific exhibit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/exhibit_id_ratings_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Exhibit rated successfully"
+          },
+          "400": {
+            "description": "Invalid rating value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exhibit not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exhibits/search": {
+      "get": {
+        "summary": "Search for exhibits",
+        "description": "FR16.  The user must be able to search for exhibits by category or keyword.",
+        "operationId": "searchExhibits",
+        "parameters": [
+          {
+            "name": "exhibit_term",
+            "in": "query",
+            "description": "Keyword to search by exhibit title, artist, or description",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter exhibits by category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "category"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Mode of access - online or offline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "online",
+              "enum": [
+                "online",
+                "offline"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exhibits matching the search criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/inline_response_200_1"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No exhibits found matching the search criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maps": {
+      "post": {
+        "summary": "Upload map",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Map uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "map_id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid map data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maps/{map_id}": {
+      "get": {
+        "summary": "Get map data with offline-aware functionality",
+        "description": "FR25.The user must be able to use basic map and pre-downloaded exhibit information in offline mode.",
+        "operationId": "getMapById",
+        "parameters": [
+          {
+            "name": "map_id",
+            "in": "path",
+            "description": "ID of map",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "zoom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "rotation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Mode of access - online or offline",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "offline",
+              "enum": [
+                "online",
+                "offline"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Map details with offline-aware URLs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapWithOfflineStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Map not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (offline mode, no cached data)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "post": {
+        "summary": "Send user notification",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid notification data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or route not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes": {
+      "post": {
+        "summary": "Calculate route",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Route calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteCalculation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid route parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or destination not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/{route_id}": {
+      "get": {
+        "summary": "Get route details or ETA",
+        "operationId": "getRouteDetails",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "walkingSpeed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteETA"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update route stops",
+        "operationId": "updateRouteStops",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Route updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "route_id": {
+                      "type": "integer"
+                    },
+                    "stopsUpdated": {
+                      "type": "boolean"
+                    },
+                    "newEstimatedTime": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid stop data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Recalculate existing route",
+        "description": "Triggers a recalculation of the route (e.g. user deviation). Linked to RestResource definitions.",
+        "operationId": "recalculateRoute",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route recalculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteCalculation"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel navigation / Delete route",
+        "description": "S-1: User cancels navigation. Removes the active route.",
+        "operationId": "deleteRoute",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Route deleted/cancelled successfully"
+          },
+          "404": {
+            "description": "Route not found"
+          }
+        }
+      }
+    },
+    "/sync": {
+      "post": {
+        "summary": "Synchronize offline changes",
+        "description": "FR26. Synchronize user data when going online",
+        "operationId": "syncOfflineData",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "discriminator": {
+                    "propertyName": "operation_type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/OfflineRating"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OfflineFavorite"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronization successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inline_response_200_3"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid operations in payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/favourites": {
+      "post": {
+        "summary": "Add an exhibit to favourites",
+        "description": "FR18. The user must be able to add exhibits to their favourites.",
+        "operationId": "addExhibitToFavourites",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "Id of the user",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/user_id_favourites_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Exhibit added to favourites successfully"
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or exhibit not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/favourites/{exhibit_id}": {
+      "delete": {
+        "summary": "Remove exhibit from favourites",
+        "description": "Allows user to remove an exhibit from their list.",
+        "operationId": "removeExhibitFromFavourites",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "exhibit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Exhibit removed from favourites successfully"
+          },
+          "404": {
+            "description": "User or exhibit not found in favourites"
+          }
+        }
+      }
+    },
+    "/users/{user_id}/preferences": {
+      "put": {
+        "summary": "Update user preferences",
+        "description": "FR21. The user must be able to update their preferences on the profile.",
+        "operationId": "updateUserPreferences",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "ID of the user whose preferences are being set or updated",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Personalised profile was successfully"
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/routes": {
+      "get": {
+        "summary": "Get personalized route for a user",
+        "description": "FR22. The system must create personalized routes based on the user's provided preferences.",
+        "operationId": "getPersonalizedRoute",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Personalized route generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot generate route — missing user preferences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MapWithOfflineStatus": {
+        "type": "object",
+        "properties": {
+          "map_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Museum Map"
+          },
+          "map_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "/maps/1/downloaded_map.png"
+          }
+        }
+      },
+      "Error": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UserPreferences": {
+        "type": "object",
+        "properties": {
+          "interests": {
+            "type": "array",
+            "example": [
+              "modern art",
+              "ancient greece"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "OfflineRating": {
+        "required": [
+          "exhibit_id",
+          "local_timestamp",
+          "operation_type",
+          "rating"
+        ],
+        "type": "object",
+        "properties": {
+          "operation_type": {
+            "type": "string",
+            "example": "rating",
+            "enum": [
+              "rating"
+            ]
+          },
+          "exhibit_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 456
+          },
+          "rating": {
+            "type": "number",
+            "format": "float",
+            "example": 4.5
+          },
+          "local_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OfflineFavorite": {
+        "required": [
+          "exhibit_id",
+          "local_timestamp",
+          "operation_type"
+        ],
+        "type": "object",
+        "properties": {
+          "operation_type": {
+            "type": "string",
+            "example": "add_favorite",
+            "enum": [
+              "add_favorite",
+              "remove_favorite"
+            ]
+          },
+          "exhibit_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 789
+          },
+          "local_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SyncConflict": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "object"
+          },
+          "server_version": {
+            "type": "object"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "client_wins",
+              "server_wins"
+            ]
+          }
+        }
+      },
+      "Exhibit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "historicalInfo": {
+            "type": "string",
+            "description": "Long text about historical background"
+          },
+          "visitingAvailability": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "description": "Long descriptive text"
+          },
+          "ratings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Map of User ID to rating (1-5)"
+          },
+          "favouredBy": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "wheelchairAccessible": {
+            "type": "boolean"
+          },
+          "brailleSupport": {
+            "type": "boolean"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ratings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Map of Exhibit ID to rating (1-5)"
+          },
+          "favourites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Exhibit"
+            }
+          },
+          "personalizationAvailable": {
+            "type": "boolean"
+          },
+          "preferences": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "inline_response_200": {
+        "type": "object",
+        "properties": {
+          "exhibit_id": {
+            "type": "number",
+            "description": "ID of the exhibit",
+            "format": "int64",
+            "example": 0
+          },
+          "title": {
+            "type": "string",
+            "example": "string"
+          },
+          "rating": {
+            "type": "number",
+            "description": "Average user rating out of 5",
+            "format": "float",
+            "example": 0
+          },
+          "location": {
+            "type": "string",
+            "description": "Physical location of the exhibit",
+            "example": "string"
+          },
+          "features": {
+            "type": "array",
+            "description": "Accessibility and visitor options",
+            "items": {
+              "type": "string",
+              "example": "Wheelchair Accessible"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Availability status of the exhibit",
+            "example": "open",
+            "enum": [
+              "open",
+              "closed",
+              "under_maintenance"
+            ]
+          }
+        }
+      },
+      "inline_response_200_1": {
+        "type": "object",
+        "properties": {
+          "exhibit_id": {
+            "type": "number",
+            "format": "int64",
+            "example": 0
+          },
+          "title": {
+            "type": "string",
+            "example": "string"
+          }
+        }
+      },
+      "exhibit_id_ratings_body": {
+        "required": [
+          "rating"
+        ],
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "format": "float",
+            "example": 4
+          }
+        }
+      },
+      "user_id_favourites_body": {
+        "required": [
+          "exhibit_id"
+        ],
+        "type": "object",
+        "properties": {
+          "exhibit_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          }
+        }
+      },
+      "inline_response_200_2": {
+        "type": "object",
+        "properties": {
+          "route_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 123
+          },
+          "exhibits": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "estimated_duration": {
+            "type": "string",
+            "example": "45 minutes"
+          },
+          "map_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "/maps/123/downloaded_map.png"
+          },
+          "starting_point": {
+            "type": "number",
+            "format": "float"
+          },
+          "ending_point": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "inline_response_200_3": {
+        "type": "object",
+        "properties": {
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncConflict"
+            }
+          }
+        }
+      },
+      "Map": {
+        "type": "object",
+        "properties": {
+          "map_id": {
+            "type": "integer"
+          },
+          "mapData": {
+            "type": "string"
+          },
+          "zoom": {
+            "type": "number"
+          },
+          "rotation": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "map_id",
+          "mapData"
+        ]
+      },
+      "MapUpload": {
+        "type": "object",
+        "properties": {
+          "mapData": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mapData",
+          "format"
+        ]
+      },
+      "Coordinate": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "lat",
+          "lng",
+          "timestamp"
+        ]
+      },
+      "CoordinateUpdate": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "Destination": {
+        "type": "object",
+        "properties": {
+          "destination_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "lat",
+              "lng"
+            ]
+          }
+        },
+        "required": [
+          "destination_id",
+          "name",
+          "type",
+          "coordinates"
+        ]
+      },
+      "DestinationUpload": {
+        "type": "object",
+        "properties": {
+          "map_id": {
+            "type": "integer"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            }
+          }
+        },
+        "required": [
+          "map_id",
+          "destinations"
+        ]
+      },
+      "DestinationResponse": {
+        "type": "object",
+        "properties": {
+          "destination_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "crowdLevel": {
+            "type": "string"
+          },
+          "lastUpdated": {
+            "type": "string"
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestedTimes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "destination_id"
+        ]
+      },
+      "RouteRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "destination_id": {
+            "type": "integer"
+          },
+          "startLat": {
+            "type": "number"
+          },
+          "startLng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "user_id",
+          "destination_id",
+          "startLat",
+          "startLng"
+        ]
+      },
+      "RouteCalculation": {
+        "type": "object",
+        "properties": {
+          "route_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "destination_id": {
+            "type": "integer"
+          },
+          "calculationTime": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "route_id",
+          "user_id",
+          "destination_id",
+          "calculationTime"
+        ]
+      },
+      "RouteETA": {
+        "type": "object",
+        "properties": {
+          "route_id": {
+            "type": "integer"
+          },
+          "estimatedTime": {
+            "type": "integer"
+          },
+          "arrivalTime": {
+            "type": "string"
+          },
+          "distance": {
+            "type": "number"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instructions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "route_id",
+          "estimatedTime",
+          "distance"
+        ]
+      },
+      "RouteUpdate": {
+        "type": "object",
+        "properties": {
+          "addStops": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removeStops": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NotificationRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "route_id": {
+            "type": "integer"
+          },
+          "currentLat": {
+            "type": "number"
+          },
+          "currentLng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "user_id",
+          "route_id",
+          "currentLat",
+          "currentLng"
+        ]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "notificationId": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "notificationId",
+          "type",
+          "message"
+        ]
+      }
+    }
+  }
+}
