@@ -319,6 +319,33 @@ export const mockRoutes = [
     mapUrl: '/maps/1/route_1.png',
     createdAt: new Date(),
     updatedAt: new Date()
+  },
+  {
+    routeId: 2,
+    userId: 1,
+    destinationId: 1,
+    startCoordinates: { lat: 40.7610, lng: -73.9780 },
+    endCoordinates: { lat: 40.7615, lng: -73.9775 },
+    path: [
+      { lat: 40.7610, lng: -73.9780 },
+      { lat: 40.7613, lng: -73.9777 },
+      { lat: 40.7615, lng: -73.9775 }
+    ],
+    instructions: [
+      'Start at Main Entrance',
+      'Walk straight for 60 meters',
+      'Turn left',
+      'Gallery B is on your right'
+    ],
+    stops: [],
+    distance: 85.2,
+    estimatedTime: 61,
+    arrivalTime: '11:01 AM',
+    calculationTime: 1,
+    isPersonalized: false,
+    mapUrl: '/maps/1/route_2.png',
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ];
 
