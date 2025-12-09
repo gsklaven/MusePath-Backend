@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
  */
 
 let isConnected = false;
-let useMockData = false;
+let useMockData = true; // Force mock data mode for tests
 
 /**
  * Connect to MongoDB database

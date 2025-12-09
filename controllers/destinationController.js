@@ -32,7 +32,7 @@ export const uploadDestinations = async (req, res) => {
     
     const result = await destinationService.uploadDestinations(map_id, destinations);
     
-    return sendSuccess(res, result, 'Destinations uploaded successfully');
+    return sendSuccess(res, result, 'Destinations uploaded successfully', 201);
   } catch (error) {
     return sendError(res, error.message, 500);
   }
