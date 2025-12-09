@@ -72,7 +72,7 @@ test('GET /destinations/999 returns 404 for non-existent destination', async (t)
     t.is(body.message, 'Destination not found');
 });
 
-test('GET /destinations/abc returns 404 for invalid syntax of ID', async (t) => {
+test('GET /destinations/abc returns 404 for invalid formatof ID', async (t) => {
     const { statusCode } = await t.context.got('destinations/abc', { throwHttpErrors: false });
     t.true(statusCode === 404);
 });
