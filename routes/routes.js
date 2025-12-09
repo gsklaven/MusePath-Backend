@@ -1,42 +1,43 @@
 import express from 'express';
 import * as routeController from '../controllers/routeController.js';
 import { validateRouteRequest } from '../middleware/validation.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 /**
  * @route   POST /routes
  * @desc    Calculate route
- * @access  Public
+ * @access  Private - Requires authentication
  */
-router.post('/', validateRouteRequest, routeController.calculateRoute);
+router.post('/', verifyToken, validateRouteRequest, routeController.calculateRoute);
 
 /**
  * @route   GET /routes/:route_id
  * @desc    Get route details
- * @access  Public
+ * @access  Private - Requires authentication
  */
-router.get('/:route_id', routeController.getRouteDetails);
+router.get('/:route_id', verifyToken, routeController.getRouteDetails);
 
 /**
  * @route   PUT /routes/:route_id
  * @desc    Update route stops
- * @access  Public
+ * @access  Private - Requires authentication
  */
-router.put('/:route_id', routeController.updateRouteStops);
+router.put('/:route_id', verifyToken, routeController.updateRouteStops);
 
 /**
  * @route   POST /routes/:route_id
  * @desc    Recalculate route
- * @access  Public
+ * @access  Private - Requires authentication
  */
-router.post('/:route_id', routeController.recalculateRoute);
+router.post('/:route_id', verifyToken, routeController.recalculateRoute);
 
 /**
  * @route   DELETE /routes/:route_id
  * @desc    Delete route
- * @access  Public
+ * @access  Private - Requires authentication
  */
-router.delete('/:route_id', routeController.deleteRoute);
+router.delete('/:route_id', verifyToken, routeController.deleteRoute);
 
 export default router;

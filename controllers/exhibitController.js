@@ -73,7 +73,13 @@ export const rateExhibit = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
     const { rating } = req.body;
-    const userId = req.user?.userId || 1; // Default to user 1 if not authenticated
+    
+    // verifyToken middleware ensures req.user exists
+    const userId = req.user.id || req.user.userId || req.user._id;
+    
+    if (!userId) {
+      return sendError(res, 'User authentication required', 401);
+    }
     
     const exhibit = await exhibitService.rateExhibit(exhibit_id, userId, rating);
     

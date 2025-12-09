@@ -1,4 +1,5 @@
 import express from 'express';
+import authRoutes from './authentication.js';
 import coordinatesRoutes from './coordinates.js';
 import destinationsRoutes from './destinations.js';
 import exhibitsRoutes from './exhibits.js';
@@ -27,9 +28,12 @@ router.get('/health', (req, res) => {
   });
 });
 
+
+
 /**
  * Mount all route modules
  */
+router.use('/auth', authRoutes);
 router.use('/coordinates', coordinatesRoutes);
 router.use('/destinations', destinationsRoutes);
 router.use('/exhibits', exhibitsRoutes);

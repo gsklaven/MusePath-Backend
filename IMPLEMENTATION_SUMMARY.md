@@ -7,7 +7,7 @@
 #### Critical Requirements (All Met ✅)
 
 1. **✅ 10+ Available Routes**
-   - **Implemented: 24 routes** across 9 resource groups
+   - **Implemented: 27 routes** across 9 resource groups
    - All routes are fully functional and tested
 
 2. **✅ HTTP Methods Coverage**
@@ -58,7 +58,7 @@
 - `models/Coordinate.js` - Coordinate schema
 - `models/Notification.js` - Notification schema
 
-### Services (7 files)
+### Services (8 files)
 - `services/userService.js` - User business logic
 - `services/exhibitService.js` - Exhibit business logic
 - `services/routeService.js` - Route calculation logic
@@ -67,8 +67,9 @@
 - `services/coordinateService.js` - Location tracking logic
 - `services/notificationService.js` - Notification logic
 - `services/syncService.js` - Offline sync logic
+- `services/authService.js` - Authentication logic
 
-### Controllers (8 files)
+### Controllers (9 files)
 - `controllers/userController.js`
 - `controllers/exhibitController.js`
 - `controllers/routeController.js`
@@ -77,8 +78,9 @@
 - `controllers/coordinateController.js`
 - `controllers/notificationController.js`
 - `controllers/syncController.js`
+- `controllers/authController.js`
 
-### Routes (10 files)
+### Routes (11 files)
 - `routes/users.js` - User endpoints
 - `routes/exhibits.js` - Exhibit endpoints
 - `routes/routes.js` - Route endpoints
@@ -89,6 +91,7 @@
 - `routes/sync.js` - Sync endpoints
 - `routes/downloads.js` - Download endpoints
 - `routes/index.js` - Main router
+- `routes/authentication.js` - Authentication endpoints
 
 ### Middleware (4 files)
 - `middleware/auth.js` - Basic authentication
@@ -157,6 +160,11 @@
 
 ## 📊 API Endpoints Summary
 
+### Authentication (3 endpoints)
+- POST `/v1/auth/register` - Register a new user
+- POST `/v1/auth/login` - Login and receive auth cookie
+- POST `/v1/auth/logout` - Logout and revoke auth cookie
+
 ### Health & Status (1 endpoint)
 - GET `/v1/health` - API health check
 
@@ -198,7 +206,7 @@
 - POST `/v1/notifications` - Send notification
 - POST `/v1/sync` - Sync offline data
 
-**Total: 24 fully functional endpoints**
+**Total: 27 fully functional endpoints**
 
 ---
 

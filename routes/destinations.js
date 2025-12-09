@@ -1,6 +1,7 @@
 import express from 'express';
 import * as destinationController from '../controllers/destinationController.js';
 import { validateDestinationUpload } from '../middleware/validation.js';
+import { verifyToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -14,9 +15,9 @@ router.get('/', destinationController.listDestinations);
 /**
  * @route   POST /destinations
  * @desc    Upload destinations data
- * @access  Public
+ * @access  Private - Admin only
  */
-router.post('/', validateDestinationUpload, destinationController.uploadDestinations);
+router.post('/', verifyToken, requireAdmin, validateDestinationUpload, destinationController.uploadDestinations);
 
 /**
  * @route   GET /destinations/:destination_id
