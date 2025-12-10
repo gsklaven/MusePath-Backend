@@ -13,27 +13,45 @@ dotenv.config();
  * Shared utilities for all test files
  */
 
+// Global test server - shared across all test files
+let globalServer = null;
+let globalBaseUrl = null;
+
+/**
+ * Get or create the shared test server
+ * This ensures only ONE server runs for all tests
+ */
+export const getTestServer = async () => {
+	if (!globalServer) {
+		// Initialize database connection (will use mock data if no MONGODB_URI)
+		await connectDatabase();
+		
+		globalServer = http.createServer(app);
+		const server = globalServer.listen();
+		const { port } = server.address();
+		globalBaseUrl = `http://localhost:${port}`;
+		
+		// Set a ref to false so Node.js can exit
+		globalServer.unref();
+	}
+	return { server: globalServer, baseUrl: globalBaseUrl };
+};
+
 /**
  * Setup test server
  * Call this in test.before() hook
  */
 export const setupTestServer = async (t) => {
-	// Initialize database connection (will use mock data if no MONGODB_URI)
-	await connectDatabase();
-	
-	t.context.server = http.createServer(app);
-	const server = t.context.server.listen();
-	const { port } = server.address();
-	t.context.baseUrl = `http://localhost:${port}`;
-	t.context.port = port;
+	const { baseUrl } = await getTestServer();
+	t.context.baseUrl = baseUrl;
 };
 
 /**
  * Cleanup test server
- * Call this in test.after.always() hook
+ * This is now a no-op since the server will auto-close when tests finish
  */
 export const cleanupTestServer = (t) => {
-	t.context.server.close();
+	// Server cleanup handled automatically via unref() - do nothing here
 };
 
 /**

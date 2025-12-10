@@ -40,5 +40,12 @@
   },
   "devDependencies": {
     "c8": "^10.1.3"
+  },
+  "ava": {
+    "files": [
+      "tests/**/*.test.js"
+    ],
+    "timeout": "2m",
+    "workerThreads": false
   }
 }
