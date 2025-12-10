@@ -154,3 +154,45 @@ export const downloadExhibitInfo = async (req, res) => {
     return sendError(res, error.message, 500);
   }
 };
+
+/**
+ * Create a new exhibit
+ * POST /exhibits
+ */
+export const createExhibit = async (req, res) => {
+  try {
+    const exhibitData = req.body;
+    
+    const exhibit = await exhibitService.createExhibit(exhibitData);
+    
+    return sendSuccess(res, { exhibitId: exhibit.exhibitId }, 'Exhibit created successfully', 201);
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Delete an exhibit
+ * DELETE /exhibits/:exhibit_id
+ */
+export const deleteExhibit = async (req, res) => {
+  try {
+    const { exhibit_id } = req.params;
+    
+    // Validate that exhibit_id is a number
+    const exhibitId = parseInt(exhibit_id, 10);
+    if (isNaN(exhibitId)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
+    
+    const result = await exhibitService.deleteExhibit(exhibitId);
+    
+    if (!result) {
+      return sendNotFound(res, 'Exhibit not found');
+    }
+    
+    return res.status(204).send();
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};

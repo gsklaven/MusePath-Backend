@@ -119,7 +119,11 @@ export const loginUser = async ({ username, password }) => {
       const jwtSecret = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
       const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
       const subject = userWithoutPassword.userId ?? userWithoutPassword._id ?? userWithoutPassword.id;
-      const token = jwt.sign({ sub: String(subject), username: userWithoutPassword.username || null }, jwtSecret, { expiresIn: tokenExpiry });
+      const token = jwt.sign({ 
+        sub: String(subject), 
+        username: userWithoutPassword.username || null,
+        role: userWithoutPassword.role || 'user'
+      }, jwtSecret, { expiresIn: tokenExpiry });
 
       return { user: userWithoutPassword, token };
     } else {
@@ -144,7 +148,11 @@ export const loginUser = async ({ username, password }) => {
       const jwtSecret = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
       const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
       const subject = userObject.userId ?? userObject._id ?? userObject.id;
-      const token = jwt.sign({ sub: String(subject), username: userObject.username || null }, jwtSecret, { expiresIn: tokenExpiry });
+      const token = jwt.sign({ 
+        sub: String(subject), 
+        username: userObject.username || null,
+        role: userObject.role || 'user'
+      }, jwtSecret, { expiresIn: tokenExpiry });
 
       return { user: userObject, token };
     }

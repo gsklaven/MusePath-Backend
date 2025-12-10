@@ -26,4 +26,11 @@ router.post('/', verifyToken, requireAdmin, validateDestinationUpload, destinati
  */
 router.get('/:destination_id', destinationController.getDestinationInfo);
 
+/**
+ * @route   DELETE /destinations/:destination_id
+ * @desc    Delete a destination
+ * @access  Private - Admin only
+ */
+router.delete('/:destination_id', verifyToken, requireAdmin, destinationController.deleteDestination);
+
 export default router;

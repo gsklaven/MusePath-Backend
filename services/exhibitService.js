@@ -145,3 +145,79 @@ export const getAllExhibits = async () => {
   
   return await Exhibit.find();
 };
+
+/**
+ * Create a new exhibit
+ * @param {Object} exhibitData - Exhibit data
+ * @returns {Promise<Object>} Created exhibit
+ */
+export const createExhibit = async (exhibitData) => {
+  if (isMockDataMode()) {
+    const newExhibit = {
+      exhibitId: mockExhibits.length > 0 ? Math.max(...mockExhibits.map(e => e.exhibitId)) + 1 : 1,
+      title: exhibitData.title,
+      name: exhibitData.name || exhibitData.title,
+      category: Array.isArray(exhibitData.category) ? exhibitData.category : [exhibitData.category],
+      description: exhibitData.description,
+      location: exhibitData.location,
+      features: exhibitData.features || [],
+      keywords: exhibitData.keywords || [],
+      audioGuideUrl: exhibitData.audioGuideUrl || null,
+      status: exhibitData.status || 'available',
+      ratings: new Map(),
+      averageRating: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    mockExhibits.push(newExhibit);
+    return newExhibit;
+  }
+  
+  const exhibitId = await generateNextExhibitId();
+  
+  const exhibit = new Exhibit({
+    exhibitId,
+    title: exhibitData.title,
+    name: exhibitData.name || exhibitData.title,
+    category: Array.isArray(exhibitData.category) ? exhibitData.category : [exhibitData.category],
+    description: exhibitData.description,
+    location: exhibitData.location,
+    features: exhibitData.features || [],
+    keywords: exhibitData.keywords || [],
+    audioGuideUrl: exhibitData.audioGuideUrl || null,
+    status: exhibitData.status || 'available',
+    ratings: new Map(),
+    averageRating: 0
+  });
+  
+  return await exhibit.save();
+};
+
+/**
+ * Delete an exhibit
+ * @param {number} exhibitId - Exhibit ID
+ * @returns {Promise<boolean>} True if deleted, false if not found
+ */
+export const deleteExhibit = async (exhibitId) => {
+  if (isMockDataMode()) {
+    const index = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
+    
+    if (index === -1) return false;
+    
+    mockExhibits.splice(index, 1);
+    return true;
+  }
+  
+  const result = await Exhibit.deleteOne({ exhibitId: Number(exhibitId) });
+  return result.deletedCount > 0;
+};
+
+/**
+ * Generate next exhibit ID (for database mode)
+ * @returns {Promise<number>} Next ID
+ */
+const generateNextExhibitId = async () => {
+  const lastExhibit = await Exhibit.findOne().sort({ exhibitId: -1 });
+  return lastExhibit ? lastExhibit.exhibitId + 1 : 1;
+};

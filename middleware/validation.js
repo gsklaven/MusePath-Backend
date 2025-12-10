@@ -125,3 +125,26 @@ export const validateNotificationRequest = (req, res, next) => {
   
   next();
 };
+
+/**
+ * Validate exhibit creation request
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+export const validateExhibitCreate = (req, res, next) => {
+  const validation = validateRequiredFields(req.body, ['title', 'description', 'location']);
+  
+  if (!validation.isValid) {
+    return sendValidationError(res, validation.message);
+  }
+  
+  const { category } = req.body;
+  
+  // Category can be a string or array
+  if (category && !Array.isArray(category) && typeof category !== 'string') {
+    return sendValidationError(res, 'Category must be a string or array');
+  }
+  
+  next();
+};

@@ -205,24 +205,121 @@ test('POST /destinations - should require admin role', async t => {
 });
 
 test('POST /destinations - should upload destinations with admin credentials', async t => {
-  // Skip this test in mock mode since we can't easily create admin users
-  // In a real scenario, admin users would be seeded or created through a separate process
-  t.pass('Skipping admin upload test in mock mode - admin role tested via requireAdmin middleware');
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  const response = await client.post('v1/destinations', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    json: {
+      map_id: 1,
+      destinations: [
+        {
+          exhibit_id: 1,
+          name: 'New Test Destination',
+          type: 'exhibit',
+          coordinates: { lat: 40.7128, lng: -74.0060 },
+          description: 'A test destination'
+        }
+      ]
+    }
+  });
+  
+  t.is(response.statusCode, 200);
+  t.true(response.body.success);
+  t.is(response.body.data.uploaded, 1);
 });
 
 test('POST /destinations - should reject missing map_id', async t => {
-  // Skip admin-specific validation tests in mock mode
-  t.pass('Skipping validation test - requires admin authentication');
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  const response = await client.post('v1/destinations', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    json: {
+      destinations: []
+    }
+  });
+  
+  t.is(response.statusCode, 400);
+  t.false(response.body.success);
+  t.truthy(response.body.message);
 });
 
 test('POST /destinations - should reject missing destinations array', async t => {
-  // Skip admin-specific validation tests in mock mode
-  t.pass('Skipping validation test - requires admin authentication');
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  const response = await client.post('v1/destinations', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    json: {
+      map_id: 1
+    }
+  });
+  
+  t.is(response.statusCode, 400);
+  t.false(response.body.success);
+  t.truthy(response.body.message);
 });
 
 test('POST /destinations - should reject non-array destinations', async t => {
-  // Skip admin-specific validation tests in mock mode
-  t.pass('Skipping validation test - requires admin authentication');
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  const response = await client.post('v1/destinations', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    json: {
+      map_id: 1,
+      destinations: 'not an array'
+    }
+  });
+  
+  t.is(response.statusCode, 400);
+  t.false(response.body.success);
+  t.truthy(response.body.message);
 });
 
 // ==================== Destination Types Tests ====================
@@ -289,3 +386,105 @@ test('Destination workflow - list, filter, and get details', async t => {
   t.truthy(detailResponse.body.data.status);
   t.truthy(detailResponse.body.data.crowdLevel);
 });
+
+// ==================== Delete Destination Tests ====================
+
+test('DELETE /destinations/:destination_id - should require authentication', async t => {
+  const client = createClient(t.context.baseUrl);
+
+  const response = await client.delete('v1/destinations/1');
+
+  t.is(response.statusCode, 401);
+  t.false(response.body.success);
+  t.regex(response.body.message, /token|authentication/i);
+});
+
+test('DELETE /destinations/:destination_id - should require admin role', async t => {
+  const client = createClient(t.context.baseUrl);
+  
+  const { client: userClient } = await registerAndLogin(
+    t.context.baseUrl,
+    'destdelete',
+    'destdelete@example.com',
+    'Password123!'
+  );
+
+  const response = await userClient.delete('v1/destinations/1');
+
+  t.is(response.statusCode, 403);
+  t.false(response.body.success);
+  t.regex(response.body.message, /admin/i);
+});
+
+test('DELETE /destinations/:destination_id - should delete destination with admin credentials', async t => {
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  // First, create a destination to delete
+  const uploadResponse = await client.post('v1/destinations', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    json: {
+      map_id: 1,
+      destinations: [
+        {
+          exhibit_id: 1,
+          name: 'Destination to Delete',
+          type: 'exhibit',
+          coordinates: { lat: 40.7128, lng: -74.0060 },
+          description: 'This will be deleted'
+        }
+      ]
+    }
+  });
+  
+  t.is(uploadResponse.statusCode, 200);
+  const destinationId = uploadResponse.body.data.destinationIds[0];
+  
+  // Now delete it
+  const deleteResponse = await client.delete(`v1/destinations/${destinationId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  
+  t.is(deleteResponse.statusCode, 204);
+  
+  // Verify it's deleted
+  const getResponse = await client.get(`v1/destinations/${destinationId}`);
+  t.is(getResponse.statusCode, 404);
+});
+
+test('DELETE /destinations/:destination_id - should return 404 for non-existent destination', async t => {
+  const client = createClient(t.context.baseUrl);
+  
+  // Login as admin using existing mock user
+  const loginResponse = await client.post('v1/auth/login', {
+    json: {
+      username: 'john_smith',
+      password: 'Password123!'
+    }
+  });
+  
+  const { token } = loginResponse.body.data;
+  
+  const response = await client.delete('v1/destinations/99999', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  
+  t.is(response.statusCode, 404);
+  t.false(response.body.success);
+});
+

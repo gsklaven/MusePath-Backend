@@ -18,6 +18,10 @@ yarn-error.log*
 # Runtime data
 pids/
 *.pid
+
+# Test coverage
+coverage/
+.nyc_output/
 *.seed
 *.pid.lock
 

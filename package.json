@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "ava"
+    "test": "ava",
+    "test:coverage": "c8 ava",
+    "test:coverage:html": "c8 --reporter=html --reporter=text ava"
   },
   "keywords": [
     "museum",
@@ -35,5 +37,8 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.1.11",
     "tough-cookie": "^6.0.0"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3"
   }
 }

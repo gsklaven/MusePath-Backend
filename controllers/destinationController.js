@@ -63,3 +63,23 @@ export const getDestinationInfo = async (req, res) => {
     return sendError(res, error.message, 500);
   }
 };
+
+/**
+ * Delete destination
+ * DELETE /destinations/:destination_id
+ */
+export const deleteDestination = async (req, res) => {
+  try {
+    const { destination_id } = req.params;
+    
+    const result = await destinationService.deleteDestination(destination_id);
+    
+    if (!result) {
+      return sendNotFound(res, 'Destination not found');
+    }
+    
+    return res.status(204).send();
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};

@@ -319,3 +319,326 @@ test.serial("POST /v1/exhibits/:exhibit_id/ratings - updates rating when user ra
 	t.is(exhibit.ratings.get(userId), 5);
 	t.not(exhibit.ratings.get(userId), 3);
 });
+
+/**
+ * ===================================
+ * EXHIBIT CREATION TESTS (ADMIN)
+ * ===================================
+ */
+
+test('POST /exhibits - should require authentication', async t => {
+	const client = createClient(t.context.baseUrl);
+
+	const response = await client.post('v1/exhibits', {
+		json: {
+			title: 'Test Exhibit',
+			description: 'Test description',
+			location: 'Room 1'
+		}
+	});
+
+	t.is(response.statusCode, 401);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /token|authentication/i);
+});
+
+test('POST /exhibits - should require admin role', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { client: userClient } = await registerAndLogin(
+		t.context.baseUrl,
+		'exhibitcreate',
+		'exhibitcreate@example.com',
+		'Password123!'
+	);
+
+	const response = await userClient.post('v1/exhibits', {
+		json: {
+			title: 'Test Exhibit',
+			description: 'Test description',
+			location: 'Room 1'
+		}
+	});
+
+	t.is(response.statusCode, 403);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /admin/i);
+});
+
+test('POST /exhibits - should create exhibit with admin credentials', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	const response = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'New Test Exhibit',
+			description: 'A test exhibit created by admin',
+			location: 'Gallery A',
+			category: ['modern art', 'sculpture'],
+			features: ['interactive', 'audio guide'],
+			keywords: ['modern', 'test'],
+			audioGuideUrl: 'https://example.com/audio/test.mp3'
+		}
+	});
+	
+	t.is(response.statusCode, 201);
+	t.is(response.body.success, true);
+	t.truthy(response.body.data.exhibitId);
+	
+	// Verify the exhibit was created
+	const exhibitId = response.body.data.exhibitId;
+	const getResponse = await client.get(`v1/exhibits/${exhibitId}`);
+	
+	t.is(getResponse.statusCode, 200);
+	t.is(getResponse.body.data.title, 'New Test Exhibit');
+	t.is(getResponse.body.data.description, 'A test exhibit created by admin');
+});
+
+test('POST /exhibits - should validate required fields', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	// Missing title
+	const response1 = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			description: 'Description',
+			location: 'Room 1'
+		}
+	});
+	t.is(response1.statusCode, 400);
+	t.is(response1.body.success, false);
+	
+	// Missing description
+	const response2 = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Title',
+			location: 'Room 1'
+		}
+	});
+	t.is(response2.statusCode, 400);
+	t.is(response2.body.success, false);
+	
+	// Missing location
+	const response3 = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Title',
+			description: 'Description'
+		}
+	});
+	t.is(response3.statusCode, 400);
+	t.is(response3.body.success, false);
+});
+
+/**
+ * ===================================
+ * EXHIBIT DELETION TESTS (ADMIN)
+ * ===================================
+ */
+
+test('DELETE /exhibits/:exhibit_id - should require authentication', async t => {
+	const client = createClient(t.context.baseUrl);
+
+	const response = await client.delete('v1/exhibits/1');
+
+	t.is(response.statusCode, 401);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /token|authentication/i);
+});
+
+test('DELETE /exhibits/:exhibit_id - should require admin role', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { client: userClient } = await registerAndLogin(
+		t.context.baseUrl,
+		'exhibitdelete',
+		'exhibitdelete@example.com',
+		'Password123!'
+	);
+
+	const response = await userClient.delete('v1/exhibits/1');
+
+	t.is(response.statusCode, 403);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /admin/i);
+});
+
+test('DELETE /exhibits/:exhibit_id - should delete exhibit with admin credentials', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	// First, create an exhibit to delete
+	const createResponse = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Exhibit to Delete',
+			description: 'This will be deleted',
+			location: 'Gallery B'
+		}
+	});
+	
+	t.is(createResponse.statusCode, 201);
+	const exhibitId = createResponse.body.data.exhibitId;
+	
+	// Now delete it
+	const deleteResponse = await client.delete(`v1/exhibits/${exhibitId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	
+	t.is(deleteResponse.statusCode, 204);
+	
+	// Verify it's deleted
+	const getResponse = await client.get(`v1/exhibits/${exhibitId}`);
+	t.is(getResponse.statusCode, 404);
+});
+
+test('DELETE /exhibits/:exhibit_id - should return 404 for non-existent exhibit', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	const response = await client.delete('v1/exhibits/99999', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	
+	t.is(response.statusCode, 404);
+	t.is(response.body.success, false);
+});
+
+test('DELETE /exhibits/:exhibit_id - should validate exhibit ID format', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	const response = await client.delete('v1/exhibits/invalid', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /invalid.*id/i);
+});
+
+/**
+ * ===================================
+ * INTEGRATION WORKFLOW TESTS
+ * ===================================
+ */
+
+test('Admin workflow - create, view, and delete exhibit', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	// Step 1: Create exhibit
+	const createResponse = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Workflow Test Exhibit',
+			description: 'Testing the full workflow',
+			location: 'Main Hall',
+			category: 'contemporary',
+			features: ['accessible'],
+			keywords: ['workflow', 'test']
+		}
+	});
+	
+	t.is(createResponse.statusCode, 201);
+	const exhibitId = createResponse.body.data.exhibitId;
+	
+	// Step 2: View the exhibit
+	const viewResponse = await client.get(`v1/exhibits/${exhibitId}`);
+	t.is(viewResponse.statusCode, 200);
+	t.is(viewResponse.body.data.title, 'Workflow Test Exhibit');
+	t.is(viewResponse.body.data.location, 'Main Hall');
+	
+	// Step 3: Search for the exhibit
+	const searchResponse = await client.get('v1/exhibits/search?keyword=workflow');
+	t.is(searchResponse.statusCode, 200);
+	const found = searchResponse.body.data.find(e => e.exhibitId === exhibitId);
+	t.truthy(found);
+	
+	// Step 4: Delete the exhibit
+	const deleteResponse = await client.delete(`v1/exhibits/${exhibitId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	t.is(deleteResponse.statusCode, 204);
+	
+	// Step 5: Verify deletion
+	const verifyResponse = await client.get(`v1/exhibits/${exhibitId}`);
+	t.is(verifyResponse.statusCode, 404);
+});
