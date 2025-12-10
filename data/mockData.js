@@ -6,8 +6,10 @@
 export const mockUsers = [
   {
     userId: 1,
+    username: 'john_smith',
     name: 'John Smith',
     email: 'john.smith@example.com',
+    password: '$2b$10$CwTycUXWue0Thq9StjUM0uJ8.8P.7KX7jx5bRfKKKKKJKJKJKJKJKe', // Password123!
     role: 'admin',
     preferences: ['modern art', 'ancient greece', 'sculpture'],
     favourites: [],
@@ -18,8 +20,10 @@ export const mockUsers = [
   },
   {
     userId: 2,
+    username: 'maria_garcia',
     name: 'Maria Garcia',
     email: 'maria.garcia@example.com',
+    password: '$2b$10$CwTycUXWue0Thq9StjUM0uJ8.8P.7KX7jx5bRfKKKKKKJKJKJKJKJe', // Password123!
     role: 'admin',
     preferences: ['impressionism', 'renaissance', 'paintings'],
     favourites: [],
@@ -30,8 +34,10 @@ export const mockUsers = [
   },
   {
     userId: 3,
+    username: 'chen_wei',
     name: 'Chen Wei',
     email: 'chen.wei@example.com',
+    password: '$2b$10$CwTycUXWue0Thq9StjUM0uJ8.8P.7KX7jx5bRfKKKKKKJKJKJKJKJe', // Password123!
     role: 'admin',
     preferences: ['asian art', 'ceramics', 'calligraphy'],
     favourites: [],
