@@ -111,7 +111,8 @@ export const validateDestinationUpload = (req, res, next) => {
  * @param {Function} next - Express next middleware function
  */
 export const validateNotificationRequest = (req, res, next) => {
-  const validation = validateRequiredFields(req.body, ['user_id', 'route_id', 'currentLat', 'currentLng']);
+  // user_id comes from req.user.id (authentication), not from request body
+  const validation = validateRequiredFields(req.body, ['route_id', 'currentLat', 'currentLng']);
   
   if (!validation.isValid) {
     return sendValidationError(res, validation.message);

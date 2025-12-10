@@ -492,7 +492,7 @@ test('DELETE /exhibits/:exhibit_id - should require admin role', async t => {
 	t.regex(response.body.message, /admin/i);
 });
 
-test('DELETE /exhibits/:exhibit_id - should delete exhibit with admin credentials', async t => {
+test.serial('DELETE /exhibits/:exhibit_id - should delete exhibit with admin credentials', async t => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin

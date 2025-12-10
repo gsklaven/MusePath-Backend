@@ -206,7 +206,9 @@ test('GET /routes/:route_id - should prevent access to other user routes', async
   t.regex(response.body.message, /forbidden/i);
 });
 
-test('GET /routes/:route_id - should return 404 for non-existent route', async t => {
+test.serial('GET /routes/:route_id - should return 404 for non-existent route', async t => {
+  // Add delay to prevent timestamp collision
+  await new Promise(resolve => setTimeout(resolve, 5));
   const { client } = await registerAndLogin(
     t.context.baseUrl,
     generateUsername('route'),
@@ -402,7 +404,7 @@ test('POST /routes/:route_id - should prevent recalculating other user routes', 
 
 // ==================== Route Deletion Tests ====================
 
-test('DELETE /routes/:route_id - should delete route when authenticated', async t => {
+test.serial('DELETE /routes/:route_id - should delete route when authenticated', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
     generateUsername('routedelete'),

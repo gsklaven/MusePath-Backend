@@ -139,17 +139,23 @@ export const downloadExhibitInfo = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
     
+    // Validate ID format
+    if (isNaN(exhibit_id) || !Number.isInteger(Number(exhibit_id))) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
+    
     const exhibit = await exhibitService.getExhibitById(exhibit_id);
     
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
     
-    // In a real application, return a ZIP file
+    // Return full exhibit details for offline download
     return sendSuccess(res, { 
-      downloadUrl: `/downloads/exhibits/${exhibit_id}.zip`,
-      exhibit_id: Number(exhibit_id)
-    }, 'Exhibit download link generated');
+      ...exhibit,
+      exhibitId: exhibit.exhibitId,
+      downloadUrl: `/downloads/exhibits/${exhibit_id}.zip`
+    }, 'Exhibit information retrieved for download');
   } catch (error) {
     return sendError(res, error.message, 500);
   }

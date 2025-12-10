@@ -56,17 +56,48 @@ export const downloadMap = async (req, res) => {
   try {
     const { map_id } = req.params;
     
-    const map = await mapService.getMapById(map_id);
+    // Validate ID format
+    if (isNaN(map_id) || !Number.isInteger(Number(map_id))) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
+    
+    const map = await mapService.getFullMapById(map_id);
     
     if (!map) {
       return sendNotFound(res, 'Map not found');
     }
     
-    // In a real application, return actual image file
+    // Return full map details for offline download
     return sendSuccess(res, {
-      downloadUrl: `/downloads/maps/${map_id}.png`,
-      map_id: Number(map_id)
-    }, 'Map download link generated');
+      ...map,
+      mapId: map.mapId,
+      downloadUrl: `/downloads/maps/${map_id}.png`
+    }, 'Map information retrieved for download');
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Delete map
+ * DELETE /maps/:map_id
+ */
+export const deleteMap = async (req, res) => {
+  try {
+    const { map_id } = req.params;
+    
+    // Validate map_id is a number
+    if (isNaN(map_id)) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
+    
+    const deleted = await mapService.deleteMap(Number(map_id));
+    
+    if (!deleted) {
+      return sendNotFound(res, 'Map not found');
+    }
+    
+    return res.status(204).send();
   } catch (error) {
     return sendError(res, error.message, 500);
   }
