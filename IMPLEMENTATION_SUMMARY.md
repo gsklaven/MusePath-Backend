@@ -160,13 +160,13 @@
 
 ## 📊 API Endpoints Summary
 
+### Health & Status (1 endpoint)
+- GET `/v1/health` - API health check
+
 ### Authentication (3 endpoints)
 - POST `/v1/auth/register` - Register a new user
 - POST `/v1/auth/login` - Login and receive auth cookie
 - POST `/v1/auth/logout` - Logout and revoke auth cookie
-
-### Health & Status (1 endpoint)
-- GET `/v1/health` - API health check
 
 ### Exhibit Management (5 endpoints)
 - GET `/v1/exhibits/search` - Search exhibits by keyword/category

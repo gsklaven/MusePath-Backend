@@ -8,6 +8,7 @@ import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { getLogger } from './middleware/logger.js';
 import { RATE_LIMIT } from './config/constants.js';
+import mongoSanitize from 'express-mongo-sanitize';
 
 /**
  * Express Application Setup
@@ -46,7 +47,7 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse cookies on incoming requests
 app.use(getLogger()); // HTTP request logging
-
+app.use(mongoSanitize()); // Sanitize user input to prevent NoSQL injection
 /**
  * API Routes
  */

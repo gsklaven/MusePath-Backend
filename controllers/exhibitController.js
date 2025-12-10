@@ -15,16 +15,23 @@ export const viewExhibitInfo = async (req, res) => {
     const { exhibit_id } = req.params;
     const { mode } = req.query;
     
-    const exhibit = await exhibitService.getExhibitById(exhibit_id, mode);
+    // Validate that exhibit_id is a number
+    const exhibitId = parseInt(exhibit_id, 10);
+    if (isNaN(exhibitId)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
+    
+    const exhibit = await exhibitService.getExhibitById(exhibitId, mode);
     
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
     
   const response = {
-    exhibit_id: exhibit.exhibitId,
+    exhibitId: exhibit.exhibitId,
     title: exhibit.title,
     name: exhibit.name,
+    category: exhibit.category,
     rating: exhibit.averageRating,
     location: exhibit.location,
     features: exhibit.features,
@@ -48,7 +55,13 @@ export const getAudioGuide = async (req, res) => {
     const { exhibit_id } = req.params;
     const { mode } = req.query;
     
-    const audioInfo = await exhibitService.getAudioGuide(exhibit_id, mode);
+    // Validate that exhibit_id is a number
+    const exhibitId = parseInt(exhibit_id, 10);
+    if (isNaN(exhibitId)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
+    
+    const audioInfo = await exhibitService.getAudioGuide(exhibitId, mode);
     
     if (!audioInfo) {
       return sendNotFound(res, 'Exhibit not found');
@@ -74,6 +87,12 @@ export const rateExhibit = async (req, res) => {
     const { exhibit_id } = req.params;
     const { rating } = req.body;
     
+    // Validate that exhibit_id is a number
+    const exhibitId = parseInt(exhibit_id, 10);
+    if (isNaN(exhibitId)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
+    
     // verifyToken middleware ensures req.user exists
     const userId = req.user.id || req.user.userId || req.user._id;
     
@@ -81,13 +100,13 @@ export const rateExhibit = async (req, res) => {
       return sendError(res, 'User authentication required', 401);
     }
     
-    const exhibit = await exhibitService.rateExhibit(exhibit_id, userId, rating);
+    const exhibit = await exhibitService.rateExhibit(exhibitId, userId, rating);
     
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
     
-    return sendNoContent(res);
+    return sendSuccess(res, { exhibitId: exhibit.exhibitId, rating, averageRating: exhibit.averageRating }, 'Exhibit rated successfully', 201);
   } catch (error) {
     return sendError(res, error.message, 500);
   }
@@ -99,17 +118,12 @@ export const rateExhibit = async (req, res) => {
  */
 export const searchExhibits = async (req, res) => {
   try {
-    const { exhibit_term, category, mode } = req.query;
+    const { keyword, exhibit_term, category, mode } = req.query;
     
-    if (!exhibit_term) {
-      return sendError(res, 'Search term is required', 400);
-    }
+    // Support both 'keyword' and 'exhibit_term' parameters
+    const searchTerm = keyword || exhibit_term;
     
-    const exhibits = await exhibitService.searchExhibits(exhibit_term, category, mode);
-    
-    if (exhibits.length === 0) {
-      return sendNotFound(res, 'No exhibits found matching the search criteria');
-    }
+    const exhibits = await exhibitService.searchExhibits(searchTerm, category, mode);
     
     return sendSuccess(res, exhibits, 'Exhibits retrieved successfully');
   } catch (error) {

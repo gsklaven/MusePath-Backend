@@ -41,14 +41,14 @@ export const registerUser = async ({ username, email, password }) => {
         throw new ServiceError('User already exists', 409);
       }
 
-      // Create mock user
+      // Create mock user following the User schema
       const newUser = {
         userId: mockUsers.length + 1,
         username,
         email,
         password: hashedPassword,
         avatar: null,
-        role: 'user',
+        role: 'user', // Default role
         preferences: [],
         favourites: [],
         ratings: new Map(),
@@ -69,16 +69,14 @@ export const registerUser = async ({ username, email, password }) => {
         throw new ServiceError('User already exists', 409);
       }
 
+      // Create new user following the User schema
+      // The schema will apply defaults: avatar=null, role='user', personalizationAvailable=false, createdAt/updatedAt=now
       const newUser = await User.create({
         userId: await getNextUserId(),
         username,
         email,
-        password: hashedPassword,
-        avatar: null,
-        role: 'user',
-        preferences: [],
-        favourites: [],
-        personalizationAvailable: false
+        password: hashedPassword
+        // Let schema defaults handle: avatar, role, preferences, favourites, ratings, personalizationAvailable, createdAt, updatedAt
       });
 
       // Convert to object and remove password

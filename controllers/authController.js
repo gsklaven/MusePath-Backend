@@ -1,6 +1,6 @@
 import * as authService from '../services/authService.js';
 import { sendSuccess, sendError } from '../utils/responses.js';
-import { validatePasswordStrength } from '../utils/validators.js';
+import { validateEmailFormat, validateUsernameFormat, validatePasswordStrength } from '../middleware/auth.js';
 
 /**
  * User Authentication and Registration Controller
@@ -20,6 +20,21 @@ export const Register = async (req, res) => {
         // Validate input
         if (!username || !email || !password) {
             return sendError(res, 'Username, email, and password are required', 400);
+        }
+
+        // Validate input types
+        if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+            return sendError(res, 'Invalid input types', 400);
+        }
+
+        // Validate username format
+        if (!validateUsernameFormat(username)) {
+            return sendError(res, 'Invalid username format. Use only letters, numbers, underscores, and hyphens (3-30 characters)', 400);
+        }
+
+        // Validate email format
+        if (!validateEmailFormat(email)) {
+            return sendError(res, 'Invalid email format', 400);
         }
 
         // Validate password strength
@@ -51,6 +66,16 @@ export const Login = async (req, res) => {
         // Validate input
         if (!username || !password) {
             return sendError(res, 'Username and password are required', 400);
+        }
+
+        // Validate input types
+        if (typeof username !== 'string' || typeof password !== 'string') {
+            return sendError(res, 'Invalid input types', 400);
+        }
+
+        // Validate username format (security check)
+        if (!validateUsernameFormat(username)) {
+            return sendError(res, 'Invalid username format', 400);
         }
 
         // Login user via service (returns { user, token })

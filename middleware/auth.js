@@ -5,6 +5,83 @@ const DEV_FALLBACK_SECRET = "dev-jwt-secret-change-me";
 
 const getJwtSecret = () => process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || DEV_FALLBACK_SECRET;
 
+/**
+ * Validate email format
+ * Only allows standard email characters to prevent NoSQL injection
+ * @param {string} email - Email address
+ * @returns {boolean} Validation result
+ */
+export const validateEmailFormat = (email) => {
+  if (typeof email !== 'string') return false;
+  // Only allow alphanumeric, dots, underscores, percent, hyphens, and plus signs
+  const emailRegex = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
+};
+
+/**
+ * Validate username format
+ * Only allows alphanumeric characters, underscores, and hyphens
+ * Prevents NoSQL injection and special characters
+ * @param {string} username - Username
+ * @returns {boolean} Validation result
+ */
+export const validateUsernameFormat = (username) => {
+  if (typeof username !== 'string') return false;
+  if (username.length < 3 || username.length > 30) return false;
+  // Only allow letters, numbers, underscores, and hyphens
+  const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+  return usernameRegex.test(username);
+};
+
+/**
+ * Validate password strength
+ * Requirements:
+ * - Minimum 8 characters
+ * - At least one uppercase letter
+ * - At least one lowercase letter
+ * - At least one digit
+ * - At least one special character
+ * - Only latin letters, digits and common special characters allowed
+ *
+ * @param {string} password
+ * @returns {{isValid: boolean, message: string}}
+ */
+export const validatePasswordStrength = (password) => {
+  if (typeof password !== 'string') {
+    return { isValid: false, message: 'Password must be a string' };
+  }
+
+  if (password.length < 8) {
+    return { isValid: false, message: 'Password must be at least 8 characters long' };
+  }
+
+  // Allowed characters: A-Z a-z 0-9 and common ASCII special characters
+  const allowedChars = /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/;
+  if (!allowedChars.test(password)) {
+    return { isValid: false, message: 'Password contains invalid characters. Use only latin letters, digits and common special characters' };
+  }
+
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  const hasSpecial = /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
+
+  if (!hasUpper) {
+    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
+  }
+  if (!hasLower) {
+    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
+  }
+  if (!hasDigit) {
+    return { isValid: false, message: 'Password must contain at least one digit' };
+  }
+  if (!hasSpecial) {
+    return { isValid: false, message: 'Password must contain at least one special character' };
+  }
+
+  return { isValid: true, message: 'Password is strong' };
+};
+
 export const verifyToken = async (req, res, next) => {
   try {
     const cookieToken = req.cookies && req.cookies.token;
@@ -14,7 +91,7 @@ export const verifyToken = async (req, res, next) => {
     const token = cookieToken || headerToken;
 
     if (!token) {
-      return res.status(401).json({ success: false, data: null, message: "Not authenticated" });
+      return res.status(401).json({ success: false, data: null, message: "Authentication token required" });
     }
 
     if (isTokenRevoked(token)) {

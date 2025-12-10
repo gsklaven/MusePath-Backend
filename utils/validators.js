@@ -51,8 +51,9 @@ export const validateCoordinates = (lat, lng) => {
 export const validateRating = (rating) => {
   return (
     typeof rating === 'number' &&
-    rating >= 0 &&
-    rating <= 5
+    rating >= 1 &&
+    rating <= 5 &&
+    Number.isInteger(rating)
   );
 };
 
@@ -123,53 +124,4 @@ export const validateMapId = (mapId) => {
 export const sanitizeSearchTerm = (term) => {
   if (typeof term !== 'string') return '';
   return term.trim().toLowerCase();
-};
-
-/**
- * Validate password strength
- * Requirements:
- * - Minimum 8 characters
- * - At least one uppercase letter
- * - At least one lowercase letter
- * - At least one digit
- * - At least one special character
- * - Only latin letters, digits and common special characters allowed
- *
- * @param {string} password
- * @returns {{isValid: boolean, message: string}}
- */
-export const validatePasswordStrength = (password) => {
-  if (typeof password !== 'string') {
-    return { isValid: false, message: 'Password must be a string' };
-  }
-
-  if (password.length < 8) {
-    return { isValid: false, message: 'Password must be at least 8 characters long' };
-  }
-
-  // Allowed characters: A-Z a-z 0-9 and common ASCII special characters
-  const allowedChars = /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/;
-  if (!allowedChars.test(password)) {
-    return { isValid: false, message: 'Password contains invalid characters. Use only latin letters, digits and common special characters' };
-  }
-
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
-
-  if (!hasUpper) {
-    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-  }
-  if (!hasLower) {
-    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-  }
-  if (!hasDigit) {
-    return { isValid: false, message: 'Password must contain at least one digit' };
-  }
-  if (!hasSpecial) {
-    return { isValid: false, message: 'Password must contain at least one special character' };
-  }
-
-  return { isValid: true, message: 'Password is strong' };
 };

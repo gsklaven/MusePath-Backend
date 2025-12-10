@@ -35,7 +35,7 @@ export const getExhibitById = async (exhibitId, mode = 'online') => {
  * @returns {Promise<Array>} Array of exhibits
  */
 export const searchExhibits = async (term, category, mode = 'online') => {
-  const searchTerm = sanitizeSearchTerm(term);
+  const searchTerm = term ? sanitizeSearchTerm(term) : null;
   
   if (isMockDataMode()) {
     let results = mockExhibits;
@@ -56,10 +56,8 @@ export const searchExhibits = async (term, category, mode = 'online') => {
       );
     }
     
-    return results.map(e => ({
-      exhibit_id: e.exhibitId,
-      title: e.title
-    }));
+    // Return full exhibit objects, not just id and title
+    return results;
   }
   
   const query = {};
@@ -76,11 +74,8 @@ export const searchExhibits = async (term, category, mode = 'online') => {
     query.category = { $in: [new RegExp(category, 'i')] };
   }
   
-  const exhibits = await Exhibit.find(query).select('exhibitId title');
-  return exhibits.map(e => ({
-    exhibit_id: e.exhibitId,
-    title: e.title
-  }));
+  const exhibits = await Exhibit.find(query);
+  return exhibits;
 };
 
 /**

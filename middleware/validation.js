@@ -56,8 +56,12 @@ export const validateRouteRequest = (req, res, next) => {
 export const validateRatingRequest = (req, res, next) => {
   const { rating } = req.body;
   
+  if (rating === undefined || rating === null) {
+    return sendValidationError(res, 'Rating is required');
+  }
+  
   if (!validateRating(rating)) {
-    return sendValidationError(res, 'Invalid rating. Rating must be a number between 0 and 5');
+    return sendValidationError(res, 'Invalid rating. Rating must be an integer between 1 and 5');
   }
   
   next();
