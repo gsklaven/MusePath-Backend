@@ -1,103 +1,34 @@
-import http from "node:http";
 import test from "ava";
-import got from "got";
-import { CookieJar } from "tough-cookie";
-import dotenv from "dotenv";
-import app from "../app.js";
-import { connectDatabase } from "../config/database.js";
-
-// Load environment variables
-dotenv.config();
+import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail } from "./helpers.js";
 
 /**
- * MusePath API Tests
- * Comprehensive test suite for the MusePath backend API
+ * Authentication Endpoint Tests
+ * Tests for /v1/auth endpoints: register, login, logout
  */
 
-/**
- * Setup test server before running tests
- */
 test.before(async (t) => {
-	// Initialize database connection (will use mock data if no MONGODB_URI)
-	await connectDatabase();
-	
-	t.context.server = http.createServer(app);
-	const server = t.context.server.listen();
-	const { port } = server.address();
-	t.context.baseUrl = `http://localhost:${port}`;
-	t.context.port = port;
+	await setupTestServer(t);
 });
 
-/**
- * Helper to create a fresh HTTP client with new cookie jar for each test
- */
-const createClient = (baseUrl) => {
-	return got.extend({
-		responseType: "json",
-		prefixUrl: baseUrl,
-		throwHttpErrors: false,
-		cookieJar: new CookieJar()
-	});
-};
-
-/**
- * Cleanup after tests
- */
 test.after.always((t) => {
-	t.context.server.close();
+	cleanupTestServer(t);
 });
 
 /**
  * ===================================
- * BASIC API TESTS
- * ===================================
- */
-
-test("Basic test - should pass", (t) => {
-	t.pass();
-});
-
-test("GET / - returns correct response and status code", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.is(body.message, "Welcome to MusePath API");
-	t.truthy(body.data);
-	t.truthy(body.data.endpoints);
-});
-
-test("GET /v1/health - returns healthy status", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/health");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-});
-
-test("GET /v1/nonexistent - returns 404", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/nonexistent");
-	
-	t.is(statusCode, 404);
-	t.is(body.success, false);
-});
-
-/**
- * ===================================
- * AUTHENTICATION TESTS - REGISTRATION
+ * REGISTRATION TESTS
  * ===================================
  */
 
 test.serial("POST /v1/auth/register - successful registration with valid data", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const uniqueUsername = `testuser_${Date.now()}`;
+	const uniqueUsername = generateUsername();
+	const uniqueEmail = generateEmail(uniqueUsername);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: uniqueUsername,
-			email: `${uniqueUsername}@example.com`,
+			email: uniqueEmail,
 			password: "Test123!@#"
 		}
 	});
@@ -107,7 +38,7 @@ test.serial("POST /v1/auth/register - successful registration with valid data", 
 	t.is(body.message, "User created successfully");
 	t.truthy(body.data);
 	t.is(body.data.username, uniqueUsername);
-	t.is(body.data.email, `${uniqueUsername}@example.com`);
+	t.is(body.data.email, uniqueEmail);
 	t.is(body.data.role, "user");
 	t.falsy(body.data.password);
 	t.is(body.data.personalizationAvailable, false);
@@ -320,12 +251,12 @@ test("POST /v1/auth/register - fails with non-string input types (NoSQL injectio
 
 test.serial("POST /v1/auth/register - fails with duplicate username", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `duplicate_${Date.now()}`;
+	const username = generateUsername("duplicate");
 	
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -345,11 +276,11 @@ test.serial("POST /v1/auth/register - fails with duplicate username", async (t) 
 
 test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const email = `duplicate_${Date.now()}@example.com`;
+	const email = generateEmail("duplicate");
 	
 	await client.post("v1/auth/register", {
 		json: {
-			username: `user1_${Date.now()}`,
+			username: generateUsername("user1"),
 			email: email,
 			password: "Test123!@#"
 		}
@@ -357,7 +288,7 @@ test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => 
 
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
-			username: `user2_${Date.now()}`,
+			username: generateUsername("user2"),
 			email: email,
 			password: "Test123!@#"
 		}
@@ -370,18 +301,18 @@ test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => 
 
 /**
  * ===================================
- * AUTHENTICATION TESTS - LOGIN
+ * LOGIN TESTS
  * ===================================
  */
 
 test.serial("POST /v1/auth/login - successful login with valid credentials", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `loginuser_${Date.now()}`;
+	const username = generateUsername("loginuser");
 	
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -452,12 +383,12 @@ test("POST /v1/auth/login - fails with non-existent username", async (t) => {
 
 test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `wrongpw_${Date.now()}`;
+	const username = generateUsername("wrongpw");
 	
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -506,18 +437,18 @@ test("POST /v1/auth/login - fails with non-string input types (NoSQL injection p
 
 /**
  * ===================================
- * AUTHENTICATION TESTS - LOGOUT
+ * LOGOUT TESTS
  * ===================================
  */
 
 test.serial("POST /v1/auth/logout - successful logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `logoutuser_${Date.now()}`;
+	const username = generateUsername("logoutuser");
 	
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -554,8 +485,8 @@ test("POST /v1/auth/logout - works even without being logged in", async (t) => {
 
 test.serial("Full authentication flow: register -> login -> logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `fullflow_${Date.now()}`;
-	const email = `${username}@example.com`;
+	const username = generateUsername("fullflow");
+	const email = generateEmail(username);
 	const password = "Test123!@#";
 
 	const registerResponse = await client.post("v1/auth/register", {
@@ -575,16 +506,16 @@ test.serial("Full authentication flow: register -> login -> logout", async (t) =
 	t.is(logoutResponse.body.message, "Logout successful");
 });
 
-test.serial("Cannot register while already logged in", async (t) => {
+test.serial("Can register while already logged in", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username1 = `user1_${Date.now()}`;
-	const username2 = `user2_${Date.now()}`;
+	const username1 = generateUsername("user1");
+	const username2 = generateUsername("user2");
 
 	// Register and login first user
 	await client.post("v1/auth/register", {
 		json: {
 			username: username1,
-			email: `${username1}@example.com`,
+			email: generateEmail(username1),
 			password: "Test123!@#"
 		}
 	});
@@ -597,26 +528,25 @@ test.serial("Cannot register while already logged in", async (t) => {
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: username2,
-			email: `${username2}@example.com`,
+			email: generateEmail(username2),
 			password: "Test123!@#"
 		}
 	});
 
 	// Should succeed - registration doesn't check if already logged in
-	// This is actually acceptable behavior (user can create multiple accounts)
 	t.is(statusCode, 201);
 	t.is(body.data.username, username2);
 });
 
-test.serial("Cannot login again while already logged in (double login)", async (t) => {
+test.serial("Can login again while already logged in (refreshes session)", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `doublelogin_${Date.now()}`;
+	const username = generateUsername("doublelogin");
 
 	// Register user
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -633,20 +563,19 @@ test.serial("Cannot login again while already logged in (double login)", async (
 	});
 
 	// Should succeed - just refreshes the session token
-	// This is acceptable behavior (allows re-login without explicit logout)
 	t.is(secondLogin.statusCode, 200);
 	t.is(secondLogin.body.data.username, username);
 });
 
 test.serial("Session persists across multiple requests", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `session_${Date.now()}`;
+	const username = generateUsername("session");
 
 	// Register and login
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -673,13 +602,13 @@ test.serial("Session persists across multiple requests", async (t) => {
 
 test.serial("Logout invalidates session", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `logout_${Date.now()}`;
+	const username = generateUsername("logout");
 
 	// Register and login
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -706,13 +635,13 @@ test.serial("Logout invalidates session", async (t) => {
 
 test.serial("Can login again after logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	const username = `relogin_${Date.now()}`;
+	const username = generateUsername("relogin");
 
 	// Register
 	await client.post("v1/auth/register", {
 		json: {
 			username: username,
-			email: `${username}@example.com`,
+			email: generateEmail(username),
 			password: "Test123!@#"
 		}
 	});
@@ -733,352 +662,3 @@ test.serial("Can login again after logout", async (t) => {
 	t.is(secondLogin.statusCode, 200);
 	t.is(secondLogin.body.data.username, username);
 });
-
-/**
- * ===================================
- * EXHIBIT ENDPOINTS TESTS
- * ===================================
- */
-
-/**
- * GET /v1/exhibits/search - Public endpoint
- */
-test("GET /v1/exhibits/search - returns all exhibits without query", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	t.true(body.data.length > 0);
-});
-
-test("GET /v1/exhibits/search - searches by keyword", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?keyword=starry");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	// Should find "The Starry Night"
-	if (body.data.length > 0) {
-		t.regex(body.data[0].title.toLowerCase(), /starry/i);
-	}
-});
-
-test("GET /v1/exhibits/search - searches by category", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?category=paintings");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	// Should find exhibits with "paintings" category
-	if (body.data.length > 0) {
-		const hasCategory = body.data.some(exhibit => 
-			exhibit.category && exhibit.category.includes("paintings")
-		);
-		t.true(hasCategory);
-	}
-});
-
-test("GET /v1/exhibits/search - returns empty array for no matches", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?keyword=nonexistent123456");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	t.is(body.data.length, 0);
-});
-
-/**
- * GET /v1/exhibits/:exhibit_id - Public endpoint
- */
-test("GET /v1/exhibits/:exhibit_id - returns exhibit details with valid ID", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/1");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.is(body.data.exhibitId, 1);
-	t.truthy(body.data.title);
-	t.truthy(body.data.category);
-	t.truthy(body.data.location);
-});
-
-test("GET /v1/exhibits/:exhibit_id - returns 404 for non-existent exhibit", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/99999");
-	
-	t.is(statusCode, 404);
-	t.is(body.success, false);
-	t.regex(body.message, /not found/i);
-});
-
-test("GET /v1/exhibits/:exhibit_id - returns 400 for invalid ID format", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/invalid");
-	
-	t.true(statusCode === 400 || statusCode === 404);
-	t.is(body.success, false);
-});
-
-/**
- * GET /v1/exhibits/:exhibit_id/audio - Public endpoint
- */
-test("GET /v1/exhibits/:exhibit_id/audio - returns audio guide with valid ID", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/1/audio");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.truthy(body.data.audioUrl || body.data.audioGuide);
-});
-
-test("GET /v1/exhibits/:exhibit_id/audio - returns 404 for non-existent exhibit", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/99999/audio");
-	
-	t.is(statusCode, 404);
-	t.is(body.success, false);
-	t.regex(body.message, /not found/i);
-});
-
-/**
- * POST /v1/exhibits/:exhibit_id/ratings - Protected endpoint (requires authentication)
- */
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - successfully rates exhibit when authenticated", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `rater_${Date.now()}`;
-	
-	// Register and login
-	const registerResponse = await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-	const userId = registerResponse.body.data.userId;
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Get exhibit before rating to check current average
-	const beforeRating = await client("v1/exhibits/1");
-	t.is(beforeRating.statusCode, 200);
-	const initialRating = beforeRating.body.data.rating;
-	
-	// Import mock data to calculate expected new average
-	const { mockExhibits } = await import("../data/mockData.js");
-	const exhibit = mockExhibits.find(e => e.exhibitId === 1);
-	
-	// Calculate expected new average rating
-	const currentRatings = Array.from(exhibit.ratings.values());
-	const newRatingValue = 4;
-	const allRatings = [...currentRatings, newRatingValue];
-	const expectedAverage = allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length;
-
-	// Rate exhibit
-	const { body, statusCode } = await client.post("v1/exhibits/1/ratings", {
-		json: {
-			rating: newRatingValue
-		}
-	});
-
-	t.is(statusCode, 201);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.is(body.data.exhibitId, 1);
-	t.is(body.data.rating, newRatingValue);
-	t.is(body.data.averageRating, expectedAverage);
-	
-	// Verify the rating was actually updated in the exhibit
-	const afterRating = await client("v1/exhibits/1");
-	t.is(afterRating.statusCode, 200);
-	t.is(afterRating.body.data.rating, expectedAverage);
-	t.not(afterRating.body.data.rating, initialRating); // Rating should have changed
-});
-
-test("POST /v1/exhibits/:exhibit_id/ratings - fails without authentication", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/exhibits/1/ratings", {
-		json: {
-			rating: 5
-		}
-	});
-
-	t.is(statusCode, 401);
-	t.is(body.success, false);
-	t.regex(body.message, /unauthorized|authentication|token/i);
-});
-
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - fails with invalid rating (too low)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `rater2_${Date.now()}`;
-	
-	// Register and login
-	await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Try to rate with invalid value
-	const { body, statusCode } = await client.post("v1/exhibits/1/ratings", {
-		json: {
-			rating: 0
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /rating|invalid|valid/i);
-});
-
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - fails with invalid rating (too high)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `rater3_${Date.now()}`;
-	
-	// Register and login
-	await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Try to rate with invalid value
-	const { body, statusCode } = await client.post("v1/exhibits/1/ratings", {
-		json: {
-			rating: 6
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /rating|invalid|valid/i);
-});
-
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - fails with missing rating", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `rater4_${Date.now()}`;
-	
-	// Register and login
-	await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Try to rate without rating value
-	const { body, statusCode } = await client.post("v1/exhibits/1/ratings", {
-		json: {}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /rating|required/i);
-});
-
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - fails for non-existent exhibit", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `rater5_${Date.now()}`;
-	
-	// Register and login
-	await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Try to rate non-existent exhibit
-	const { body, statusCode } = await client.post("v1/exhibits/99999/ratings", {
-		json: {
-			rating: 5
-		}
-	});
-
-	t.is(statusCode, 404);
-	t.is(body.success, false);
-	t.regex(body.message, /not found/i);
-});
-
-test.serial("POST /v1/exhibits/:exhibit_id/ratings - updates rating when user rates same exhibit twice", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const username = `updater_${Date.now()}`;
-	
-	// Register and login
-	const registerResponse = await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: `${username}@example.com`,
-			password: "Test123!@#"
-		}
-	});
-	const userId = registerResponse.body.data.userId;
-
-	await client.post("v1/auth/login", {
-		json: { username, password: "Test123!@#" }
-	});
-
-	// Get initial state
-	const { mockExhibits } = await import("../data/mockData.js");
-	const exhibit = mockExhibits.find(e => e.exhibitId === 3);
-	const initialRatingsCount = exhibit.ratings.size;
-
-	// First rating
-	const firstRating = await client.post("v1/exhibits/3/ratings", {
-		json: { rating: 3 }
-	});
-	t.is(firstRating.statusCode, 201);
-	
-	// Check that one rating was added
-	t.is(exhibit.ratings.size, initialRatingsCount + 1);
-	t.is(exhibit.ratings.get(userId), 3);
-
-	// Second rating from same user with different value
-	const secondRating = await client.post("v1/exhibits/3/ratings", {
-		json: { rating: 5 }
-	});
-	t.is(secondRating.statusCode, 201);
-	
-	// Rating count should NOT increase (update, not duplicate)
-	t.is(exhibit.ratings.size, initialRatingsCount + 1);
-	// Rating value should be updated
-	t.is(exhibit.ratings.get(userId), 5);
-	t.not(exhibit.ratings.get(userId), 3);
-});
-
