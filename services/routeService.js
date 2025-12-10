@@ -180,6 +180,21 @@ export const recalculateRoute = async (routeId) => {
 };
 
 /**
+ * Get route owner (userId)
+ * @param {number} routeId - Route ID
+ * @returns {Promise<number|null>} User ID or null if not found
+ */
+export const getRouteOwner = async (routeId) => {
+  if (isMockDataMode()) {
+    const route = mockRoutes.find(r => r.routeId === Number(routeId));
+    return route ? Number(route.userId) : null;
+  }
+  
+  const route = await Route.findOne({ routeId: Number(routeId) });
+  return route ? Number(route.userId) : null;
+};
+
+/**
  * Delete route
  * @param {number} routeId - Route ID
  * @returns {Promise<boolean>} Deletion success

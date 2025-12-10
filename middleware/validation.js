@@ -32,7 +32,8 @@ export const validateCoordinateUpdate = (req, res, next) => {
  * @param {Function} next - Express next middleware function
  */
 export const validateRouteRequest = (req, res, next) => {
-  const validation = validateRequiredFields(req.body, ['user_id', 'destination_id', 'startLat', 'startLng']);
+  // user_id comes from req.user.id (authentication), not from request body
+  const validation = validateRequiredFields(req.body, ['destination_id', 'startLat', 'startLng']);
   
   if (!validation.isValid) {
     return sendValidationError(res, validation.message);
