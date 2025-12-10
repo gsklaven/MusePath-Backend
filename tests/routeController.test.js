@@ -194,7 +194,6 @@ test('PUT /routes/:id with invalid ID format returns 404', async (t) => {
 	t.is(body.message, 'Route not found');
 });
 
-
 test('POST /routes/:id recalculates route (success)', async (t) => {
 
 	// Creating a route to recalculate

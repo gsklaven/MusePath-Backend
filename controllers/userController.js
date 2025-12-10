@@ -1,6 +1,6 @@
 import * as userService from '../services/userService.js';
 import * as routeService from '../services/routeService.js';
-import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
+import { sendSuccess, sendError, sendNotFound, sendNoContent, sendValidationError } from '../utils/responses.js';
 
 /**
  * User Controller
@@ -15,13 +15,13 @@ export const updateUserPreferences = async (req, res) => {
   try {
     const { user_id } = req.params;
     const preferences = req.body;
-    
+    if (!preferences || !Array.isArray(preferences.interests)) {
+      return sendValidationError(res, 'Invalid or missing interests array');
+    }
     const user = await userService.updateUserPreferences(user_id, preferences);
-    
     if (!user) {
       return sendNotFound(res, 'User not found');
     }
-    
     return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -36,13 +36,13 @@ export const addExhibitToFavourites = async (req, res) => {
   try {
     const { user_id } = req.params;
     const { exhibit_id } = req.body;
-    
+    if (exhibit_id === undefined || exhibit_id === null) {
+      return sendValidationError(res, 'Missing exhibit_id');
+    }
     const user = await userService.addFavorite(user_id, exhibit_id);
-    
     if (!user) {
       return sendNotFound(res, 'User not found');
     }
-    
     return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);

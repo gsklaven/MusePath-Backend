@@ -61,20 +61,26 @@ export const createUser = async (userData) => {
  * @returns {Promise<Object>} Updated user
  */
 export const updateUserPreferences = async (userId, preferences) => {
+  // Defensive checks to avoid runtime errors
+  const safeInterests =
+    preferences && typeof preferences === 'object' && Array.isArray(preferences.interests)
+      ? preferences.interests
+      : [];
+
   if (isMockDataMode()) {
     const user = mockUsers.find(u => u.userId === Number(userId));
     if (user) {
-      user.preferences = preferences.interests || [];
+      user.preferences = safeInterests;
       user.personalizationAvailable = true;
       user.updatedAt = new Date();
     }
     return user;
   }
-  
+
   return await User.findOneAndUpdate(
     { userId: Number(userId) },
-    { 
-      preferences: preferences.interests || [],
+    {
+      preferences: safeInterests,
       personalizationAvailable: true,
       updatedAt: new Date()
     },
