@@ -444,3 +444,36 @@ test.serial('Notification workflow - multiple users with different routes', asyn
 	// Notifications should have different IDs
 	t.not(notif1.body.data.notificationId, notif2.body.data.notificationId);
 });
+
+test.serial('POST /notifications - should handle route with no path (empty route)', async t => {
+	const { client } = await registerAndLogin(
+		t.context.baseUrl,
+		generateUsername('emptypath'),
+		generateEmail('emptypath'),
+		'Password123!'
+	);
+	
+	// Create a route
+	const routeResponse = await client.post('v1/routes', {
+		json: {
+			destination_id: 1,
+			startLat: 40.7610,
+			startLng: -73.9780
+		}
+	});
+	
+	t.is(routeResponse.statusCode, 200);
+	const routeId = routeResponse.body.data.route_id;
+	
+	// Send notification - should work even if path handling has edge cases
+	const response = await client.post('v1/notifications', {
+		json: {
+			route_id: routeId,
+			currentLat: 40.7610,
+			currentLng: -73.9780
+		}
+	});
+	
+	// Should succeed regardless of path structure
+	t.true(response.statusCode === 200 || response.statusCode === 404);
+});

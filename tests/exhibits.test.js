@@ -499,6 +499,52 @@ test('POST /exhibits - should validate required fields', async t => {
 	t.is(response3.body.success, false);
 });
 
+test('POST /exhibits - should validate category type (must be string or array)', async t => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as admin
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: 'Password123!'
+		}
+	});
+	
+	const { token } = loginResponse.body.data;
+	
+	// Invalid category type (number)
+	const response1 = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Test Exhibit',
+			description: 'Test Description',
+			location: 'Room 1',
+			category: 12345
+		}
+	});
+	t.is(response1.statusCode, 400);
+	t.is(response1.body.success, false);
+	t.regex(response1.body.message, /category.*string.*array/i);
+	
+	// Invalid category type (object)
+	const response2 = await client.post('v1/exhibits', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		json: {
+			title: 'Test Exhibit',
+			description: 'Test Description',
+			location: 'Room 1',
+			category: { type: 'paintings' }
+		}
+	});
+	t.is(response2.statusCode, 400);
+	t.is(response2.body.success, false);
+	t.regex(response2.body.message, /category.*string.*array/i);
+});
+
 /**
  * ===================================
  * EXHIBIT DELETION TESTS (ADMIN)

@@ -131,6 +131,48 @@ test('POST /routes - should reject invalid destination_id', async t => {
   t.regex(response.body.message, /destination not found/i);
 });
 
+test('POST /routes - should reject invalid start coordinates (latitude out of range)', async t => {
+  const { client } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('routeinvlat'),
+    generateEmail('routeinvlat'),
+    'Password123!'
+  );
+
+  const response = await client.post('v1/routes', {
+    json: {
+      destination_id: 1,
+      startLat: 95.0,
+      startLng: -73.9780
+    }
+  });
+
+  t.is(response.statusCode, 400);
+  t.false(response.body.success);
+  t.regex(response.body.message, /invalid.*coordinates/i);
+});
+
+test('POST /routes - should reject invalid start coordinates (longitude out of range)', async t => {
+  const { client } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('routeinvlng'),
+    generateEmail('routeinvlng'),
+    'Password123!'
+  );
+
+  const response = await client.post('v1/routes', {
+    json: {
+      destination_id: 1,
+      startLat: 40.7610,
+      startLng: -200.0
+    }
+  });
+
+  t.is(response.statusCode, 400);
+  t.false(response.body.success);
+  t.regex(response.body.message, /invalid.*coordinates/i);
+});
+
 // ==================== Route Retrieval Tests ====================
 
 test('GET /routes/:route_id - should retrieve route details when authenticated', async t => {
