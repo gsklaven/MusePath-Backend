@@ -19,7 +19,10 @@ const app = express();
  * Security Middleware
  */
 app.use(helmet()); // Set security headers
-app.use(cors()); // Enable CORS
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true
+})); // Enable CORS with credentials
 
 /**
  * Rate Limiting

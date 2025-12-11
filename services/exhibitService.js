@@ -17,7 +17,7 @@ import { sanitizeSearchTerm, calculateAverageRating } from '../utils/helpers.js'
 export const getExhibitById = async (exhibitId, mode = 'online') => {
   if (isMockDataMode()) {
     const exhibit = mockExhibits.find(e => e.exhibitId === Number(exhibitId));
-    // NOTE: Lines 21-23 - offline mode audio removal is redundant as getAudioGuide()
+    // NOTE: Offline mode audio removal is redundant as getAudioGuide()
     // handles this properly. This code is defensive but unreachable in practice.
     if (exhibit && mode === 'offline' && exhibit.audioGuideUrl) {
       // In offline mode, audio might not be available

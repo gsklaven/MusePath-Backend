@@ -22,8 +22,8 @@ export const Register = async (req, res) => {
             return sendError(res, 'Username, email, and password are required', 400);
         }
 
-        // Validate input types
-        if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+        // Validate input types for username and email
+        if (typeof username !== 'string' || typeof email !== 'string') {
             return sendError(res, 'Invalid input types', 400);
         }
 
@@ -37,7 +37,7 @@ export const Register = async (req, res) => {
             return sendError(res, 'Invalid email format', 400);
         }
 
-        // Validate password strength
+        // Validate password strength (handles type checking internally)
         const pwCheck = validatePasswordStrength(password);
         if (!pwCheck.isValid) {
             return sendError(res, pwCheck.message, 400);

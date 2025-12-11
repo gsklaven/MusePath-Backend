@@ -698,6 +698,7 @@ test("POST /v1/auth/register - fails with number as password", async (t) => {
 
 	t.is(statusCode, 400);
 	t.is(body.success, false);
+	t.is(body.message, 'Password must be a string');
 });
 
 test("POST /v1/auth/register - fails with password containing invalid characters (unicode)", async (t) => {
