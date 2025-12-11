@@ -361,7 +361,7 @@ GET http://localhost:3000/v1/destinations
 
 ### Automated Test Suite
 
-Το API περιλαμβάνει **127 comprehensive tests** που καλύπτουν όλα τα endpoints:
+Το API περιλαμβάνει **206 comprehensive tests** που καλύπτουν όλα τα endpoints:
 
 ```bash
 # Εκτέλεση όλων των tests
@@ -377,10 +377,13 @@ npm run test:coverage:html
 **Test Coverage:**
 - 4 Basic tests (health, routing)
 - 47 Authentication tests (register, login, logout, validation)
-- 26 Exhibit tests (CRUD, ratings, admin operations)
+- 29 Exhibit tests (CRUD, ratings, admin operations, offline mode)
 - 20 Coordinate tests (location tracking, validation)
 - 24 Route tests (calculation, navigation, personalization)
 - 21 Destination tests (CRUD, admin operations)
+- 18 Map tests (CRUD, admin operations, offline support)
+- 20 User tests (preferences, favorites, personalized routes)
+- 23 Additional integration tests
 
 Το HTML coverage report δημιουργείται στο `coverage/index.html` και δείχνει:
 - Line coverage

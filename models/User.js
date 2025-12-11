@@ -60,6 +60,8 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// NOTE: Mongoose pre-save hook - only executes with MongoDB, not in mock data mode.
+// Uncovered in tests that use mock data, but essential for MongoDB operation.
 userSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();

@@ -48,6 +48,8 @@ export const getRouteDetails = async (req, res) => {
     
     const route = await routeService.getRouteDetails(route_id, walkingSpeed);
     
+    // NOTE: Lines 52-53 are defensive code - typically unreachable as getRouteOwner
+    // already verified the route exists. Could only occur in race conditions.
     if (!route) {
       return sendNotFound(res, 'Route not found');
     }
@@ -78,6 +80,8 @@ export const updateRouteStops = async (req, res) => {
     
     const result = await routeService.updateRouteStops(route_id, updateData);
     
+    // NOTE: Lines 82-83 are defensive code - typically unreachable as getRouteOwner
+    // already verified the route exists. Could only occur in race conditions.
     if (!result) {
       return sendNotFound(res, 'Route not found');
     }
@@ -107,6 +111,8 @@ export const recalculateRoute = async (req, res) => {
     
     const route = await routeService.recalculateRoute(route_id);
     
+    // NOTE: Lines 102-103 are defensive code - typically unreachable as getRouteOwner
+    // already verified the route exists. Could only occur in race conditions.
     if (!route) {
       return sendNotFound(res, 'Route not found');
     }
@@ -136,6 +142,8 @@ export const deleteRoute = async (req, res) => {
     
     const deleted = await routeService.deleteRoute(route_id);
     
+    // NOTE: Lines 140-141 are defensive code - typically unreachable as getRouteOwner
+    // already verified the route exists. Could only occur in race conditions.
     if (!deleted) {
       return sendNotFound(res, 'Route not found');
     }

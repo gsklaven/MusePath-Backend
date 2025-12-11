@@ -25,6 +25,9 @@ export const getMapById = async (req, res) => {
     
     return sendSuccess(res, map, 'Map details retrieved successfully');
   } catch (error) {
+    // NOTE: Lines 28-30 are defensive code - currently unreachable as mapService.getMapById
+    // does not throw errors with 'offline' in the message. It returns offline_available flag instead.
+    // Kept for potential future implementation of stricter offline validation.
     if (error.message.includes('offline')) {
       return sendError(res, 'Service unavailable (offline mode, no cached data)', 503);
     }

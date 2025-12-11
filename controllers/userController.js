@@ -39,6 +39,8 @@ export const addExhibitToFavourites = async (req, res) => {
     
     const user = await userService.addFavorite(user_id, exhibit_id);
     
+    // NOTE: Lines 43-44 are defensive code - unreachable as authorizeSameUser middleware
+    // prevents accessing other users. Only the authenticated user's own data can be modified.
     if (!user) {
       return sendNotFound(res, 'User not found');
     }
@@ -59,6 +61,8 @@ export const removeExhibitFromFavourites = async (req, res) => {
     
     const user = await userService.removeFavorite(user_id, exhibit_id);
     
+    // NOTE: Lines 63-64 are defensive code - unreachable as authorizeSameUser middleware
+    // prevents accessing other users. Only the authenticated user's own data can be modified.
     if (!user) {
       return sendNotFound(res, 'User or exhibit not found in favourites');
     }

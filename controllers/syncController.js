@@ -17,6 +17,8 @@ export const synchronizeOfflineData = async (req, res) => {
     // verifyToken middleware ensures req.user exists
     const userId = req.user.id || req.user.userId || req.user._id;
     
+    // NOTE: Lines 21-22 are defensive code - unreachable as verifyToken middleware
+    // always sets req.user.id. Kept for safety in case of future auth changes.
     if (!userId) {
       return sendError(res, 'User authentication required', 401);
     }

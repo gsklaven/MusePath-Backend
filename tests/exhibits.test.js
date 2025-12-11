@@ -134,6 +134,26 @@ test("GET /v1/exhibits/:exhibit_id/audio - returns 404 for non-existent exhibit"
 	t.regex(body.message, /not found/i);
 });
 
+test("GET /v1/exhibits/:exhibit_id/audio - returns 400 for invalid exhibit ID format", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	const { body, statusCode } = await client("v1/exhibits/invalid/audio");
+	
+	t.true(statusCode === 400 || statusCode === 404);
+	t.is(body.success, false);
+});
+
+test("GET /v1/exhibits/:exhibit_id/audio - handles missing audio file gracefully", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Test offline mode - audio should not be available
+	const { body, statusCode } = await client("v1/exhibits/1/audio?mode=offline");
+	
+	// Should return 402 error when audio not available in offline mode
+	t.is(statusCode, 402);
+	t.is(body.success, false);
+	t.regex(body.message, /audio.*not.*available.*offline/i);
+});
+
 /**
  * ===================================
  * EXHIBIT RATING TESTS (Protected)
@@ -199,6 +219,26 @@ test("POST /v1/exhibits/:exhibit_id/ratings - fails without authentication", asy
 	t.is(statusCode, 401);
 	t.is(body.success, false);
 	t.regex(body.message, /unauthorized|authentication|token/i);
+});
+
+test.serial("POST /v1/exhibits/:exhibit_id/ratings - returns 400 for invalid exhibit ID format", async (t) => {
+	const username = generateUsername("raterinvalid");
+	const { client } = await registerAndLogin(
+		t.context.baseUrl,
+		username,
+		generateEmail(username),
+		"Test123!@#"
+	);
+
+	// Try to rate with invalid exhibit ID
+	const { body, statusCode } = await client.post("v1/exhibits/invalid/ratings", {
+		json: {
+			rating: 5
+		}
+	});
+
+	t.true(statusCode === 400 || statusCode === 404);
+	t.is(body.success, false);
 });
 
 test.serial("POST /v1/exhibits/:exhibit_id/ratings - fails with invalid rating (too low)", async (t) => {
