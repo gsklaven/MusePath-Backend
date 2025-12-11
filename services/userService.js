@@ -23,6 +23,7 @@ export const getUserById = async (userId) => {
 
 /**
  * Get all users
+ * NOTE: Unused function - no endpoint calls this. Could be used for admin user management.
  * @returns {Promise<Array>} Array of users
  */
 export const getAllUsers = async () => {

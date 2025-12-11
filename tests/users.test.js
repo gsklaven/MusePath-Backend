@@ -417,6 +417,25 @@ test.serial("GET /users/:user_id/routes - should prevent accessing other user ro
 	t.false(response.body.success);
 });
 
+test("GET /users/:user_id/routes - should fail when no exhibits match user preferences", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	// Login as chen_wei (user 3) who has preferences that don't match any exhibits
+	await client.post("v1/auth/login", {
+		json: {
+			username: "chen_wei",
+			password: "Password123!"
+		}
+	});
+	
+	// Try to get personalized route - should fail because preferences don't match any exhibits
+	const response = await client.get("v1/users/3/routes");
+	
+	t.is(response.statusCode, 400);
+	t.false(response.body.success);
+	t.regex(response.body.message, /no matching exhibits/i);
+});
+
 // ============================================================================
 // User Workflows
 // ============================================================================

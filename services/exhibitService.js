@@ -17,6 +17,8 @@ import { sanitizeSearchTerm, calculateAverageRating } from '../utils/helpers.js'
 export const getExhibitById = async (exhibitId, mode = 'online') => {
   if (isMockDataMode()) {
     const exhibit = mockExhibits.find(e => e.exhibitId === Number(exhibitId));
+    // NOTE: Lines 21-23 - offline mode audio removal is redundant as getAudioGuide()
+    // handles this properly. This code is defensive but unreachable in practice.
     if (exhibit && mode === 'offline' && exhibit.audioGuideUrl) {
       // In offline mode, audio might not be available
       return { ...exhibit, audioGuideUrl: null };
@@ -218,6 +220,7 @@ export const deleteExhibit = async (exhibitId) => {
  * @returns {Promise<number>} Next ID
  */
 const generateNextExhibitId = async () => {
+  // NOTE: Lines 179-181 - MongoDB only, not executed in mock data mode tests
   const lastExhibit = await Exhibit.findOne().sort({ exhibitId: -1 });
   return lastExhibit ? lastExhibit.exhibitId + 1 : 1;
 };

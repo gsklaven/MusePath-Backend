@@ -165,6 +165,11 @@ export const loginUser = async ({ username, password }) => {
  * Get user by ID
  * @param {number} userId - User ID
  * @returns {Promise<Object>} User object (without password)
+ * 
+ * NOTE: This function removes the password field for security.
+ * Consider if userService.getUserById should also remove password,
+ * as it currently returns hashed password for internal use.
+ * TODO: Review password handling consistency across services
  */
 export const getUserById = async (userId) => {
   try {

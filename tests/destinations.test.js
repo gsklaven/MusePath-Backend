@@ -135,9 +135,8 @@ test('GET /destinations/:destination_id - should exclude status by default', asy
 test('GET /destinations/:destination_id - should include alternatives when requested and unavailable', async t => {
   const client = createClient(t.context.baseUrl);
 
-  // First, let's get a destination that might have alternatives
-  // We'll use destination 2 which has alternatives in mock data
-  const response = await client.get('v1/destinations/2', {
+  // Destination 7 has status 'closed' with alternatives
+  const response = await client.get('v1/destinations/7', {
     searchParams: { 
       includeAlternatives: 'true',
       includeStatus: 'true'
@@ -147,11 +146,13 @@ test('GET /destinations/:destination_id - should include alternatives when reque
   t.is(response.statusCode, 200);
   t.true(response.body.success);
   
-  // If status is not available, should have alternatives
-  if (response.body.data.status !== 'available') {
-    t.truthy(response.body.data.alternatives);
-    t.true(Array.isArray(response.body.data.alternatives));
-  }
+  // Should include alternatives for closed destination
+  t.is(response.body.data.status, 'closed');
+  t.truthy(response.body.data.alternatives);
+  t.true(Array.isArray(response.body.data.alternatives));
+  t.true(response.body.data.alternatives.length > 0);
+  t.truthy(response.body.data.suggestedTimes);
+  t.true(Array.isArray(response.body.data.suggestedTimes));
 });
 
 // ==================== Upload Destinations Tests ====================

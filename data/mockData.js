@@ -42,7 +42,7 @@ export const mockUsers = [
     preferences: ['asian art', 'ceramics', 'calligraphy'],
     favourites: [],
     ratings: new Map(),
-    personalizationAvailable: false,
+    personalizationAvailable: true, // Changed to true to test "no matching exhibits" case
     createdAt: new Date('2024-03-05'),
     updatedAt: new Date('2024-03-05')
   }
@@ -286,6 +286,20 @@ export const mockDestinations = [
     lastUpdated: new Date(),
     alternatives: [],
     suggestedTimes: ['10:30 AM', '2:30 PM'],
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
+  },
+  {
+    destinationId: 7,
+    name: 'Gallery D - Temporarily Closed',
+    type: 'exhibit',
+    coordinates: { lat: 40.7617, lng: -73.9773 },
+    mapId: 1,
+    status: 'closed',
+    crowdLevel: 'none',
+    lastUpdated: new Date(),
+    alternatives: [2, 3, 6],
+    suggestedTimes: ['Tomorrow 10:00 AM', 'Friday 2:00 PM'],
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
   }

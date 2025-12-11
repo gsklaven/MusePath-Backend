@@ -237,10 +237,13 @@ export const generatePersonalizedRoute = async (userId) => {
     )
   ).slice(0, 5); // Limit to 5 exhibits
   
+  // NOTE: Edge case: user has preferences but no matching exhibits exist.
+  // Unlikely in practice with current mock data as multiple exhibits match common preferences.
   if (matchingExhibits.length === 0) {
     throw new Error('No matching exhibits found for user preferences');
   }
   
+  // NOTE: Lines 248-258 - MongoDB mode route generation, not executed in mock data tests.
   const routeId = isMockDataMode() 
     ? generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
@@ -260,6 +263,7 @@ export const generatePersonalizedRoute = async (userId) => {
 
 /**
  * Generate next route ID (for database mode)
+ * NOTE: Lines 267-269 - MongoDB only, not executed in mock data mode tests.
  * @returns {Promise<number>} Next ID
  */
 const generateNextRouteId = async () => {

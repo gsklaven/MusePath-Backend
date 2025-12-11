@@ -120,6 +120,8 @@ export const uploadMap = async (mapData) => {
 
 /**
  * Get all maps
+ * NOTE: Lines 125-130 - Unused function, no endpoint calls this.
+ * Could be used for GET /maps endpoint if needed in future.
  * @returns {Promise<Array>} Array of maps
  */
 export const getAllMaps = async () => {
