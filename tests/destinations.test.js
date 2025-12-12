@@ -7,6 +7,7 @@ import {
   generateUsername,
   generateEmail
 } from './helpers.js';
+import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
 /**
  * Destination Management Tests
@@ -212,7 +213,7 @@ test('POST /destinations - should upload destinations with admin credentials', a
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   
@@ -248,7 +249,7 @@ test('POST /destinations - should reject missing map_id', async t => {
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   
@@ -275,7 +276,7 @@ test('POST /destinations - should reject missing destinations array', async t =>
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   
@@ -302,7 +303,7 @@ test('POST /destinations - should reject non-array destinations', async t => {
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   
@@ -424,7 +425,7 @@ test('DELETE /destinations/:destination_id - should delete destination with admi
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   
@@ -473,7 +474,7 @@ test('DELETE /destinations/:destination_id - should return 404 for non-existent 
   const loginResponse = await client.post('v1/auth/login', {
     json: {
       username: 'john_smith',
-      password: 'Password123!'
+      password: MOCK_ADMIN_PASSWORD
     }
   });
   

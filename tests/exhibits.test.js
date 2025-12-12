@@ -1,5 +1,6 @@
 import test from "ava";
 import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail } from "./helpers.js";
+import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
 /**
  * Exhibit Endpoint Tests
@@ -412,7 +413,7 @@ test('POST /exhibits - should create exhibit with admin credentials', async t =>
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -453,7 +454,7 @@ test('POST /exhibits - should validate required fields', async t => {
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -506,7 +507,7 @@ test('POST /exhibits - should validate category type (must be string or array)',
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -585,7 +586,7 @@ test.serial('DELETE /exhibits/:exhibit_id - should delete exhibit with admin cre
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -627,7 +628,7 @@ test('DELETE /exhibits/:exhibit_id - should return 404 for non-existent exhibit'
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -650,7 +651,7 @@ test('DELETE /exhibits/:exhibit_id - should validate exhibit ID format', async t
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	
@@ -680,7 +681,7 @@ test('Admin workflow - create, view, and delete exhibit', async t => {
 	const loginResponse = await client.post('v1/auth/login', {
 		json: {
 			username: 'john_smith',
-			password: 'Password123!'
+			password: MOCK_ADMIN_PASSWORD
 		}
 	});
 	

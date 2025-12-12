@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { mockUsers } from '../data/mockData.js';
 import { isMockDataMode } from '../config/database.js';
 import jwt from 'jsonwebtoken';
-import { getJwtSecret } from '../config/constants.js';
+import { getJwtSecret, BCRYPT_SALT_ROUNDS } from '../config/constants.js';
 
 // Simple service-level error with HTTP status
 class ServiceError extends Error {
@@ -30,7 +30,7 @@ class ServiceError extends Error {
 export const registerUser = async ({ username, email, password }) => {
   try {
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
     if (isMockDataMode()) {
       // Mock data mode - check if user exists

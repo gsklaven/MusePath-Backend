@@ -1,6 +1,6 @@
 import test from "ava";
 import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail } from "./helpers.js";
-
+import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 /**
  * Map Endpoint Tests
  * Tests for /v1/maps endpoints
@@ -138,7 +138,7 @@ test("POST /maps - should upload map with admin credentials", async (t) => {
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "john_smith", password: "Password123!" }
+		json: { username: "john_smith", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	const { body, statusCode } = await client.post("v1/maps", {
@@ -158,7 +158,7 @@ test("POST /maps - should validate required fields", async (t) => {
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "maria_garcia", password: "Password123!" }
+		json: { username: "maria_garcia", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	const { body, statusCode } = await client.post("v1/maps", {
@@ -177,7 +177,7 @@ test("POST /maps - should accept different image formats", async (t) => {
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "chen_wei", password: "Password123!" }
+		json: { username: "chen_wei", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	const formats = ["png", "jpg", "svg"];
@@ -238,7 +238,7 @@ test("DELETE /maps/:map_id - should delete map with admin credentials", async (t
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "john_smith", password: "Password123!" }
+		json: { username: "john_smith", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	// First upload a map
@@ -266,7 +266,7 @@ test("DELETE /maps/:map_id - should return 404 for non-existent map", async (t) 
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "maria_garcia", password: "Password123!" }
+		json: { username: "maria_garcia", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	const { body, statusCode } = await client.delete("v1/maps/99999");
@@ -280,7 +280,7 @@ test("DELETE /maps/:map_id - should validate map ID format", async (t) => {
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "chen_wei", password: "Password123!" }
+		json: { username: "chen_wei", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	const { body, statusCode } = await client.delete("v1/maps/invalid");
@@ -301,7 +301,7 @@ test("Admin workflow - upload, retrieve, and delete map", async (t) => {
 	
 	// Login as admin
 	await client.post("v1/auth/login", {
-		json: { username: "john_smith", password: "Password123!" }
+		json: { username: "john_smith", password: MOCK_ADMIN_PASSWORD }
 	});
 	
 	// Upload map

@@ -1,3 +1,7 @@
+// Mock admin user password (unhashed, for tests and mock data)
+export const MOCK_ADMIN_PASSWORD = process.env.MOCK_ADMIN_PASSWORD || 'Password123!';
+// Bcrypt salt rounds
+export const BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
 /**
  * Application Constants
  */
