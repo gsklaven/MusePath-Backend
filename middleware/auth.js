@@ -3,7 +3,7 @@ import { isTokenRevoked } from "../services/authService.js";
 
 const DEV_FALLBACK_SECRET = "dev-jwt-secret-change-me";
 
-const getJwtSecret = () => process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || DEV_FALLBACK_SECRET;
+export const getJwtSecret = () => process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || DEV_FALLBACK_SECRET;
 
 /**
  * Validate email format
