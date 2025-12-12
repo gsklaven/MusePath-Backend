@@ -1,5 +1,6 @@
 import * as exhibitService from '../services/exhibitService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
+import { validateExhibitId, validateMode } from '../utils/validators.js';
 
 /**
  * Exhibit Controller
@@ -14,33 +15,29 @@ export const viewExhibitInfo = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
     const { mode } = req.query;
-    
-    // Validate that exhibit_id is a number
-    const exhibitId = parseInt(exhibit_id, 10);
-    if (isNaN(exhibitId)) {
+    if (!validateExhibitId(exhibit_id)) {
       return sendError(res, 'Invalid exhibit ID format', 400);
     }
-    
-    const exhibit = await exhibitService.getExhibitById(exhibitId, mode);
-    
+    if (mode && !validateMode(mode)) {
+      return sendError(res, 'Invalid mode value', 400);
+    }
+    const exhibit = await exhibitService.getExhibitById(Number(exhibit_id), mode);
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    
-  const response = {
-    exhibitId: exhibit.exhibitId,
-    title: exhibit.title,
-    name: exhibit.name,
-    category: exhibit.category,
-    rating: exhibit.averageRating,
-    location: exhibit.location,
-    features: exhibit.features,
-    status: exhibit.status,
-    description: exhibit.description,
-    historicalInfo: exhibit.historicalInfo,
-    audioGuideUrl: exhibit.audioGuideUrl,
-  };
-    
+    const response = {
+      exhibitId: exhibit.exhibitId,
+      title: exhibit.title,
+      name: exhibit.name,
+      category: exhibit.category,
+      rating: exhibit.averageRating,
+      location: exhibit.location,
+      features: exhibit.features,
+      status: exhibit.status,
+      description: exhibit.description,
+      historicalInfo: exhibit.historicalInfo,
+      audioGuideUrl: exhibit.audioGuideUrl,
+    };
     return sendSuccess(res, response, 'Exhibit information retrieved successfully');
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -55,24 +52,19 @@ export const getAudioGuide = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
     const { mode } = req.query;
-    
-    // Validate that exhibit_id is a number
-    const exhibitId = parseInt(exhibit_id, 10);
-    if (isNaN(exhibitId)) {
+    if (!validateExhibitId(exhibit_id)) {
       return sendError(res, 'Invalid exhibit ID format', 400);
     }
-    
-    const audioInfo = await exhibitService.getAudioGuide(exhibitId, mode);
-    
+    if (mode && !validateMode(mode)) {
+      return sendError(res, 'Invalid mode value', 400);
+    }
+    const audioInfo = await exhibitService.getAudioGuide(Number(exhibit_id), mode);
     if (!audioInfo) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    
     if (!audioInfo.available) {
       return sendError(res, audioInfo.message, 402);
     }
-    
-    // In a real application, send the actual audio file
     return sendSuccess(res, { audioUrl: audioInfo.url }, 'Audio guide retrieved successfully');
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -87,26 +79,18 @@ export const rateExhibit = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
     const { rating } = req.body;
-    
-    // Validate that exhibit_id is a number
-    const exhibitId = parseInt(exhibit_id, 10);
-    if (isNaN(exhibitId)) {
+    if (!validateExhibitId(exhibit_id)) {
       return sendError(res, 'Invalid exhibit ID format', 400);
     }
-    
     // verifyToken middleware ensures req.user exists
     const userId = req.user.id || req.user.userId || req.user._id;
-    
     if (!userId) {
       return sendError(res, 'User authentication required', 401);
     }
-    
-    const exhibit = await exhibitService.rateExhibit(exhibitId, userId, rating);
-    
+    const exhibit = await exhibitService.rateExhibit(Number(exhibit_id), userId, rating);
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    
     return sendSuccess(res, { exhibitId: exhibit.exhibitId, rating, averageRating: exhibit.averageRating }, 'Exhibit rated successfully', 201);
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -139,20 +123,15 @@ export const searchExhibits = async (req, res) => {
 export const downloadExhibitInfo = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
-    
-    // Validate ID format
-    if (isNaN(exhibit_id) || !Number.isInteger(Number(exhibit_id))) {
+    if (!validateExhibitId(exhibit_id)) {
       return sendError(res, 'Invalid exhibit ID format', 400);
     }
-    
-    const exhibit = await exhibitService.getExhibitById(exhibit_id);
-    
+    const exhibit = await exhibitService.getExhibitById(Number(exhibit_id));
     if (!exhibit) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    
     // Return full exhibit details for offline download
-    return sendSuccess(res, { 
+    return sendSuccess(res, {
       ...exhibit,
       exhibitId: exhibit.exhibitId,
       downloadUrl: `/downloads/exhibits/${exhibit_id}.zip`
@@ -185,19 +164,13 @@ export const createExhibit = async (req, res) => {
 export const deleteExhibit = async (req, res) => {
   try {
     const { exhibit_id } = req.params;
-    
-    // Validate that exhibit_id is a number
-    const exhibitId = parseInt(exhibit_id, 10);
-    if (isNaN(exhibitId)) {
+    if (!validateExhibitId(exhibit_id)) {
       return sendError(res, 'Invalid exhibit ID format', 400);
     }
-    
-    const result = await exhibitService.deleteExhibit(exhibitId);
-    
+    const result = await exhibitService.deleteExhibit(Number(exhibit_id));
     if (!result) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    
     return res.status(204).send();
   } catch (error) {
     return sendError(res, error.message, 500);

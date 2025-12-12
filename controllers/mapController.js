@@ -1,5 +1,6 @@
 import * as mapService from '../services/mapService.js';
 import { sendSuccess, sendError, sendNotFound } from '../utils/responses.js';
+import { validateMapId } from '../utils/validators.js';
 
 /**
  * Map Controller
@@ -14,6 +15,10 @@ export const getMapById = async (req, res) => {
   try {
     const { map_id } = req.params;
     const { zoom, rotation, mode } = req.query;
+    
+    if (!validateMapId(map_id)) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
     
     const options = { zoom, rotation, mode };
     
@@ -59,8 +64,7 @@ export const downloadMap = async (req, res) => {
   try {
     const { map_id } = req.params;
     
-    // Validate ID format
-    if (isNaN(map_id) || !Number.isInteger(Number(map_id))) {
+    if (!validateMapId(map_id)) {
       return sendError(res, 'Invalid map ID format', 400);
     }
     
@@ -89,8 +93,7 @@ export const deleteMap = async (req, res) => {
   try {
     const { map_id } = req.params;
     
-    // Validate map_id is a number
-    if (isNaN(map_id)) {
+    if (!validateMapId(map_id)) {
       return sendError(res, 'Invalid map ID format', 400);
     }
     

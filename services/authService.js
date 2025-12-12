@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { mockUsers } from '../data/mockData.js';
 import { isMockDataMode } from '../config/database.js';
 import jwt from 'jsonwebtoken';
-import { getJwtSecret } from '../middleware/auth.js';
+import { getJwtSecret } from '../config/constants.js';
 
 // Simple service-level error with HTTP status
 class ServiceError extends Error {
