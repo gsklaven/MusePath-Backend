@@ -32,6 +32,9 @@ const startServer = async () => {
       console.log('');
       console.log('📋 Available Endpoints:');
       console.log(`   GET    /v1/health`);
+      console.log(`   POST   /v1/auth/register`);
+      console.log(`   POST   /v1/auth/login`);
+      console.log(`   POST   /v1/auth/logout`);
       console.log(`   GET    /v1/coordinates/:user_id`);
       console.log(`   PUT    /v1/coordinates/:user_id`);
       console.log(`   GET    /v1/destinations`);

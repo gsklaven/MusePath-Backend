@@ -12,7 +12,11 @@ import { sendSuccess, sendError, sendNotFound } from '../utils/responses.js';
  */
 export const sendUserNotification = async (req, res) => {
   try {
-    const notificationData = req.body;
+    // Get user_id from authenticated user (req.user.id)
+    const notificationData = {
+      ...req.body,
+      user_id: req.user.id
+    };
     
     const notification = await notificationService.sendNotification(notificationData);
     

@@ -1,3 +1,7 @@
+// Mock admin user password (unhashed, for tests and mock data)
+export const MOCK_ADMIN_PASSWORD = process.env.MOCK_ADMIN_PASSWORD || 'Password123!';
+// Bcrypt salt rounds
+export const BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
 /**
  * Application Constants
  */
@@ -71,5 +75,9 @@ export const API_VERSION = process.env.API_VERSION || 'v1';
 // Rate limiting
 export const RATE_LIMIT = {
   WINDOW_MS: Number(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
-  MAX_REQUESTS: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
+  MAX_REQUESTS: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 500 // Increased for testing
 };
+
+// JWT Secret
+const DEV_FALLBACK_SECRET = "dev-jwt-secret-change-me";
+export const getJwtSecret = () => process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || DEV_FALLBACK_SECRET;

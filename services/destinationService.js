@@ -106,8 +106,8 @@ export const uploadDestinations = async (mapId, destinations) => {
     }
     
     return {
-      destinationsId: destinationIds[0],
-      destinationData: `${destinationIds.length} destinations uploaded`
+      uploaded: destinationIds.length,
+      destinationIds: destinationIds
     };
   }
   
@@ -126,9 +126,28 @@ export const uploadDestinations = async (mapId, destinations) => {
   }
   
   return {
-    destinationsId: savedDestinations[0].destinationId,
-    destinationData: `${savedDestinations.length} destinations uploaded`
+    uploaded: savedDestinations.length,
+    destinationIds: savedDestinations.map(d => d.destinationId)
   };
+};
+
+/**
+ * Delete destination by ID
+ * @param {number} destinationId - Destination ID
+ * @returns {Promise<boolean>} True if deleted, false if not found
+ */
+export const deleteDestination = async (destinationId) => {
+  if (isMockDataMode()) {
+    const index = mockDestinations.findIndex(d => d.destinationId === Number(destinationId));
+    
+    if (index === -1) return false;
+    
+    mockDestinations.splice(index, 1);
+    return true;
+  }
+  
+  const result = await Destination.deleteOne({ destinationId: Number(destinationId) });
+  return result.deletedCount > 0;
 };
 
 /**

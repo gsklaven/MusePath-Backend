@@ -51,8 +51,9 @@ export const validateCoordinates = (lat, lng) => {
 export const validateRating = (rating) => {
   return (
     typeof rating === 'number' &&
-    rating >= 0 &&
-    rating <= 5
+    rating >= 1 &&
+    rating <= 5 &&
+    Number.isInteger(rating)
   );
 };
 

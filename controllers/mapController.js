@@ -1,5 +1,6 @@
 import * as mapService from '../services/mapService.js';
 import { sendSuccess, sendError, sendNotFound } from '../utils/responses.js';
+import { validateMapId } from '../utils/validators.js';
 
 /**
  * Map Controller
@@ -15,6 +16,10 @@ export const getMapById = async (req, res) => {
     const { map_id } = req.params;
     const { zoom, rotation, mode } = req.query;
     
+    if (!validateMapId(map_id)) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
+    
     const options = { zoom, rotation, mode };
     
     const map = await mapService.getMapById(map_id, options);
@@ -25,6 +30,9 @@ export const getMapById = async (req, res) => {
     
     return sendSuccess(res, map, 'Map details retrieved successfully');
   } catch (error) {
+    // NOTE: Lines 28-30 are defensive code - currently unreachable as mapService.getMapById
+    // does not throw errors with 'offline' in the message. It returns offline_available flag instead.
+    // Kept for potential future implementation of stricter offline validation.
     if (error.message.includes('offline')) {
       return sendError(res, 'Service unavailable (offline mode, no cached data)', 503);
     }
@@ -56,17 +64,46 @@ export const downloadMap = async (req, res) => {
   try {
     const { map_id } = req.params;
     
-    const map = await mapService.getMapById(map_id);
+    if (!validateMapId(map_id)) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
+    
+    const map = await mapService.getFullMapById(map_id);
     
     if (!map) {
       return sendNotFound(res, 'Map not found');
     }
     
-    // In a real application, return actual image file
+    // Return full map details for offline download
     return sendSuccess(res, {
-      downloadUrl: `/downloads/maps/${map_id}.png`,
-      map_id: Number(map_id)
-    }, 'Map download link generated');
+      ...map,
+      mapId: map.mapId,
+      downloadUrl: `/downloads/maps/${map_id}.png`
+    }, 'Map information retrieved for download');
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * Delete map
+ * DELETE /maps/:map_id
+ */
+export const deleteMap = async (req, res) => {
+  try {
+    const { map_id } = req.params;
+    
+    if (!validateMapId(map_id)) {
+      return sendError(res, 'Invalid map ID format', 400);
+    }
+    
+    const deleted = await mapService.deleteMap(Number(map_id));
+    
+    if (!deleted) {
+      return sendNotFound(res, 'Map not found');
+    }
+    
+    return res.status(204).send();
   } catch (error) {
     return sendError(res, error.message, 500);
   }

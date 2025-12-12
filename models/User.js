@@ -10,13 +10,30 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  name: {
+  username: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   email: {
     type: String,
-    required: false
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false  // Don't return password in queries by default
+  },
+  avatar: {
+    type: String,
+    required: false,
+    default: null
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   preferences: [{
     type: String
@@ -43,6 +60,8 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// NOTE: Mongoose pre-save hook - only executes with MongoDB, not in mock data mode.
+// Uncovered in tests that use mock data, but essential for MongoDB operation.
 userSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();

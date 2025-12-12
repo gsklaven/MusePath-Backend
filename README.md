@@ -128,11 +128,13 @@ http://localhost:3000/v1
 #### 🏥 Health Check
 - `GET /health` - API status check
 
-#### 🎨 Exhibits (5 endpoints)
+#### 🎨 Exhibits (7 endpoints)
 - `GET /exhibits/search` - Αναζήτηση εκθεμάτων
 - `GET /exhibits/:id` - Λεπτομέρειες εκθέματος
 - `GET /exhibits/:id/audio` - Audio guide
 - `POST /exhibits/:id/ratings` - Αξιολόγηση εκθέματος
+- `POST /exhibits` - Δημιουργία εκθέματος (admin only)
+- `DELETE /exhibits/:id` - Διαγραφή εκθέματος (admin only)
 - `GET /downloads/exhibits/:id` - Download για offline
 
 #### 🗺️ Routes (5 endpoints)
@@ -153,10 +155,11 @@ http://localhost:3000/v1
 - `GET /maps/:id` - Λήψη χάρτη
 - `GET /downloads/maps/:id` - Download χάρτη
 
-#### 📍 Destinations (3 endpoints)
+#### 📍 Destinations (4 endpoints)
 - `GET /destinations` - Λίστα προορισμών
-- `POST /destinations` - Upload προορισμών
+- `POST /destinations` - Upload προορισμών (admin only)
 - `GET /destinations/:id` - Πληροφορίες προορισμού
+- `DELETE /destinations/:id` - Διαγραφή προορισμού (admin only)
 
 #### 📍 Coordinates (2 endpoints)
 - `GET /coordinates/:user_id` - Τοποθεσία χρήστη
@@ -356,6 +359,38 @@ GET http://localhost:3000/v1/destinations
 
 ## 🧪 Testing
 
+### Automated Test Suite
+
+Το API περιλαμβάνει **206 comprehensive tests** που καλύπτουν όλα τα endpoints:
+
+```bash
+# Εκτέλεση όλων των tests
+npm test
+
+# Εκτέλεση με coverage report (terminal)
+npm run test:coverage
+
+# Δημιουργία HTML coverage report
+npm run test:coverage:html
+```
+
+**Test Coverage:**
+- 4 Basic tests (health, routing)
+- 47 Authentication tests (register, login, logout, validation)
+- 29 Exhibit tests (CRUD, ratings, admin operations, offline mode)
+- 20 Coordinate tests (location tracking, validation)
+- 24 Route tests (calculation, navigation, personalization)
+- 21 Destination tests (CRUD, admin operations)
+- 18 Map tests (CRUD, admin operations, offline support)
+- 20 User tests (preferences, favorites, personalized routes)
+- 23 Additional integration tests
+
+Το HTML coverage report δημιουργείται στο `coverage/index.html` και δείχνει:
+- Line coverage
+- Branch coverage
+- Function coverage
+- Statement coverage
+
 ### Μέθοδος 1: API Test Page (Recommended) 🌟
 Χρησιμοποιήστε την ενσωματωμένη σελίδα testing:
 
@@ -394,9 +429,11 @@ curl -X POST http://localhost:3000/v1/routes \
 
 ```json
 {
-  "start": "node server.js",           // Production
-  "dev": "node --watch server.js",     // Development with auto-reload
-  "test": "echo \"No tests yet\""      // Tests (TODO)
+  "start": "node server.js",              // Production
+  "dev": "node --watch server.js",        // Development with auto-reload
+  "test": "ava",                           // Run all tests (127 tests)
+  "test:coverage": "c8 ava",               // Run tests with coverage report
+  "test:coverage:html": "c8 --reporter=html --reporter=text ava"  // HTML coverage report
 }
 ```
 
