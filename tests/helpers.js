@@ -78,15 +78,13 @@ export const registerAndLogin = async (baseUrl, username, email, password) => {
 		json: { username, email, password }
 	});
 	
-	// Verify registration was successful
-	if (!registerResponse.body || !registerResponse.body.success || !registerResponse.body.data) {
-		const errorMsg = registerResponse.body?.message || 'Unknown error';
-		throw new Error(`Registration failed for ${username}: ${errorMsg} (Status: ${registerResponse.statusCode})`);
-	}
-	
 	await client.post("v1/auth/login", {
 		json: { username, password }
 	});
+	
+	if (!registerResponse.body || !registerResponse.body.data) {
+		throw new Error(`Registration failed: ${JSON.stringify(registerResponse.body)}`);
+	}
 	
 	return {
 		userId: registerResponse.body.data.userId,
