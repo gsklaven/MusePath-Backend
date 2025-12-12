@@ -75,7 +75,7 @@ export const API_VERSION = process.env.API_VERSION || 'v1';
 // Rate limiting
 export const RATE_LIMIT = {
   WINDOW_MS: Number(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
-  MAX_REQUESTS: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
+  MAX_REQUESTS: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 500 // Increased for testing
 };
 
 // JWT Secret
