@@ -28,65 +28,61 @@ class ServiceError extends Error {
  * @returns {Promise<Object>} Created user (without password)
  */
 export const registerUser = async ({ username, email, password }) => {
-  try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-    if (isMockDataMode()) {
-      // Mock data mode - check if user exists
-      const existingUser = mockUsers.find(
-        u => u.email === email || u.username === username
-      );
+  if (isMockDataMode()) {
+    // Mock data mode - check if user exists
+    const existingUser = mockUsers.find(
+      u => u.email === email || u.username === username
+    );
 
-      if (existingUser) {
-        throw new ServiceError('User already exists', 409);
-      }
-
-      // Create mock user following the User schema
-      const newUser = {
-        userId: mockUsers.length + 1,
-        username,
-        email,
-        password: hashedPassword,
-        avatar: null,
-        role: 'user', // Default role
-        preferences: [],
-        favourites: [],
-        ratings: new Map(),
-        personalizationAvailable: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      mockUsers.push(newUser);
-
-      // Return user without password
-      const { password: _, ...userWithoutPassword } = newUser;
-      return userWithoutPassword;
-    } else {
-      // MongoDB mode - check existing user first
-      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-      if (existingUser) {
-        throw new ServiceError('User already exists', 409);
-      }
-
-      // Create new user following the User schema
-      // The schema will apply defaults: avatar=null, role='user', personalizationAvailable=false, createdAt/updatedAt=now
-      const newUser = await User.create({
-        userId: await getNextUserId(),
-        username,
-        email,
-        password: hashedPassword
-        // Let schema defaults handle: avatar, role, preferences, favourites, ratings, personalizationAvailable, createdAt, updatedAt
-      });
-
-      // Convert to object and remove password
-      const userObject = newUser.toObject();
-      delete userObject.password;
-      return userObject;
+    if (existingUser) {
+      throw new ServiceError('User already exists', 409);
     }
-  } catch (error) {
-    throw error;
+
+    // Create mock user following the User schema
+    const newUser = {
+      userId: mockUsers.length + 1,
+      username,
+      email,
+      password: hashedPassword,
+      avatar: null,
+      role: 'user', // Default role
+      preferences: [],
+      favourites: [],
+      ratings: new Map(),
+      personalizationAvailable: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    mockUsers.push(newUser);
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = newUser;
+    return userWithoutPassword;
+  } else {
+    // MongoDB mode - check existing user first
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      throw new ServiceError('User already exists', 409);
+    }
+
+    // Create new user following the User schema
+    // The schema will apply defaults: avatar=null, role='user', personalizationAvailable=false, createdAt/updatedAt=now
+    const newUser = await User.create({
+      userId: await getNextUserId(),
+      username,
+      email,
+      password: hashedPassword
+      // Let schema defaults handle: avatar, role, preferences, favourites, ratings, personalizationAvailable, createdAt, updatedAt
+    });
+
+    // Convert to object and remove password
+    const userObject = newUser.toObject();
+    delete userObject.password;
+    return userObject;
   }
 };
 
@@ -98,67 +94,63 @@ export const registerUser = async ({ username, email, password }) => {
  * @returns {Promise<Object>} User object (without password)
  */
 export const loginUser = async ({ username, password }) => {
-  try {
-    if (isMockDataMode()) {
-      // Mock data mode
-      const user = mockUsers.find(u => u.username === username);
+  if (isMockDataMode()) {
+    // Mock data mode
+    const user = mockUsers.find(u => u.username === username);
 
-      if (!user) {
-        throw new Error('Invalid credentials');
-      }
-
-      // Compare password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-
-      if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
-      }
-
-      // Return user without password
-      const { password: _, ...userWithoutPassword } = user;
-      // Generate JWT token
-      const jwtSecret = getJwtSecret();
-      const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
-      const subject = userWithoutPassword.userId ?? userWithoutPassword._id ?? userWithoutPassword.id;
-      const token = jwt.sign({ 
-        sub: String(subject), 
-        username: userWithoutPassword.username || null,
-        role: userWithoutPassword.role || 'user'
-      }, jwtSecret, { expiresIn: tokenExpiry });
-
-      return { user: userWithoutPassword, token };
-    } else {
-      // MongoDB mode - explicitly select password for comparison
-      const user = await User.findOne({ username }).select('+password');
-
-      if (!user) {
-        throw new Error('Invalid credentials');
-      }
-
-      // Compare password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-
-      if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
-      }
-
-      // Convert to object and remove password
-      const userObject = user.toObject();
-      delete userObject.password;
-      // Generate JWT token
-      const jwtSecret = getJwtSecret();
-      const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
-      const subject = userObject.userId ?? userObject._id ?? userObject.id;
-      const token = jwt.sign({ 
-        sub: String(subject), 
-        username: userObject.username || null,
-        role: userObject.role || 'user'
-      }, jwtSecret, { expiresIn: tokenExpiry });
-
-      return { user: userObject, token };
+    if (!user) {
+      throw new Error('Invalid credentials');
     }
-  } catch (error) {
-    throw error;
+
+    // Compare password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user;
+    // Generate JWT token
+    const jwtSecret = getJwtSecret();
+    const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
+    const subject = userWithoutPassword.userId ?? userWithoutPassword._id ?? userWithoutPassword.id;
+    const token = jwt.sign({ 
+      sub: String(subject), 
+      username: userWithoutPassword.username || null,
+      role: userWithoutPassword.role || 'user'
+    }, jwtSecret, { expiresIn: tokenExpiry });
+
+    return { user: userWithoutPassword, token };
+  } else {
+    // MongoDB mode - explicitly select password for comparison
+    const user = await User.findOne({ username }).select('+password');
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Compare password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Convert to object and remove password
+    const userObject = user.toObject();
+    delete userObject.password;
+    // Generate JWT token
+    const jwtSecret = getJwtSecret();
+    const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
+    const subject = userObject.userId ?? userObject._id ?? userObject.id;
+    const token = jwt.sign({ 
+      sub: String(subject), 
+      username: userObject.username || null,
+      role: userObject.role || 'user'
+    }, jwtSecret, { expiresIn: tokenExpiry });
+
+    return { user: userObject, token };
   }
 };
 
@@ -173,27 +165,23 @@ export const loginUser = async ({ username, password }) => {
  * TODO: Review password handling consistency across services
  */
 export const getUserById = async (userId) => {
-  try {
-    if (isMockDataMode()) {
-      const user = mockUsers.find(u => u.userId === userId);
+  if (isMockDataMode()) {
+    const user = mockUsers.find(u => u.userId === userId);
 
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    } else {
-      const user = await User.findOne({ userId });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      return user.toObject();
+    if (!user) {
+      throw new Error('User not found');
     }
-  } catch (error) {
-    throw error;
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  } else {
+    const user = await User.findOne({ userId });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user.toObject();
   }
 };
 

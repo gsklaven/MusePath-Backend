@@ -171,7 +171,7 @@ export const deleteExhibit = async (req, res) => {
     if (!result) {
       return sendNotFound(res, 'Exhibit not found');
     }
-    return res.status(204).send();
+    return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);
   }

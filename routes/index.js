@@ -15,7 +15,7 @@ const router = express.Router();
 /**
  * API Health Check
  */
-router.get('/health', (req, res) => {
+router.get('/health', (_, res) => {
   res.json({
     success: true,
     data: {

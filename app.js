@@ -57,7 +57,7 @@ app.use(mongoSanitize()); // Sanitize user input to prevent NoSQL injection
 app.use('/v1', routes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.json({
     success: true,
     data: {
