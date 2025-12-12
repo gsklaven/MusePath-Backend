@@ -44,7 +44,7 @@ test.serial("POST /v1/auth/register - successful registration with valid data", 
 	t.is(body.data.personalizationAvailable, false);
 });
 
-test("POST /v1/auth/register - fails with missing username", async (t) => {
+test.serial("POST /v1/auth/register - fails with missing username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -59,7 +59,7 @@ test("POST /v1/auth/register - fails with missing username", async (t) => {
 	t.regex(body.message, /username.*required/i);
 });
 
-test("POST /v1/auth/register - fails with missing email", async (t) => {
+test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -74,7 +74,7 @@ test("POST /v1/auth/register - fails with missing email", async (t) => {
 	t.regex(body.message, /email.*required/i);
 });
 
-test("POST /v1/auth/register - fails with missing password", async (t) => {
+test.serial("POST /v1/auth/register - fails with missing password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -89,7 +89,7 @@ test("POST /v1/auth/register - fails with missing password", async (t) => {
 	t.regex(body.message, /password.*required/i);
 });
 
-test("POST /v1/auth/register - fails with invalid email format", async (t) => {
+test.serial("POST /v1/auth/register - fails with invalid email format", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
@@ -103,7 +103,7 @@ test("POST /v1/auth/register - fails with invalid email format", async (t) => {
 	t.regex(body.message, /invalid email|email must be a string/i);
 });
 
-test("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
+test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -119,7 +119,7 @@ test("POST /v1/auth/register - fails with weak password (no uppercase)", async (
 	t.regex(body.message, /uppercase/i);
 });
 
-test("POST /v1/auth/register - fails with weak password (no lowercase)", async (t) => {
+test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -135,7 +135,7 @@ test("POST /v1/auth/register - fails with weak password (no lowercase)", async (
 	t.regex(body.message, /lowercase/i);
 });
 
-test("POST /v1/auth/register - fails with weak password (no digit)", async (t) => {
+test.serial("POST /v1/auth/register - fails with weak password (no digit)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -151,7 +151,7 @@ test("POST /v1/auth/register - fails with weak password (no digit)", async (t) =
 	t.regex(body.message, /digit/i);
 });
 
-test("POST /v1/auth/register - fails with weak password (no special character)", async (t) => {
+test.serial("POST /v1/auth/register - fails with weak password (no special character)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -167,7 +167,7 @@ test("POST /v1/auth/register - fails with weak password (no special character)",
 	t.regex(body.message, /special character/i);
 });
 
-test("POST /v1/auth/register - fails with short password", async (t) => {
+test.serial("POST /v1/auth/register - fails with short password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -183,7 +183,7 @@ test("POST /v1/auth/register - fails with short password", async (t) => {
 	t.regex(body.message, /at least 8 characters/i);
 });
 
-test("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
+test.serial("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {

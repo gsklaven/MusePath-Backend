@@ -406,7 +406,7 @@ test('POST /exhibits - should require admin role', async t => {
 	t.regex(response.body.message, /admin/i);
 });
 
-test('POST /exhibits - should create exhibit with admin credentials', async t => {
+test.serial('POST /exhibits - should create exhibit with admin credentials', async t => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin
@@ -674,7 +674,7 @@ test('DELETE /exhibits/:exhibit_id - should validate exhibit ID format', async t
  * ===================================
  */
 
-test('Admin workflow - create, view, and delete exhibit', async t => {
+test.serial('Admin workflow - create, view, and delete exhibit', async t => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin
