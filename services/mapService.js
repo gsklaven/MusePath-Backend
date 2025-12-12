@@ -9,6 +9,19 @@ import { generateUniqueId } from '../utils/helpers.js';
  */
 
 /**
+ * Get full map details by ID (for downloads)
+ * @param {number} mapId - Map ID
+ * @returns {Promise<Object>} Full map object
+ */
+export const getFullMapById = async (mapId) => {
+  if (isMockDataMode()) {
+    return mockMaps.find(m => m.mapId === Number(mapId)) || null;
+  }
+  
+  return await Map.findOne({ mapId: Number(mapId) });
+};
+
+/**
  * Get map by ID
  * @param {number} mapId - Map ID
  * @param {Object} options - Query options
@@ -107,6 +120,8 @@ export const uploadMap = async (mapData) => {
 
 /**
  * Get all maps
+ * NOTE: Lines 125-130 - Unused function, no endpoint calls this.
+ * Could be used for GET /maps endpoint if needed in future.
  * @returns {Promise<Array>} Array of maps
  */
 export const getAllMaps = async () => {
@@ -115,6 +130,24 @@ export const getAllMaps = async () => {
   }
   
   return await Map.find();
+};
+
+/**
+ * Delete map
+ * @param {number} mapId - Map ID
+ * @returns {Promise<boolean>} True if deleted
+ */
+export const deleteMap = async (mapId) => {
+  if (isMockDataMode()) {
+    const index = mockMaps.findIndex(m => m.mapId === mapId);
+    if (index === -1) return false;
+    
+    mockMaps.splice(index, 1);
+    return true;
+  }
+  
+  const result = await Map.deleteOne({ mapId });
+  return result.deletedCount > 0;
 };
 
 /**

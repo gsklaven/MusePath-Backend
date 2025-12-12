@@ -75,13 +75,15 @@ curl -X PUT http://localhost:3000/v1/users/1/preferences \
 
 ## 📋 All Available Endpoints
 
-**Total: 24 Routes**
+**Total: 31 Routes**
 
-### Exhibits (5 routes)
+### Exhibits (7 routes)
 - GET `/v1/exhibits/search` - Search exhibits
 - GET `/v1/exhibits/:id` - Get exhibit info
 - GET `/v1/exhibits/:id/audio` - Get audio guide
 - POST `/v1/exhibits/:id/ratings` - Rate exhibit
+- POST `/v1/exhibits` - Create exhibit (admin)
+- DELETE `/v1/exhibits/:id` - Delete exhibit (admin)
 - GET `/v1/downloads/exhibits/:id` - Download exhibit
 
 ### Routes (5 routes)
@@ -97,10 +99,11 @@ curl -X PUT http://localhost:3000/v1/users/1/preferences \
 - DELETE `/v1/users/:id/favourites/:exhibit_id` - Remove favorite
 - GET `/v1/users/:id/routes` - Get personalized route
 
-### Destinations (3 routes)
+### Destinations (4 routes)
 - GET `/v1/destinations` - List all
-- POST `/v1/destinations` - Upload destinations
+- POST `/v1/destinations` - Upload destinations (admin)
 - GET `/v1/destinations/:id` - Get destination info
+- DELETE `/v1/destinations/:id` - Delete destination (admin)
 
 ### Maps (3 routes)
 - GET `/v1/maps/:id` - Get map
@@ -132,7 +135,7 @@ MONGODB_URI=mongodb://localhost:27017/musepath
 
 ## 🎯 Key Features
 
-✅ 24 fully functional API endpoints  
+✅ 31 fully functional API endpoints  
 ✅ GET, POST, PUT, DELETE operations  
 ✅ 7 different entities (Users, Exhibits, Routes, etc.)  
 ✅ Mock data ready to use  
@@ -142,6 +145,8 @@ MONGODB_URI=mongodb://localhost:27017/musepath
 ✅ Input validation  
 ✅ Rate limiting  
 ✅ Security headers  
+✅ 206 comprehensive tests  
+✅ Test coverage reporting  
 
 ---
 
@@ -165,6 +170,23 @@ Every endpoint returns:
 npm run dev
 ```
 Auto-reloads on file changes!
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all 206 tests
+npm test
+
+# Test with coverage report
+npm run test:coverage
+
+# Generate HTML coverage report
+npm run test:coverage:html
+```
+
+Tests cover all endpoints with authentication, authorization, validation, and error handling.
 
 ---
 

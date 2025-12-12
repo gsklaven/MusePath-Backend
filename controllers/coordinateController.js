@@ -37,10 +37,7 @@ export const updateCurrentCoordinates = async (req, res) => {
     
     const coordinates = await coordinateService.updateUserCoordinates(user_id, lat, lng);
     
-    return sendSuccess(res, {
-      user_id: Number(user_id),
-      updated: true
-    }, 'Coordinates updated successfully');
+    return sendSuccess(res, coordinates, 'Coordinates updated successfully');
   } catch (error) {
     return sendError(res, error.message, 500);
   }

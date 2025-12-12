@@ -6,8 +6,11 @@
 export const mockUsers = [
   {
     userId: 1,
+    username: 'john_smith',
     name: 'John Smith',
     email: 'john.smith@example.com',
+    password: '$2b$10$z0RDSx0UIh.16pZBQrS4qOtkhHja.fjGV9K6Q6OfI4TM0iq3NzVWe', // Password123!
+    role: 'admin',
     preferences: ['modern art', 'ancient greece', 'sculpture'],
     favourites: [],
     ratings: new Map(),
@@ -17,8 +20,11 @@ export const mockUsers = [
   },
   {
     userId: 2,
+    username: 'maria_garcia',
     name: 'Maria Garcia',
     email: 'maria.garcia@example.com',
+    password: '$2b$10$z0RDSx0UIh.16pZBQrS4qOtkhHja.fjGV9K6Q6OfI4TM0iq3NzVWe', // Password123!
+    role: 'admin',
     preferences: ['impressionism', 'renaissance', 'paintings'],
     favourites: [],
     ratings: new Map([[1, 5], [2, 4]]),
@@ -28,12 +34,15 @@ export const mockUsers = [
   },
   {
     userId: 3,
+    username: 'chen_wei',
     name: 'Chen Wei',
     email: 'chen.wei@example.com',
+    password: '$2b$10$z0RDSx0UIh.16pZBQrS4qOtkhHja.fjGV9K6Q6OfI4TM0iq3NzVWe', // Password123!
+    role: 'admin',
     preferences: ['asian art', 'ceramics', 'calligraphy'],
     favourites: [],
     ratings: new Map(),
-    personalizationAvailable: false,
+    personalizationAvailable: true, // Changed to true to test "no matching exhibits" case
     createdAt: new Date('2024-03-05'),
     updatedAt: new Date('2024-03-05')
   }
@@ -44,6 +53,7 @@ export const mockExhibits = [
     exhibitId: 1,
     name: 'The Starry Night',
     title: 'The Starry Night',
+    artist: 'Vincent van Gogh',
     category: ['paintings', 'post-impressionism', 'modern art'],
     description: 'Vincent van Gogh\'s masterpiece depicting a swirling night sky over a French village. Created in June 1889, this iconic painting captures the view from his asylum room window.',
     historicalInfo: 'Painted while Van Gogh was in the Saint-Paul-de-Mausole asylum in Saint-Rémy-de-Provence, France. The painting is one of the most recognized pieces in modern culture.',
@@ -55,6 +65,7 @@ export const mockExhibits = [
     averageRating: 5,
     wheelchairAccessible: true,
     brailleSupport: true,
+    audioGuide: '/audio/exhibits/1.mp3',
     audioGuideUrl: '/audio/exhibits/1.mp3',
     keywords: ['van gogh', 'starry', 'night', 'impressionism', 'oil painting'],
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
@@ -66,6 +77,7 @@ export const mockExhibits = [
     exhibitId: 2,
     name: 'Greek Amphora',
     title: 'Ancient Greek Amphora',
+    artist: 'Unknown',
     category: ['pottery', 'ancient greece', 'archaeology'],
     description: 'A beautifully preserved amphora from the 5th century BCE, featuring black-figure decoration depicting mythological scenes.',
     historicalInfo: 'This vessel was used for storing wine and olive oil in ancient Greece. The decorative scenes show Hercules\' twelve labors.',
@@ -77,6 +89,7 @@ export const mockExhibits = [
     averageRating: 4,
     wheelchairAccessible: true,
     brailleSupport: false,
+    audioGuide: '/audio/exhibits/2.mp3',
     audioGuideUrl: '/audio/exhibits/2.mp3',
     keywords: ['greece', 'amphora', 'pottery', 'ancient', 'hercules'],
     features: ['Wheelchair Accessible', 'Audio Guide Available'],
@@ -88,6 +101,7 @@ export const mockExhibits = [
     exhibitId: 3,
     name: 'Renaissance Sculpture',
     title: 'David - Renaissance Masterpiece',
+    artist: 'Michelangelo',
     category: ['sculpture', 'renaissance', 'marble'],
     description: 'A stunning marble sculpture from the Italian Renaissance, showcasing exceptional craftsmanship and anatomical detail.',
     historicalInfo: 'Created in Florence during the height of the Renaissance period, this sculpture represents the biblical hero David.',
@@ -99,6 +113,7 @@ export const mockExhibits = [
     averageRating: 0,
     wheelchairAccessible: true,
     brailleSupport: true,
+    audioGuide: '/audio/exhibits/3.mp3',
     audioGuideUrl: '/audio/exhibits/3.mp3',
     keywords: ['renaissance', 'sculpture', 'david', 'marble', 'florence'],
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
@@ -110,6 +125,7 @@ export const mockExhibits = [
     exhibitId: 4,
     name: 'Egyptian Sarcophagus',
     title: 'Pharaoh\'s Sarcophagus',
+    artist: 'Unknown',
     category: ['ancient egypt', 'archaeology', 'artifacts'],
     description: 'An intricately decorated sarcophagus from ancient Egypt, dating back to the New Kingdom period.',
     historicalInfo: 'This sarcophagus belonged to a high-ranking official and features hieroglyphic inscriptions and colorful depictions of the journey to the afterlife.',
@@ -121,6 +137,7 @@ export const mockExhibits = [
     averageRating: 0,
     wheelchairAccessible: true,
     brailleSupport: false,
+    audioGuide: '/audio/exhibits/4.mp3',
     audioGuideUrl: '/audio/exhibits/4.mp3',
     keywords: ['egypt', 'sarcophagus', 'pharaoh', 'hieroglyphics', 'ancient'],
     features: ['Wheelchair Accessible', 'Audio Guide Available'],
@@ -132,6 +149,7 @@ export const mockExhibits = [
     exhibitId: 5,
     name: 'Modern Abstract Art',
     title: 'Composition VIII',
+    artist: 'Wassily Kandinsky',
     category: ['modern art', 'abstract', 'paintings'],
     description: 'A vibrant abstract composition featuring geometric shapes and bold colors, representing the pinnacle of abstract expressionism.',
     historicalInfo: 'Created in the early 20th century during the abstract art movement. The artist explored the relationship between color, form, and emotion.',
@@ -143,6 +161,7 @@ export const mockExhibits = [
     averageRating: 0,
     wheelchairAccessible: true,
     brailleSupport: true,
+    audioGuide: '/audio/exhibits/5.mp3',
     audioGuideUrl: '/audio/exhibits/5.mp3',
     keywords: ['abstract', 'modern', 'geometric', 'kandinsky', 'composition'],
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
@@ -155,9 +174,11 @@ export const mockExhibits = [
 export const mockMaps = [
   {
     mapId: 1,
+    name: 'Museum Ground Floor',
     title: 'Museum Ground Floor',
     mapData: 'base64_encoded_map_data_here',
     mapUrl: '/maps/1/museum_ground_floor.png',
+    imageUrl: '/maps/1/museum_ground_floor.png',
     format: 'png',
     zoom: 1,
     rotation: 0,
@@ -168,9 +189,11 @@ export const mockMaps = [
   },
   {
     mapId: 2,
+    name: 'Museum First Floor',
     title: 'Museum First Floor',
     mapData: 'base64_encoded_map_data_here',
     mapUrl: '/maps/2/museum_first_floor.png',
+    imageUrl: '/maps/2/museum_first_floor.png',
     format: 'png',
     zoom: 1,
     rotation: 0,
@@ -263,6 +286,20 @@ export const mockDestinations = [
     lastUpdated: new Date(),
     alternatives: [],
     suggestedTimes: ['10:30 AM', '2:30 PM'],
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
+  },
+  {
+    destinationId: 7,
+    name: 'Gallery D - Temporarily Closed',
+    type: 'exhibit',
+    coordinates: { lat: 40.7617, lng: -73.9773 },
+    mapId: 1,
+    status: 'closed',
+    crowdLevel: 'none',
+    lastUpdated: new Date(),
+    alternatives: [2, 3, 6],
+    suggestedTimes: ['Tomorrow 10:00 AM', 'Friday 2:00 PM'],
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
   }

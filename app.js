@@ -3,10 +3,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { getLogger } from './middleware/logger.js';
 import { RATE_LIMIT } from './config/constants.js';
+import mongoSanitize from 'express-mongo-sanitize';
 
 /**
  * Express Application Setup
@@ -17,7 +19,10 @@ const app = express();
  * Security Middleware
  */
 app.use(helmet()); // Set security headers
-app.use(cors()); // Enable CORS
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  credentials: true
+})); // Enable CORS with credentials
 
 /**
  * Rate Limiting
@@ -43,15 +48,16 @@ app.use(limiter);
 app.use(compression()); // Compress response bodies
 app.use(express.json({ limit: '10mb' })); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
+app.use(cookieParser()); // Parse cookies on incoming requests
 app.use(getLogger()); // HTTP request logging
-
+app.use(mongoSanitize()); // Sanitize user input to prevent NoSQL injection
 /**
  * API Routes
  */
 app.use('/v1', routes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.json({
     success: true,
     data: {
@@ -59,6 +65,7 @@ app.get('/', (req, res) => {
       version: '1.0.0',
       description: 'Interactive museum maps, exhibit details, and personalized navigation REST API',
       endpoints: {
+        authentication: '/v1/auth',
         health: '/v1/health',
         coordinates: '/v1/coordinates',
         destinations: '/v1/destinations',

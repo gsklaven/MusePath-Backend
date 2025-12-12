@@ -9,7 +9,7 @@
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  */
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, _, res, __) => {
   console.error('Error:', err);
 
   // Mongoose validation error

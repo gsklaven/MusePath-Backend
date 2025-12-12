@@ -1,6 +1,7 @@
 import * as userService from '../services/userService.js';
 import * as routeService from '../services/routeService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
+import { validateUserId, validateExhibitId } from '../utils/validators.js';
 
 /**
  * User Controller
@@ -15,13 +16,13 @@ export const updateUserPreferences = async (req, res) => {
   try {
     const { user_id } = req.params;
     const preferences = req.body;
-    
+    if (!validateUserId(user_id)) {
+      return sendError(res, 'Invalid user ID format', 400);
+    }
     const user = await userService.updateUserPreferences(user_id, preferences);
-    
     if (!user) {
       return sendNotFound(res, 'User not found');
     }
-    
     return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -36,13 +37,16 @@ export const addExhibitToFavourites = async (req, res) => {
   try {
     const { user_id } = req.params;
     const { exhibit_id } = req.body;
-    
+    if (!validateUserId(user_id)) {
+      return sendError(res, 'Invalid user ID format', 400);
+    }
+    if (!validateExhibitId(exhibit_id)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
     const user = await userService.addFavorite(user_id, exhibit_id);
-    
     if (!user) {
       return sendNotFound(res, 'User not found');
     }
-    
     return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -56,13 +60,16 @@ export const addExhibitToFavourites = async (req, res) => {
 export const removeExhibitFromFavourites = async (req, res) => {
   try {
     const { user_id, exhibit_id } = req.params;
-    
+    if (!validateUserId(user_id)) {
+      return sendError(res, 'Invalid user ID format', 400);
+    }
+    if (!validateExhibitId(exhibit_id)) {
+      return sendError(res, 'Invalid exhibit ID format', 400);
+    }
     const user = await userService.removeFavorite(user_id, exhibit_id);
-    
     if (!user) {
       return sendNotFound(res, 'User or exhibit not found in favourites');
     }
-    
     return sendNoContent(res);
   } catch (error) {
     return sendError(res, error.message, 500);
@@ -76,9 +83,10 @@ export const removeExhibitFromFavourites = async (req, res) => {
 export const getPersonalizedRoute = async (req, res) => {
   try {
     const { user_id } = req.params;
-    
+    if (!validateUserId(user_id)) {
+      return sendError(res, 'Invalid user ID format', 400);
+    }
     const route = await routeService.generatePersonalizedRoute(user_id);
-    
     return sendSuccess(res, route, 'Personalized route generated successfully');
   } catch (error) {
     if (error.message.includes('preferences')) {

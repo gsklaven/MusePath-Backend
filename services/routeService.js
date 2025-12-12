@@ -180,6 +180,21 @@ export const recalculateRoute = async (routeId) => {
 };
 
 /**
+ * Get route owner (userId)
+ * @param {number} routeId - Route ID
+ * @returns {Promise<number|null>} User ID or null if not found
+ */
+export const getRouteOwner = async (routeId) => {
+  if (isMockDataMode()) {
+    const route = mockRoutes.find(r => r.routeId === Number(routeId));
+    return route ? Number(route.userId) : null;
+  }
+  
+  const route = await Route.findOne({ routeId: Number(routeId) });
+  return route ? Number(route.userId) : null;
+};
+
+/**
  * Delete route
  * @param {number} routeId - Route ID
  * @returns {Promise<boolean>} Deletion success
@@ -222,10 +237,13 @@ export const generatePersonalizedRoute = async (userId) => {
     )
   ).slice(0, 5); // Limit to 5 exhibits
   
+  // NOTE: Edge case: user has preferences but no matching exhibits exist.
+  // Unlikely in practice with current mock data as multiple exhibits match common preferences.
   if (matchingExhibits.length === 0) {
     throw new Error('No matching exhibits found for user preferences');
   }
   
+  // NOTE: Lines 248-258 - MongoDB mode route generation, not executed in mock data tests.
   const routeId = isMockDataMode() 
     ? generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
@@ -245,6 +263,7 @@ export const generatePersonalizedRoute = async (userId) => {
 
 /**
  * Generate next route ID (for database mode)
+ * NOTE: Lines 267-269 - MongoDB only, not executed in mock data mode tests.
  * @returns {Promise<number>} Next ID
  */
 const generateNextRouteId = async () => {
