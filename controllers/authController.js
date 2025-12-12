@@ -22,19 +22,17 @@ export const Register = async (req, res) => {
             return sendError(res, 'Username, email, and password are required', 400);
         }
 
-        // Validate input types for username and email
-        if (typeof username !== 'string' || typeof email !== 'string') {
-            return sendError(res, 'Invalid input types', 400);
-        }
 
         // Validate username format
-        if (!validateUsernameFormat(username)) {
-            return sendError(res, 'Invalid username format. Use only letters, numbers, underscores, and hyphens (3-30 characters)', 400);
+        const usernameCheck = validateUsernameFormat(username);
+        if (!usernameCheck.isValid) {
+            return sendError(res, usernameCheck.message, 400);
         }
 
         // Validate email format
-        if (!validateEmailFormat(email)) {
-            return sendError(res, 'Invalid email format', 400);
+        const emailCheck = validateEmailFormat(email);
+        if (!emailCheck.isValid) {
+            return sendError(res, emailCheck.message, 400);
         }
 
         // Validate password strength (handles type checking internally)
@@ -68,14 +66,11 @@ export const Login = async (req, res) => {
             return sendError(res, 'Username and password are required', 400);
         }
 
-        // Validate input types
-        if (typeof username !== 'string' || typeof password !== 'string') {
-            return sendError(res, 'Invalid input types', 400);
-        }
 
         // Validate username format (security check)
-        if (!validateUsernameFormat(username)) {
-            return sendError(res, 'Invalid username format', 400);
+        const usernameCheck = validateUsernameFormat(username);
+        if (!usernameCheck.isValid) {
+            return sendError(res, usernameCheck.message, 400);
         }
 
         // Login user via service (returns { user, token })

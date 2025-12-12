@@ -12,10 +12,15 @@ const getJwtSecret = () => process.env.JWT_SECRET || process.env.JWT_SECRET_KEY 
  * @returns {boolean} Validation result
  */
 export const validateEmailFormat = (email) => {
-  if (typeof email !== 'string') return false;
+  if (typeof email !== 'string') {
+    return { isValid: false, message: 'Email must be a string' };
+  }
   // Only allow alphanumeric, dots, underscores, percent, hyphens, and plus signs
   const emailRegex = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailRegex.test(email);
+  if (!emailRegex.test(email)) {
+    return { isValid: false, message: 'Invalid email format' };
+  }
+  return { isValid: true, message: 'Valid email' };
 };
 
 /**
@@ -26,11 +31,18 @@ export const validateEmailFormat = (email) => {
  * @returns {boolean} Validation result
  */
 export const validateUsernameFormat = (username) => {
-  if (typeof username !== 'string') return false;
-  if (username.length < 3 || username.length > 30) return false;
+  if (typeof username !== 'string') {
+    return { isValid: false, message: 'Username must be a string' };
+  }
+  if (username.length < 3 || username.length > 30) {
+    return { isValid: false, message: 'Username must be 3-30 characters long' };
+  }
   // Only allow letters, numbers, underscores, and hyphens
   const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-  return usernameRegex.test(username);
+  if (!usernameRegex.test(username)) {
+    return { isValid: false, message: 'Username can only contain latin characters, numbers, underscores, and hyphens' };
+  }
+  return { isValid: true, message: 'Valid username' };
 };
 
 /**

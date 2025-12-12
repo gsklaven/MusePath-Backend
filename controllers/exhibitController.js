@@ -37,6 +37,7 @@ export const viewExhibitInfo = async (req, res) => {
     features: exhibit.features,
     status: exhibit.status,
     description: exhibit.description,
+    historicalInfo: exhibit.historicalInfo,
     audioGuideUrl: exhibit.audioGuideUrl,
   };
     

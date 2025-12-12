@@ -91,7 +91,6 @@ test("POST /v1/auth/register - fails with missing password", async (t) => {
 
 test("POST /v1/auth/register - fails with invalid email format", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: "testuser",
@@ -99,10 +98,9 @@ test("POST /v1/auth/register - fails with invalid email format", async (t) => {
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid email format/i);
+	t.regex(body.message, /invalid email|email must be a string/i);
 });
 
 test("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
@@ -187,7 +185,6 @@ test("POST /v1/auth/register - fails with short password", async (t) => {
 
 test("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: "test@user!",
@@ -195,15 +192,13 @@ test("POST /v1/auth/register - fails with invalid username format (special chars
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid username format/i);
+	t.regex(body.message, /username can only contain|username must be a string|username must be 3-30 characters/i);
 });
 
 test("POST /v1/auth/register - fails with username too short", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: "ab",
@@ -211,15 +206,13 @@ test("POST /v1/auth/register - fails with username too short", async (t) => {
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid username format/i);
+	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
 test("POST /v1/auth/register - fails with username too long", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: "a".repeat(31),
@@ -227,15 +220,13 @@ test("POST /v1/auth/register - fails with username too long", async (t) => {
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid username format/i);
+	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
 test("POST /v1/auth/register - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/register", {
 		json: {
 			username: { "$ne": null },
@@ -243,10 +234,9 @@ test("POST /v1/auth/register - fails with non-string input types (NoSQL injectio
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid input types/i);
+	t.regex(body.message, /username must be a string|invalid input types/i);
 });
 
 test.serial("POST /v1/auth/register - fails with duplicate username", async (t) => {
@@ -407,32 +397,28 @@ test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 
 test("POST /v1/auth/login - fails with invalid username format", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/login", {
 		json: {
 			username: "invalid@user",
 			password: "Test123!@#"
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid username format/i);
+	t.regex(body.message, /username can only contain|invalid username format|username must be a string|username must be 3-30 characters/i);
 });
 
 test("POST /v1/auth/login - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	const client = createClient(t.context.baseUrl);
-	
 	const { body, statusCode } = await client.post("v1/auth/login", {
 		json: {
 			username: { "$ne": null },
 			password: { "$ne": null }
 		}
 	});
-
 	t.is(statusCode, 400);
 	t.is(body.success, false);
-	t.regex(body.message, /invalid input types/i);
+	t.regex(body.message, /username must be a string|invalid input types/i);
 });
 
 /**

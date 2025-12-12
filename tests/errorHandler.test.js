@@ -1,0 +1,59 @@
+import test from "ava";
+import express from "express";
+import supertest from "supertest";
+import { errorHandler } from "../middleware/errorHandler.js";
+
+// Create a test app with a route that throws an error
+const createTestApp = (errorToThrow) => {
+  const app = express();
+  app.get("/error", (req, res, next) => {
+    next(errorToThrow);
+  });
+  app.use(errorHandler);
+  return app;
+};
+
+test("errorHandler returns 500 and error message for generic error", async (t) => {
+  const error = new Error("Test error");
+  const app = createTestApp(error);
+  const response = await supertest(app).get("/error");
+  t.is(response.status, 500);
+  t.is(response.body.success, false);
+  t.is(response.body.message, "Test error");
+  t.truthy(response.body.error);
+});
+
+test("errorHandler returns 400 for ValidationError", async (t) => {
+  const error = new Error("Validation failed");
+  error.name = "ValidationError";
+  error.errors = { field1: { message: "Field1 is invalid" }, field2: { message: "Field2 is invalid" } };
+  const app = createTestApp(error);
+  const response = await supertest(app).get("/error");
+  t.is(response.status, 400);
+  t.is(response.body.success, false);
+  t.is(response.body.message, "Validation error");
+  t.regex(response.body.error, /Field1 is invalid.*Field2 is invalid/);
+});
+
+test("errorHandler returns 400 for CastError", async (t) => {
+  const error = new Error("Cast to ObjectId failed");
+  error.name = "CastError";
+  const app = createTestApp(error);
+  const response = await supertest(app).get("/error");
+  t.is(response.status, 400);
+  t.is(response.body.success, false);
+  t.is(response.body.message, "Invalid ID format");
+  t.is(response.body.error, "Cast to ObjectId failed");
+});
+
+test("errorHandler returns 409 for duplicate key error", async (t) => {
+  const error = new Error("Duplicate key");
+  error.code = 11000;
+  error.keyPattern = { username: 1 };
+  const app = createTestApp(error);
+  const response = await supertest(app).get("/error");
+  t.is(response.status, 409);
+  t.is(response.body.success, false);
+  t.regex(response.body.message, /Duplicate value for username/);
+  t.regex(response.body.error, /username already exists/);
+});
