@@ -86,9 +86,8 @@ export const Login = async (req, res) => {
             maxAge: cookieMaxAge
         });
 
-        // Return only user info (token stored in cookie)
-        return sendSuccess(res, user, 'Login successful', 200);
-    } catch (err) {
+        // Return user info AND token (for Authorization header support)
+        return sendSuccess(res, { ...user, token }, 'Login successful', 200);       } catch (err) {
         console.error('Login error:', err);
         return sendError(res, err.message || 'Failed to login', err.status || 401);
     }
