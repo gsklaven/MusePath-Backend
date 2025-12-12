@@ -75,7 +75,7 @@ curl -X PUT http://localhost:3000/v1/users/1/preferences \
 
 ## 📋 All Available Endpoints
 
-**Total: 31 Routes**
+**Total: 35 Routes**
 
 ### Exhibits (7 routes)
 - GET `/v1/exhibits/search` - Search exhibits
@@ -118,6 +118,11 @@ curl -X PUT http://localhost:3000/v1/users/1/preferences \
 - POST `/v1/sync` - Sync offline data
 - POST `/v1/notifications` - Send notification
 
+### Authentication (3 routes)
+- POST `/v1/auth/register` - User registration
+- POST `/v1/auth/login` - User login (JWT)
+- POST `/v1/auth/logout` - User logout
+
 ---
 
 ## 🗄️ Optional: Add MongoDB
@@ -135,18 +140,19 @@ MONGODB_URI=mongodb://localhost:27017/musepath
 
 ## 🎯 Key Features
 
-✅ 31 fully functional API endpoints  
+✅ 35 fully functional API endpoints  
 ✅ GET, POST, PUT, DELETE operations  
 ✅ 7 different entities (Users, Exhibits, Routes, etc.)  
 ✅ Mock data ready to use  
 ✅ MongoDB optional  
+✅ JWT authentication & authorization  
 ✅ Complete error handling  
 ✅ Standard response format  
 ✅ Input validation  
 ✅ Rate limiting  
 ✅ Security headers  
-✅ 206 comprehensive tests  
-✅ Test coverage reporting  
+✅ 311 comprehensive tests  
+✅ 87.21% code coverage  
 
 ---
 
@@ -176,10 +182,10 @@ Auto-reloads on file changes!
 ## 🧪 Testing
 
 ```bash
-# Run all 206 tests
+# Run all 311 tests
 npm test
 
-# Test with coverage report
+# Test with coverage report (87.21%)
 npm run test:coverage
 
 # Generate HTML coverage report

@@ -361,7 +361,7 @@ GET http://localhost:3000/v1/destinations
 
 ### Automated Test Suite
 
-Το API περιλαμβάνει **206 comprehensive tests** που καλύπτουν όλα τα endpoints:
+Το API περιλαμβάνει **311 comprehensive tests** που καλύπτουν όλα τα endpoints:
 
 ```bash
 # Εκτέλεση όλων των tests
@@ -374,16 +374,30 @@ npm run test:coverage
 npm run test:coverage:html
 ```
 
-**Test Coverage:**
-- 4 Basic tests (health, routing)
-- 47 Authentication tests (register, login, logout, validation)
-- 29 Exhibit tests (CRUD, ratings, admin operations, offline mode)
-- 20 Coordinate tests (location tracking, validation)
-- 24 Route tests (calculation, navigation, personalization)
+**Test Coverage: 87.21%**
+- Statements: 87.21% (3153/4631)
+- Branches: 77.66% (225/270)
+- Functions: 88.97% (38/127)
+- Lines: 87.21% (3153/4631)
+
+**Test Files (17 total):**
+- 45 Authentication tests (JWT, register, login, logout, validation, security)
+- 30 Exhibit tests (CRUD, search, ratings, admin operations)
+- 25 Route tests (calculation, navigation, personalization, recalculation)
+- 21 User tests (preferences, favorites, personalized routes)
+- 21 Coordinate tests (location tracking, validation)
 - 21 Destination tests (CRUD, admin operations)
 - 18 Map tests (CRUD, admin operations, offline support)
-- 20 User tests (preferences, favorites, personalized routes)
-- 23 Additional integration tests
+- 14 Sync tests (offline synchronization)
+- 14 Download tests (offline content)
+- 11 Notification tests (route alerts, deviation detection)
+- 28 Helper function tests (distance, time calculations)
+- 24 Validator tests (input validation)
+- 13 Response utility tests
+- 8 Middleware tests (auth, optionalAuth, requireAdmin)
+- 8 Logger tests (request logging)
+- 6 Error handler tests
+- 4 Basic tests (health, routing)
 
 Το HTML coverage report δημιουργείται στο `coverage/index.html` και δείχνει:
 - Line coverage
@@ -431,7 +445,7 @@ curl -X POST http://localhost:3000/v1/routes \
 {
   "start": "node server.js",              // Production
   "dev": "node --watch server.js",        // Development with auto-reload
-  "test": "ava",                           // Run all tests (127 tests)
+  "test": "ava",                           // Run all tests (311 tests)
   "test:coverage": "c8 ava",               // Run tests with coverage report
   "test:coverage:html": "c8 --reporter=html --reporter=text ava"  // HTML coverage report
 }

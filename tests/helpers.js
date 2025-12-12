@@ -83,8 +83,8 @@ export const registerAndLogin = async (baseUrl, username, email, password) => {
 	});
 	
 	return {
-		userId: registerResponse.body.data.userId,
-		username: registerResponse.body.data.username,
+		userId: registerResponse.body?.data?.userId,
+		username: registerResponse.body?.data?.username,
 		client
 	};
 };

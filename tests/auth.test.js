@@ -852,3 +852,65 @@ test.serial("Admin endpoints - POST /destinations requires authentication", asyn
 	t.is(statusCode, 401);
 	t.is(body.success, false);
 });
+
+// ============================================================================
+// Additional Edge Cases for Coverage
+// ============================================================================
+
+test("POST /v1/auth/register - fails with non-string username", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { body, statusCode } = await client.post("v1/auth/register", {
+		json: {
+			username: 12345,
+			email: "test@example.com",
+			password: "Test123!@#"
+		}
+	});
+
+	t.is(statusCode, 400);
+	t.is(body.success, false);
+});
+
+test("POST /v1/auth/register - fails with non-string email", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { body, statusCode } = await client.post("v1/auth/register", {
+		json: {
+			username: "testuser",
+			email: 12345,
+			password: "Test123!@#"
+		}
+	});
+
+	t.is(statusCode, 400);
+	t.is(body.success, false);
+});
+
+test("POST /v1/auth/login - fails with non-string username", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { body, statusCode } = await client.post("v1/auth/login", {
+		json: {
+			username: 12345,
+			password: "Test123!@#"
+		}
+	});
+
+	t.is(statusCode, 400);
+	t.is(body.success, false);
+});
+
+test("POST /v1/auth/login - fails with non-string password", async (t) => {
+	const client = createClient(t.context.baseUrl);
+	
+	const { body, statusCode } = await client.post("v1/auth/login", {
+		json: {
+			username: "testuser",
+			password: 12345
+		}
+	});
+
+	t.is(statusCode, 400);
+	t.is(body.success, false);
+});

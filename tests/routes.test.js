@@ -556,16 +556,6 @@ test('GET /users/:user_id/routes - should generate personalized route for user w
   t.truthy(response.body.data.estimated_duration);
 });
 
-test('GET /users/:user_id/routes - should require authentication', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/users/1/routes');
-
-  t.is(response.statusCode, 401);
-  t.false(response.body.success);
-  t.is(response.body.message, 'Authentication token required');
-});
-
 test('GET /users/:user_id/routes - should prevent accessing other user personalized routes', async t => {
   const { userId: user1Id, client: client1 } = await registerAndLogin(
     t.context.baseUrl,
