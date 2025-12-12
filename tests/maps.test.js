@@ -133,7 +133,7 @@ test("POST /maps - should require admin role", async (t) => {
 	t.is(body.success, false);
 });
 
-test("POST /maps - should upload map with admin credentials", async (t) => {
+test.serial('POST /maps - should upload map with admin credentials', async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin
@@ -172,7 +172,7 @@ test("POST /maps - should validate required fields", async (t) => {
 	t.is(body.success, false);
 });
 
-test("POST /maps - should accept different image formats", async (t) => {
+test.serial('POST /maps - should accept different image formats', async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin
@@ -296,7 +296,7 @@ test("DELETE /maps/:map_id - should validate map ID format", async (t) => {
  * ===================================
  */
 
-test("Admin workflow - upload, retrieve, and delete map", async (t) => {
+test.serial('Admin workflow - upload, retrieve, and delete map', async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
 	// Login as admin

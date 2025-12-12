@@ -206,7 +206,7 @@ test('POST /destinations - should require admin role', async t => {
   t.regex(response.body.message, /admin/i);
 });
 
-test('POST /destinations - should upload destinations with admin credentials', async t => {
+test.serial('POST /destinations - should upload destinations with admin credentials', async t => {
   const client = createClient(t.context.baseUrl);
   
   // Login as admin using existing mock user
@@ -401,7 +401,7 @@ test('DELETE /destinations/:destination_id - should require authentication', asy
   t.regex(response.body.message, /token|authentication/i);
 });
 
-test('DELETE /destinations/:destination_id - should require admin role', async t => {
+test.serial('DELETE /destinations/:destination_id - should require admin role', async t => {
   const client = createClient(t.context.baseUrl);
   
   const { client: userClient } = await registerAndLogin(
@@ -418,7 +418,7 @@ test('DELETE /destinations/:destination_id - should require admin role', async t
   t.regex(response.body.message, /admin/i);
 });
 
-test('DELETE /destinations/:destination_id - should delete destination with admin credentials', async t => {
+test.serial('DELETE /destinations/:destination_id - should delete destination with admin credentials', async t => {
   const client = createClient(t.context.baseUrl);
   
   // Login as admin using existing mock user
