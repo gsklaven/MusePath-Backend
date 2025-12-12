@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import { mockUsers } from '../data/mockData.js';
 import { isMockDataMode } from '../config/database.js';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../middleware/auth.js';
 
 // Simple service-level error with HTTP status
 class ServiceError extends Error {
@@ -116,7 +117,7 @@ export const loginUser = async ({ username, password }) => {
       // Return user without password
       const { password: _, ...userWithoutPassword } = user;
       // Generate JWT token
-      const jwtSecret = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
+      const jwtSecret = getJwtSecret();
       const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
       const subject = userWithoutPassword.userId ?? userWithoutPassword._id ?? userWithoutPassword.id;
       const token = jwt.sign({ 
@@ -145,7 +146,7 @@ export const loginUser = async ({ username, password }) => {
       const userObject = user.toObject();
       delete userObject.password;
       // Generate JWT token
-      const jwtSecret = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
+      const jwtSecret = getJwtSecret();
       const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
       const subject = userObject.userId ?? userObject._id ?? userObject.id;
       const token = jwt.sign({ 
