@@ -337,7 +337,7 @@ test('PUT /routes/:route_id - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
-test('PUT /routes/:route_id - should prevent updating other user routes', async t => {
+test.serial('PUT /routes/:route_id - should prevent updating other user routes', async t => {
   // Create route with user1
   const { client: client1 } = await registerAndLogin(
     t.context.baseUrl,
