@@ -20,7 +20,7 @@ const app = express();
  */
 app.use(helmet()); // Set security headers
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  origin: [process.env.CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 })); // Enable CORS with credentials
 
