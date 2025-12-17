@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npm test
+        run: npm run test:coverage
 
   cd:
     runs-on: ubuntu-latest
