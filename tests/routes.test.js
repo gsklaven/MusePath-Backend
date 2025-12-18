@@ -10,17 +10,14 @@ import {
 
 /**
  * Route Management Tests
- * 
- * Test Coverage:
- * - Route calculation (POST /routes)
- * - Route retrieval (GET /routes/:route_id)
- * - Route updates (PUT /routes/:route_id)
- * - Route recalculation (POST /routes/:route_id)
- * - Route deletion (DELETE /routes/:route_id)
- * - Personalized routes (GET /users/:user_id/routes)
- * - Authentication requirements
- * - Authorization (own routes only)
- * - Input validation
+ *
+ * Purpose and scope:
+ * - Validate route lifecycle: creation, retrieval, update, recalculation and deletion
+ * - Verify authorization: users may only operate on their own routes
+ * - Check input validation and optional query parameters (e.g., walkingSpeed)
+ *
+ * Notes:
+ * - Many tests run `serial` to avoid timestamp and ID collisions with mock data
  */
 
 test.before(async t => {

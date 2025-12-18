@@ -2,7 +2,14 @@ import mongoose from 'mongoose';
 
 /**
  * Exhibit Schema
- * Represents a museum exhibit with information and accessibility features
+ *
+ * Purpose:
+ * - Represent exhibits with metadata, accessibility flags, ratings and media
+ * - Designed to match fields used by services and mock data for tests
+ *
+ * Notes:
+ * - `exhibitId` is a stable numeric identifier used in mock mode
+ * - Pre-save hook keeps `updatedAt` current when persisting to MongoDB
  */
 const exhibitSchema = new mongoose.Schema({
   exhibitId: {

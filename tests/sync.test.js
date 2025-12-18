@@ -10,7 +10,13 @@ import {
 
 /**
  * Sync Endpoints Tests
- * Tests for offline data synchronization functionality
+ *
+ * This suite verifies the offline synchronization endpoint `/v1/sync`:
+ * - Authentication requirement
+ * - Handling of rating and favorite operations
+ * - Bulk operation handling, conflicts and validation
+ *
+ * Tests are run serially to avoid state and timestamp collisions.
  */
 
 test.before(async t => {

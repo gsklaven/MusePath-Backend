@@ -1,4 +1,3 @@
-import Route from '../models/Route.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockRoutes } from '../data/mockData.js';
 import { getDestinationById } from './destinationService.js';

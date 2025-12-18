@@ -3,10 +3,18 @@ import express from "express";
 import supertest from "supertest";
 import { errorHandler } from "../middleware/errorHandler.js";
 
+/**
+ * Unit tests for the centralized error handler middleware.
+ *
+ * The suite covers common error shapes (generic Error, ValidationError,
+ * CastError and duplicate key errors) and verifies status codes and
+ * normalized response payloads consumed by clients.
+ */
+
 // Create a test app with a route that throws an error
 const createTestApp = (errorToThrow) => {
   const app = express();
-  app.get("/error", (req, res, next) => {
+  app.get('/error', (req, res, next) => {
     next(errorToThrow);
   });
   app.use(errorHandler);

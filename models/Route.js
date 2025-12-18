@@ -2,7 +2,15 @@ import mongoose from 'mongoose';
 
 /**
  * Route Schema
- * Represents a calculated route between points
+ *
+ * Purpose:
+ * - Persist calculated routes including path, instructions and timing
+ * - Used by route services in both mock and DB modes; fields are kept
+ *   intentionally simple for deterministic test behavior
+ *
+ * Notes:
+ * - `routeId` is a numeric stable identifier used throughout tests
+ * - Pre-save hook updates `updatedAt`; not executed in mock mode
  */
 const routeSchema = new mongoose.Schema({
   routeId: {

@@ -60,51 +60,60 @@ export const validatePasswordStrength = (password) => {
     return { isValid: false, message: 'Password must be a string' };
   }
 
-  if (password.length < 8) {
-    return { isValid: false, message: 'Password must be at least 8 characters long' };
-  }
+  const validationRules = [
+    {
+      rule: (p) => p.length >= 8,
+      message: 'Password must be at least 8 characters long',
+    },
+    {
+      rule: (p) => /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/.test(p),
+      message: 'Password contains invalid characters. Use only latin letters, digits and common special characters',
+    },
+    {
+      rule: (p) => /[A-Z]/.test(p),
+      message: 'Password must contain at least one uppercase letter',
+    },
+    {
+      rule: (p) => /[a-z]/.test(p),
+      message: 'Password must contain at least one lowercase letter',
+    },
+    {
+      rule: (p) => /[0-9]/.test(p),
+      message: 'Password must contain at least one digit',
+    },
+    {
+      rule: (p) => /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(p),
+      message: 'Password must contain at least one special character',
+    },
+  ];
 
-  // Allowed characters: A-Z a-z 0-9 and common ASCII special characters
-  const allowedChars = /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/;
-  if (!allowedChars.test(password)) {
-    return { isValid: false, message: 'Password contains invalid characters. Use only latin letters, digits and common special characters' };
-  }
-
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
-
-  if (!hasUpper) {
-    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-  }
-  if (!hasLower) {
-    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-  }
-  if (!hasDigit) {
-    return { isValid: false, message: 'Password must contain at least one digit' };
-  }
-  if (!hasSpecial) {
-    return { isValid: false, message: 'Password must contain at least one special character' };
+  for (const { rule, message } of validationRules) {
+    if (!rule(password)) {
+      return { isValid: false, message };
+    }
   }
 
   return { isValid: true, message: 'Password is strong' };
 };
 
+const extractToken = (req) => {
+  const cookieToken = req.cookies && req.cookies.token;
+  const headerToken = req.headers?.authorization?.startsWith('Bearer ')
+    ? req.headers.authorization.split(' ')[1]
+    : null;
+  return cookieToken || headerToken;
+};
+
 export const verifyToken = async (req, res, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
     if (!token) {
-      return res.status(401).json({ success: false, data: null, message: "Authentication token required" });
+      return res.status(401).json({ success: false, data: null, message: 'Authentication token required' });
     }
 
     if (isTokenRevoked(token)) {
-      return res.status(401).json({ success: false, data: null, message: "Token revoked" });
+      return res.status(401).json({ success: false, data: null, message: 'Token revoked' });
     }
 
     const secret = getJwtSecret();
@@ -115,23 +124,15 @@ export const verifyToken = async (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.status(403).json({ success: false, data: null, message: "Token is not valid", error: err.message });
+    return res.status(403).json({ success: false, data: null, message: 'Token is not valid', error: err.message });
   }
 };
 
 export const optionalAuth = async (req, _res, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
-    if (!token) {
-      return next();
-    }
-
-    if (isTokenRevoked(token)) {
+    if (!token || isTokenRevoked(token)) {
       return next();
     }
 
@@ -152,17 +153,16 @@ export const optionalAuth = async (req, _res, next) => {
 export const authorizeSameUser = (paramName = 'user_id') => {
   return (req, res, next) => {
     try {
-      const paramValue = req.params && req.params[paramName];
       if (!req.user) {
         return res.status(401).json({ success: false, data: null, message: 'Not authenticated' });
       }
 
+      const paramValue = req.params && req.params[paramName];
       if (!paramValue) {
         return res.status(400).json({ success: false, data: null, message: `Missing param ${paramName}` });
       }
 
-      const userId = String(req.user.id || req.user.userId || req.userId || req.user._id || '');
-      if (String(paramValue) !== userId) {
+      if (String(paramValue) !== String(req.user.id)) {
         return res.status(403).json({ success: false, data: null, message: 'Forbidden: cannot access other user data' });
       }
 

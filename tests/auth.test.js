@@ -3,7 +3,12 @@ import { setupTestServer, cleanupTestServer, createClient, generateUsername, gen
 
 /**
  * Authentication Endpoint Tests
- * Tests for /v1/auth endpoints: register, login, logout
+ *
+ * Coverage:
+ * - Registration input validation and success cases
+ * - Login and logout behavior
+ *
+ * Tests run serially where indicated to avoid timestamp collisions
  */
 
 test.before(async (t) => {

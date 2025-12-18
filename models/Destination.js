@@ -2,7 +2,14 @@ import mongoose from 'mongoose';
 
 /**
  * Destination Schema
- * Represents a point of interest in the museum
+ *
+ * Purpose:
+ * - Model a point of interest (exhibit, restroom, cafe, etc.) on a map
+ * - Store coordinates, type, optional alternatives and suggested times
+ *
+ * Implementation notes:
+ * - `destinationId` is a numeric stable identifier used in mock data tests
+ * - A pre-save hook updates timestamps; this is only active in DB mode
  */
 const destinationSchema = new mongoose.Schema({
   destinationId: {
