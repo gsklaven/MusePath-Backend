@@ -19,6 +19,8 @@ import {
  * Tests are run serially to avoid state and timestamp collisions.
  */
 
+// Purpose: ensure `/v1/sync` correctly processes offline batched operations
+// and returns a structured summary of successes, failures and conflicts.
 test.before(async t => {
 	await setupTestServer(t);
 });

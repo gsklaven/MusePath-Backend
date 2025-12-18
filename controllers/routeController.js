@@ -1,6 +1,6 @@
 import * as routeService from '../services/routeService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
-import { validateRouteId, validateUserId } from '../utils/validators.js';
+import { validateUserId } from '../utils/validators.js';
 
 /**
  * Route Controller
@@ -8,6 +8,7 @@ import { validateRouteId, validateUserId } from '../utils/validators.js';
  */
 
 // TODO: Move this middleware to a separate file in the middleware directory
+/* exported authorizeRouteOwner */
 const authorizeRouteOwner = async (req, res, next) => {
   try {
     const { route_id } = req.params;

@@ -9,6 +9,12 @@ import { setupTestServer, cleanupTestServer, createClient, generateUsername, gen
  * - Login and logout behavior
  *
  * Tests run serially where indicated to avoid timestamp collisions
+
+// -------------------------
+// Registration tests
+// - Validate required fields, format and password rules
+// - Successful registration should return sanitized user data
+// -------------------------
  */
 
 test.before(async (t) => {

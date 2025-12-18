@@ -126,6 +126,10 @@ export const mockExhibits = [
     keywords: ['renaissance', 'sculpture', 'david', 'marble', 'florence'],
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
     crowdLevel: 'medium',
+    // NOTE: Fields included here are representative of what services expect:
+    // - `keywords` and `category` are used for search and filtering
+    // - `ratings` is a Map keyed by userId for quick updates in mock mode
+    // - `audioGuideUrl` and `features` are used by frontend to enable UI elements
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
   },

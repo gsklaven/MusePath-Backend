@@ -29,6 +29,8 @@ test.after.always(async t => {
 });
 
 // ==================== Route Calculation Tests ====================
+// Purpose: ensure the route calculation endpoint returns deterministic
+// results for valid inputs and rejects invalid or unauthorized requests.
 
 test.serial('POST /routes - should calculate route with valid data when authenticated', async t => {
   const { userId, client } = await registerAndLogin(
@@ -171,6 +173,8 @@ test('POST /routes - should reject invalid start coordinates (longitude out of r
 });
 
 // ==================== Route Retrieval Tests ====================
+// Purpose: verify retrieval enforces ownership and supports optional
+// query parameters like walkingSpeed.
 
 test.serial('GET /routes/:route_id - should retrieve route details when authenticated', async t => {
   const { userId, client } = await registerAndLogin(
@@ -328,6 +332,8 @@ async function testForbiddenRouteAction(t, method, routeAction, body) {
 }
 
 // ==================== Route Update Tests ====================
+// Purpose: updating a route should only be allowed by the owner and
+// must return updated timing information when stops change.
 
 test.serial('PUT /routes/:route_id - should update route stops when authenticated', async t => {
   const { client } = await registerAndLogin(

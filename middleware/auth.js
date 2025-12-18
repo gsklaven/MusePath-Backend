@@ -128,6 +128,7 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
+/* exported optionalAuth */
 export const optionalAuth = async (req, _res, next) => {
   try {
     const token = extractToken(req);
