@@ -16,6 +16,38 @@ import {
 test.before(setupTestServer);
 test.after.always(cleanupTestServer);
 
+
+// ============================================================================
+// Helpers for forbidden user actions
+// ============================================================================
+
+async function testForbiddenUserAction(t, method, endpoint, body) {
+	// Add delay to prevent timestamp collision
+	await new Promise(resolve => setTimeout(resolve, 5));
+	const username1 = generateUsername("user1");
+	const email1 = generateEmail("user1");
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		username1,
+		email1,
+		"Password123!"
+	);
+
+	const username2 = generateUsername("user2");
+	const email2 = generateEmail("user2");
+	const { userId: userId2 } = await registerAndLogin(
+		t.context.baseUrl,
+		username2,
+		email2,
+		"Password123!"
+	);
+
+	const url = endpoint.replace(":user_id", userId2);
+	const response = await client1[method](url, body ? { json: body } : undefined);
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+}
+
 // ============================================================================
 // PUT /users/:user_id/preferences
 // ============================================================================
@@ -51,33 +83,12 @@ test.serial("PUT /users/:user_id/preferences - should update preferences when au
 });
 
 test.serial("PUT /users/:user_id/preferences - should prevent updating other user preferences", async (t) => {
-	// Add delay to prevent timestamp collision
-	await new Promise(resolve => setTimeout(resolve, 5));
-	const username1 = generateUsername("user1");
-	const email1 = generateEmail("user1");
-	const { client: client1 } = await registerAndLogin(
-		t.context.baseUrl,
-		username1,
-		email1,
-		"Password123!"
+	await testForbiddenUserAction(
+		t,
+		"put",
+		"v1/users/:user_id/preferences",
+		{ interests: ["art"] }
 	);
-	
-	const username2 = generateUsername("user2");
-	const email2 = generateEmail("user2");
-	const { userId: userId2 } = await registerAndLogin(
-		t.context.baseUrl,
-		username2,
-		email2,
-		"Password123!"
-	);
-	
-	// User 1 tries to update User 2's preferences
-	const response = await client1.put(`v1/users/${userId2}/preferences`, {
-		json: { interests: ["art"] }
-	});
-	
-	t.is(response.statusCode, 403);
-	t.false(response.body.success);
 });
 
 test.serial("PUT /users/:user_id/preferences - should return 404 for non-existent user", async (t) => {
@@ -207,33 +218,12 @@ test.serial("POST /users/:user_id/favourites - should handle duplicate favourite
 });
 
 test.serial("POST /users/:user_id/favourites - should prevent adding to other user favourites", async (t) => {
-	// Add delay to prevent timestamp collision
-	await new Promise(resolve => setTimeout(resolve, 5));
-	const username1 = generateUsername("user1");
-	const email1 = generateEmail("user1");
-	const { client: client1 } = await registerAndLogin(
-		t.context.baseUrl,
-		username1,
-		email1,
-		"Password123!"
+	await testForbiddenUserAction(
+		t,
+		"post",
+		"v1/users/:user_id/favourites",
+		{ exhibit_id: 1 }
 	);
-	
-	const username2 = generateUsername("user2");
-	const email2 = generateEmail("user2");
-	const { userId: userId2 } = await registerAndLogin(
-		t.context.baseUrl,
-		username2,
-		email2,
-		"Password123!"
-	);
-	
-	// User 1 tries to add to User 2's favourites
-	const response = await client1.post(`v1/users/${userId2}/favourites`, {
-		json: { exhibit_id: 1 }
-	});
-	
-	t.is(response.statusCode, 403);
-	t.false(response.body.success);
 });
 
 // ============================================================================

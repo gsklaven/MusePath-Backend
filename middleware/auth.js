@@ -139,7 +139,7 @@ export const optionalAuth = async (req, res, next) => {
     const payload = jwt.verify(token, secret);
     req.user = { id: payload.id || payload.userId || payload.sub, ...payload };
     return next();
-  } catch (err) {
+  } catch (_) {
     // don't block on invalid token in optional mode
     return next();
   }

@@ -291,6 +291,45 @@ test.serial('GET /routes/:route_id - should accept walkingSpeed parameter', asyn
   t.is(typeof response.body.data.estimatedTime, 'number');
 });
 
+
+// ==================== Helpers for forbidden route actions ====================
+
+async function testForbiddenRouteAction(t, method, routeAction, body) {
+  // Create route with user1
+  const { client: client1 } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('route1'),
+    generateEmail('route1'),
+    'Password123!'
+  );
+
+  const createResponse = await client1.post('v1/routes', {
+    json: {
+      destination_id: 1,
+      startLat: 40.7610,
+      startLng: -73.9780
+    }
+  });
+  const routeId = createResponse.body.data.route_id;
+
+  // Try to modify with user2
+  const { client: client2 } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('route2'),
+    generateEmail('route2'),
+    'Password123!'
+  );
+
+  const url = `v1/routes/${routeId}`;
+  const response = body
+    ? await client2[method](url, { json: body })
+    : await client2[method](url);
+
+  t.is(response.statusCode, 403);
+  t.false(response.body.success);
+  t.regex(response.body.message, /forbidden/i);
+}
+
 // ==================== Route Update Tests ====================
 
 test.serial('PUT /routes/:route_id - should update route stops when authenticated', async t => {
@@ -338,40 +377,12 @@ test('PUT /routes/:route_id - should require authentication', async t => {
 });
 
 test.serial('PUT /routes/:route_id - should prevent updating other user routes', async t => {
-  // Create route with user1
-  const { client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to update with user2
-  const { client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.put(`v1/routes/${routeId}`, {
-    json: {
-      addStops: [2]
-    }
-  });
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+	await testForbiddenRouteAction(
+		t,
+		'put',
+		'update',
+		{ addStops: [2] }
+	);
 });
 
 // ==================== Route Recalculation Tests ====================
@@ -412,36 +423,12 @@ test('POST /routes/:route_id - should require authentication for recalculation',
 });
 
 test.serial('POST /routes/:route_id - should prevent recalculating other user routes', async t => {
-  // Create route with user1
-  const { client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to recalculate with user2
-  const { client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.post(`v1/routes/${routeId}`);
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+	await testForbiddenRouteAction(
+		t,
+		'post',
+		'recalculate',
+		undefined
+	);
 });
 
 // ==================== Route Deletion Tests ====================
