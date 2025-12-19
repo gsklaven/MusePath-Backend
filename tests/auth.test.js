@@ -801,4 +801,3 @@ test.serial("Logout with valid token, then try to use revoked token", async (t) 
 		t.pass("Cookie handling not available in test environment");
 	}
 });
-
