@@ -2,7 +2,7 @@ import * as routeService from '../services/routeService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
 import { validateRouteId, validateUserId } from '../utils/validators.js';
 
-const checkRouteAccess = async (req, res, route_id) => {
+const checkRouteAccess = async (req, _, route_id) => {
   if (!validateRouteId(route_id)) return { error: 'Invalid route ID format', code: 400 };
 
   const routeOwner = await routeService.getRouteOwner(route_id);

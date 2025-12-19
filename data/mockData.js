@@ -11,6 +11,7 @@
  * - When adding new fields, update services that read mock objects.
  */
 
+// Represents mock user data for testing authentication and personalization.
 export const mockUsers = [
   {
     userId: 1,
@@ -56,6 +57,7 @@ export const mockUsers = [
   }
 ];
 
+// Represents mock exhibit data, including metadata for filtering and display.
 export const mockExhibits = [
   {
     exhibitId: 1,
@@ -183,6 +185,7 @@ export const mockExhibits = [
   }
 ];
 
+// Mock map data, defining the museum's floor plans.
 export const mockMaps = [
   {
     mapId: 1,
@@ -216,6 +219,7 @@ export const mockMaps = [
   }
 ];
 
+// Mock destination points of interest within the museum.
 export const mockDestinations = [
   {
     destinationId: 1,
@@ -317,6 +321,7 @@ export const mockDestinations = [
   }
 ];
 
+// Records the geographical coordinates of users within the museum.
 export const mockCoordinates = [
   {
     userId: 1,
@@ -341,6 +346,7 @@ export const mockCoordinates = [
   }
 ];
 
+// Defines pre-calculated routes between destinations.
 export const mockRoutes = [
   {
     routeId: 1,
@@ -398,6 +404,7 @@ export const mockRoutes = [
   }
 ];
 
+// Contains mock notifications for events like route deviations.
 export const mockNotifications = [
   {
     notificationId: 1,

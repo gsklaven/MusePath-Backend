@@ -3,7 +3,7 @@ import { isTokenRevoked } from "../services/authService.js";
 import { getJwtSecret } from "../config/constants.js";
 
 
-const getRequestToken = (req) => {
+const _getRequestToken = (req) => {
   const authHeader = req.headers?.authorization;
   if (authHeader?.startsWith("Bearer ")) return authHeader.split(" ")[1];
   return req.cookies?.token || null;
