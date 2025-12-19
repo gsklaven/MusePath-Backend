@@ -1,8 +1,10 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 export const options = {
-  stages: [{ duration: '10s', target: 5 }, 
-    { duration: '20s', target: 5 }, 
+  stages: [{ duration: '20s', target: 10 }, 
+    { duration: '20s', target: 5 },
+    {duration: '40s', target: 5 },
+    { duration: '20s', target: 10 }, 
     { duration: '10s', target: 0 }],
   thresholds: {
         // System's non-Functional Requirements
