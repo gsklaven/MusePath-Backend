@@ -70,22 +70,22 @@ jobs:
       - name: Run k6 Load Test - Health Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/health_load.test.js
+          path: tests/k6/health_load.js
 
       - name: Run k6 Spike Test - Health Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/health_spike.test.js
+          path: tests/k6/health_spike.js
 
       - name: Run k6 Load Test - Destinations Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/dest_load.test.js
+          path: tests/k6/dest_load.js
 
       - name: Run k6 Spike Test - Destinations Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/dest_spike.test.js
+          path: tests/k6/dest_spike.js
 
   # 3. Continuous Deployment (Render)
   cd:
