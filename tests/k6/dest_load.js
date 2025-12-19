@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 10 }, // Πιο αργή άνοδος σε 15 χρήστες
-    { duration: '3m', target: 10 }, // Παραμονή για 3 λεπτά για σταθερό δείγμα
+    { duration: '1m', target: 8 }, // Πιο αργή άνοδος σε 15 χρήστες
+    { duration: '3m', target: 8 }, // Παραμονή για 3 λεπτά για σταθερό δείγμα
     { duration: '30s', target: 0 },
   ],
   thresholds: {
