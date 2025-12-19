@@ -14,7 +14,7 @@ export const options = {
 };
 
 export default function () {
-  http.get('http://localhost:3000/api');
-  http.get('http://localhost:3000/api/data');
+  http.get('http://localhost:3000/v1/health');
+  http.get('http://localhost:3000/v1/destinations');
   sleep(1);
 }

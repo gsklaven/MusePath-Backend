@@ -15,11 +15,11 @@ export const options = {
 
 export default function () {
   // Test Route A
-  let res1 = http.get('http://localhost:3000/api');
+  let res1 = http.get('http://localhost:3000/v1/health');
   check(res1, { 'status is 200': (r) => r.status === 200 });
 
   // Test Route B
-  let res2 = http.get('http://localhost:3000/api/data');
+  let res2 = http.get('http://localhost:3000/v1/destinations');
   check(res2, { 'status is 200': (r) => r.status === 200 });
 
   sleep(1);
