@@ -7,5 +7,5 @@ export const options = {
 export default function () {
   let res = http.get('http://localhost:3000/v1/destinations');
   check(res, { 'status is 200': (r) => r.status === 200 });
-  sleep(1);
+  sleep(Math.random() * 5);
 }
