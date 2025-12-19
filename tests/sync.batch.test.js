@@ -8,16 +8,19 @@ import {
 	generateEmail
 } from './helpers.js';
 
+// Setup the test server before running the tests
 test.before(async t => {
 	await setupTestServer(t);
 });
 
+// Cleanup the test server after all tests have run
 test.after.always(async t => {
 	await cleanupTestServer(t);
 });
 
 // Test to ensure multiple operations can be synchronized in a single request.
 test.serial('POST /sync - should synchronize multiple operations', async t => {
+	// Register and login a new user
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
 		generateUsername('syncmulti'),
@@ -25,6 +28,7 @@ test.serial('POST /sync - should synchronize multiple operations', async t => {
 		'Password123!'
 	);
 	
+	// Attempt to synchronize multiple operations in a single request
 	const response = await client.post('v1/sync', {
 		json: [
 			{
@@ -44,6 +48,7 @@ test.serial('POST /sync - should synchronize multiple operations', async t => {
 		]
 	});
 	
+	// Assert that the server returns a 200 OK status and the correct response body
 	t.is(response.statusCode, 200);
 	t.true(response.body.success);
 	t.is(response.body.data.successful, 3);
@@ -53,6 +58,7 @@ test.serial('POST /sync - should synchronize multiple operations', async t => {
 
 // Test to ensure the endpoint can handle an empty array of operations.
 test.serial('POST /sync - should handle empty operations array', async t => {
+	// Register and login a new user
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
 		generateUsername('syncempty'),
@@ -60,10 +66,12 @@ test.serial('POST /sync - should handle empty operations array', async t => {
 		'Password123!'
 	);
 	
+	// Attempt to synchronize an empty array of operations
 	const response = await client.post('v1/sync', {
 		json: []
 	});
 	
+	// Assert that the server returns a 200 OK status and the correct response body
 	t.is(response.statusCode, 200);
 	t.true(response.body.success);
 	t.is(response.body.data.successful, 0);
@@ -73,6 +81,7 @@ test.serial('POST /sync - should handle empty operations array', async t => {
 
 // Test to ensure the endpoint rejects a non-array payload.
 test.serial('POST /sync - should reject non-array payload', async t => {
+	// Register and login a new user
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
 		generateUsername('syncinvalid'),
@@ -80,6 +89,7 @@ test.serial('POST /sync - should reject non-array payload', async t => {
 		'Password123!'
 	);
 	
+	// Attempt to synchronize a non-array payload
 	const response = await client.post('v1/sync', {
 		json: {
 			operation_type: 'rating',
@@ -88,6 +98,7 @@ test.serial('POST /sync - should reject non-array payload', async t => {
 		}
 	});
 	
+	// Assert that the server returns a 400 Bad Request status
 	t.is(response.statusCode, 400);
 	t.false(response.body.success);
 	t.regex(response.body.message, /array/i);
@@ -95,6 +106,7 @@ test.serial('POST /sync - should reject non-array payload', async t => {
 
 // Test to ensure the endpoint can handle an unknown operation type.
 test.serial('POST /sync - should handle unknown operation type', async t => {
+	// Register and login a new user
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
 		generateUsername('syncunknown'),
@@ -102,6 +114,7 @@ test.serial('POST /sync - should handle unknown operation type', async t => {
 		'Password123!'
 	);
 	
+	// Attempt to synchronize an unknown operation type
 	const response = await client.post('v1/sync', {
 		json: [
 			{
@@ -111,6 +124,7 @@ test.serial('POST /sync - should handle unknown operation type', async t => {
 		]
 	});
 	
+	// Assert that the server returns a 200 OK status and the correct response body
 	t.is(response.statusCode, 200);
 	t.true(response.body.success);
 	t.is(response.body.data.successful, 0);
@@ -121,6 +135,7 @@ test.serial('POST /sync - should handle unknown operation type', async t => {
 
 // Test to ensure the endpoint can handle a mix of successful and failed operations.
 test.serial('POST /sync - should handle mixed success and failure operations', async t => {
+	// Register and login a new user
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
 		generateUsername('syncmixed'),
@@ -128,6 +143,7 @@ test.serial('POST /sync - should handle mixed success and failure operations', a
 		'Password123!'
 	);
 	
+	// Attempt to synchronize a mix of successful and failed operations
 	const response = await client.post('v1/sync', {
 		json: [
 			{
@@ -146,6 +162,7 @@ test.serial('POST /sync - should handle mixed success and failure operations', a
 		]
 	});
 	
+	// Assert that the server returns a 200 OK status and the correct response body
 	t.is(response.statusCode, 200);
 	t.true(response.body.success);
 	// 2 valid operations succeed (rating + add_favorite), 1 fails (unknown_operation)
