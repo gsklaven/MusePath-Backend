@@ -36,7 +36,7 @@ export const getExhibitById = async (exhibitId, mode = 'online') => {
  * @param {string} mode - Access mode
  * @returns {Promise<Array>} Array of exhibits
  */
-export const searchExhibits = async (term, category, _mode = 'online') => {
+export const searchExhibits = async (term, category, _ = 'online') => {
   const searchTerm = term ? sanitizeSearchTerm(term) : null;
   
   if (isMockDataMode()) {
