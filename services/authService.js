@@ -70,17 +70,50 @@ export const registerUser = async ({ username, email, password }) => {
     }
 
     // Create new user following the User schema
-    // The schema will apply defaults: avatar=null, role='user', personalizationAvailable=false, createdAt/updatedAt=now
-    const newUser = await User.create({
-      userId: await getNextUserId(),
-      username,
-      email,
-      password: hashedPassword
-      // Let schema defaults handle: avatar, role, preferences, favourites, ratings, personalizationAvailable, createdAt, updatedAt
-    });
+    // Use retry loop to avoid rare duplicate `userId` collisions when tests run quickly
+    const maxAttempts = 5;
+    let created = null;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const candidateId = await getNextUserId();
+      try {
+        const newUser = await User.create({
+          userId: candidateId,
+          username,
+          email,
+          password: hashedPassword
+        });
+        created = newUser;
+        break;
+      } catch (err) {
+        // If duplicate key on userId, retry; otherwise propagate
+        if (err && err.code === 11000 && err.keyPattern && err.keyPattern.userId) {
+          // small delay to allow other inserts to complete
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise(r => setTimeout(r, 20));
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!created) {
+      // Final fallback: generate a high-entropy userId to avoid collisions in fast test environments
+      const fallbackId = Date.now() % 1000000000 + Math.floor(Math.random() * 10000);
+      try {
+        const finalUser = await User.create({
+          userId: fallbackId,
+          username,
+          email,
+          password: hashedPassword
+        });
+        created = finalUser;
+      } catch (finalErr) {
+        throw new ServiceError('Failed to create user after multiple attempts', 500);
+      }
+    }
 
     // Convert to object and remove password
-    const userObject = newUser.toObject();
+    const userObject = created.toObject();
     delete userObject.password;
     return userObject;
   }

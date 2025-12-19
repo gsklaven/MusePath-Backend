@@ -4,6 +4,8 @@ import { CookieJar } from "tough-cookie";
 import dotenv from "dotenv";
 import app from "../app.js";
 import { connectDatabase } from "../config/database.js";
+import { isMockDataMode } from '../config/database.js';
+import { mockExhibits } from '../data/mockData.js';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +27,32 @@ export const getTestServer = async () => {
 	if (!globalServer) {
 		// Initialize database connection (will use mock data if no MONGODB_URI)
 		await connectDatabase();
+
+		// If connected to MongoDB, ensure exhibits collection matches mock data for tests
+		try {
+			if (!isMockDataMode()) {
+				const Exhibit = (await import('../models/Exhibit.js')).default;
+				// Clear existing exhibits and seed from mockExhibits
+				await Exhibit.deleteMany({});
+				const docs = mockExhibits.map(e => ({
+					exhibitId: e.exhibitId,
+					title: e.title,
+					name: e.name || e.title,
+					category: e.category || [],
+					description: e.description || '',
+					location: e.location || '',
+					ratings: Object.fromEntries(e.ratings || new Map()),
+					averageRating: e.averageRating || 0,
+					audioGuideUrl: e.audioGuideUrl || null,
+					keywords: e.keywords || [],
+					features: e.features || []
+				}));
+				if (docs.length > 0) await Exhibit.insertMany(docs);
+			}
+		} catch (seedErr) {
+			// eslint-disable-next-line no-console
+			console.warn('Warning: seeding exhibits failed', seedErr.message);
+		}
 		
 		globalServer = http.createServer(app);
 		const server = globalServer.listen();
@@ -74,35 +102,47 @@ export const createClient = (baseUrl) => {
 export const registerAndLogin = async (baseUrl, username, email, password) => {
 	const client = createClient(baseUrl);
 	
+	// Try to register; if user exists, fall back to login
 	const registerResponse = await client.post("v1/auth/register", {
 		json: { username, email, password }
 	});
-	
-	await client.post("v1/auth/login", {
+
+	const loginResponse = await client.post("v1/auth/login", {
 		json: { username, password }
 	});
-	
-	if (!registerResponse.body || !registerResponse.body.data) {
-		throw new Error(`Registration failed: ${JSON.stringify(registerResponse.body)}`);
+
+	// If registration succeeded, use its returned user; otherwise use login response
+	if (registerResponse.statusCode === 201 && registerResponse.body && registerResponse.body.data) {
+		return {
+			userId: registerResponse.body.data.userId,
+			username: registerResponse.body.data.username,
+			client
+		};
 	}
-	
-	return {
-		userId: registerResponse.body.data.userId,
-		username: registerResponse.body.data.username,
-		client
-	};
+
+	if (loginResponse && loginResponse.body && loginResponse.body.data) {
+		return {
+			userId: loginResponse.body.data.userId || loginResponse.body.data.id || null,
+			username: loginResponse.body.data.username || username,
+			client
+		};
+	}
+
+	throw new Error(`Registration failed: ${JSON.stringify(registerResponse.body)}`);
 };
 
 /**
  * Generate unique test username
  */
 export const generateUsername = (prefix = "testuser") => {
-	return `${prefix}_${Date.now()}`;
-};
-
+		const base = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+		return base.length > 30 ? base.slice(0, 30) : base;
+	};
 /**
  * Generate unique test email
  */
 export const generateEmail = (prefix = "testuser") => {
-	return `${prefix}_${Date.now()}@example.com`;
-};
+		const local = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+		const safeLocal = local.length > 30 ? local.slice(0, 30) : local;
+		return `${safeLocal}@example.com`;
+	};

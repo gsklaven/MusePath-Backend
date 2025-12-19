@@ -386,10 +386,12 @@ test('POST /exhibits - should require authentication', async t => {
 test('POST /exhibits - should require admin role', async t => {
 	const client = createClient(t.context.baseUrl);
 	
+	const _username_exhibitcreate = generateUsername('exhibitcreate');
+	const _email_exhibitcreate = generateEmail(_username_exhibitcreate);
 	const { client: userClient } = await registerAndLogin(
 		t.context.baseUrl,
-		'exhibitcreate',
-		'exhibitcreate@example.com',
+		_username_exhibitcreate,
+		_email_exhibitcreate,
 		'Password123!'
 	);
 
@@ -565,10 +567,12 @@ test('DELETE /exhibits/:exhibit_id - should require authentication', async t => 
 test('DELETE /exhibits/:exhibit_id - should require admin role', async t => {
 	const client = createClient(t.context.baseUrl);
 	
+	const _username_exhibitdelete = generateUsername('exhibitdelete');
+	const _email_exhibitdelete = generateEmail(_username_exhibitdelete);
 	const { client: userClient } = await registerAndLogin(
 		t.context.baseUrl,
-		'exhibitdelete',
-		'exhibitdelete@example.com',
+		_username_exhibitdelete,
+		_email_exhibitdelete,
 		'Password123!'
 	);
 
