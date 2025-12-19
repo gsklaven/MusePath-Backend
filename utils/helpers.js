@@ -1,3 +1,40 @@
+import Exhibit from '../models/Exhibit.js';
+
+/** Utility helpers for service layer */
+
+export const toNumber = (v) => {
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+};
+
+export const now = () => new Date();
+
+/**
+ * Find a document's ObjectId by a numeric field value.
+ * @param {Model} Model - Mongoose model
+ * @param {string} fieldName - Numeric field name on the model (e.g. 'exhibitId')
+ * @param {number|string} value - Numeric value to match
+ * @returns {Promise<ObjectId|null>} Document _id or null
+ */
+export const getModelIdByNumericField = async (Model, fieldName, value) => {
+  const num = toNumber(value);
+  if (num === null) return null;
+  const query = {};
+  query[fieldName] = num;
+  const doc = await Model.findOne(query).select('_id');
+  return doc ? doc._id : null;
+};
+
+export const findExhibitObjectId = async (exhibitId) => {
+  return await getModelIdByNumericField(Exhibit, 'exhibitId', exhibitId);
+};
+
+export default {
+  toNumber,
+  now,
+  getModelIdByNumericField,
+  findExhibitObjectId,
+};
 /**
  * Helper utility functions
  */

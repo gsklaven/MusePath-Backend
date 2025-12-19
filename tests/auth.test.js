@@ -1,5 +1,5 @@
 import test from "ava";
-import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail } from "./helpers.js";
+import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail } from './helpers.js';
 
 /**
  * Authentication Endpoint Tests

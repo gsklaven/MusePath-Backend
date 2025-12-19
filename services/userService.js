@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockUsers } from '../data/mockData.js';
+import { findExhibitObjectId, toNumber, now } from '../utils/helpers.js';
 
 /**
  * User Service
@@ -100,12 +101,15 @@ export const addFavorite = async (userId, exhibitId) => {
     }
     return user;
   }
-  
+
+  // MongoDB mode: find Exhibit by exhibitId, use its _id for favourites
+  const exhibitObjectId = await findExhibitObjectId(exhibitId);
+  if (!exhibitObjectId) return null;
   return await User.findOneAndUpdate(
     { userId: Number(userId) },
-    { 
-      $addToSet: { favourites: exhibitId },
-      updatedAt: new Date()
+    {
+      $addToSet: { favourites: exhibitObjectId },
+      updatedAt: now()
     },
     { new: true }
   );
@@ -126,12 +130,21 @@ export const removeFavorite = async (userId, exhibitId) => {
     }
     return user;
   }
-  
+  // MongoDB mode: find Exhibit by exhibitId, remove its _id from favourites
+  const exhibitObjectId = await findExhibitObjectId(exhibitId);
+  if (!exhibitObjectId) {
+    // If the exhibit does not exist, treat removal as idempotent: update timestamp and return user
+    return await User.findOneAndUpdate(
+      { userId: Number(userId) },
+      { updatedAt: now() },
+      { new: true }
+    );
+  }
   return await User.findOneAndUpdate(
     { userId: Number(userId) },
-    { 
-      $pull: { favourites: exhibitId },
-      updatedAt: new Date()
+    {
+      $pull: { favourites: exhibitObjectId },
+      updatedAt: now()
     },
     { new: true }
   );

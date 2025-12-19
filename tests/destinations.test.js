@@ -406,8 +406,8 @@ test.serial('DELETE /destinations/:destination_id - should require admin role', 
   
   const { client: userClient } = await registerAndLogin(
     t.context.baseUrl,
-    'destdelete',
-    'destdelete@example.com',
+    generateUsername('destdelete'),
+    generateEmail('destdelete'),
     'Password123!'
   );
 
