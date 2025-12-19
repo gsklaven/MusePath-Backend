@@ -106,3 +106,38 @@ export const generateUsername = (prefix = "testuser") => {
 export const generateEmail = (prefix = "testuser") => {
 	return `${prefix}_${Date.now()}@example.com`;
 };
+
+/**
+ * Helper function to test forbidden actions on a user-specific endpoint.
+ * It creates two users, and then tries to perform an action on user2's resources using user1's client.
+ * @param {object} t - The test context from ava.
+ * @param {string} method - The HTTP method to use (e.g., 'put', 'post', 'delete').
+ * @param {string} endpoint - The endpoint to test, with ':user_id' as a placeholder for the user ID.
+ * @param {object} [body] - The request body, if any.
+ */
+export async function testForbiddenUserAction(t, method, endpoint, body) {
+	// Add delay to prevent timestamp collision
+	await new Promise(resolve => setTimeout(resolve, 5));
+	const username1 = generateUsername("user1");
+	const email1 = generateEmail("user1");
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		username1,
+		email1,
+		"Password123!"
+	);
+
+	const username2 = generateUsername("user2");
+	const email2 = generateEmail("user2");
+	const { userId: userId2 } = await registerAndLogin(
+		t.context.baseUrl,
+		username2,
+		email2,
+		"Password123!"
+	);
+
+	const url = endpoint.replace(":user_id", userId2);
+	const response = await client1[method](url, body ? { json: body } : undefined);
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+}
