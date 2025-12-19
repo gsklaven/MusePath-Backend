@@ -2,86 +2,50 @@ import * as routeService from '../services/routeService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
 import { validateRouteId, validateUserId } from '../utils/validators.js';
 
-/**
- * Route Controller
- * Handles HTTP requests for route operations
- */
+const checkRouteAccess = async (req, res, route_id) => {
+  if (!validateRouteId(route_id)) return { error: 'Invalid route ID format', code: 400 };
 
-/**
- * Calculate route
- * POST /routes
- */
+  const routeOwner = await routeService.getRouteOwner(route_id);
+  if (!routeOwner) return { error: 'Route not found', code: 404 };
+
+  if (routeOwner !== Number(req.user.id)) {
+    return { error: 'Forbidden: cannot access other user routes', code: 403 };
+  }
+  return { success: true };
+};
+
 export const calculateRoute = async (req, res) => {
   try {
-    const routeData = req.body;
-    // Add authenticated user's ID to the route data
-    routeData.user_id = req.user.id;
-    if (!validateUserId(routeData.user_id)) {
-      return sendError(res, 'Invalid user ID format', 400);
-    }
+    const routeData = { ...req.body, user_id: req.user.id };
+    if (!validateUserId(routeData.user_id)) return sendError(res, 'Invalid user ID format', 400);
+
     const route = await routeService.calculateRoute(routeData);
     return sendSuccess(res, route, 'Route calculated successfully');
   } catch (error) {
-    if (error.message.includes('not found')) {
-      return sendNotFound(res, error.message);
-    }
-    return sendError(res, error.message, 500);
+    const isNotFound = error.message.includes('not found');
+    return isNotFound ? sendNotFound(res, error.message) : sendError(res, error.message, 500);
   }
 };
 
-/**
- * Get route details
- * GET /routes/:route_id
- */
 export const getRouteDetails = async (req, res) => {
   try {
-    const { route_id } = req.params;
-    const { walkingSpeed } = req.query;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
-    const route = await routeService.getRouteDetails(route_id, walkingSpeed);
-    if (!route) {
-      return sendNotFound(res, 'Route not found');
-    }
-    return sendSuccess(res, route, 'Route details retrieved successfully');
+    const access = await checkRouteAccess(req, res, req.params.route_id);
+    if (access.error) return access.code === 404 ? sendNotFound(res, access.error) : sendError(res, access.error, access.code);
+
+    const route = await routeService.getRouteDetails(req.params.route_id, req.query.walkingSpeed);
+    return route ? sendSuccess(res, route, 'Route details retrieved successfully') : sendNotFound(res, 'Route not found');
   } catch (error) {
     return sendError(res, error.message, 500);
   }
 };
 
-/**
- * Update route stops
- * PUT /routes/:route_id
- */
 export const updateRouteStops = async (req, res) => {
   try {
-    const { route_id } = req.params;
-    const updateData = req.body;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
-    const result = await routeService.updateRouteStops(route_id, updateData);
-    if (!result) {
-      return sendNotFound(res, 'Route not found');
-    }
-    return sendSuccess(res, result, 'Route updated successfully');
+    const access = await checkRouteAccess(req, res, req.params.route_id);
+    if (access.error) return access.code === 404 ? sendNotFound(res, access.error) : sendError(res, access.error, access.code);
+
+    const result = await routeService.updateRouteStops(req.params.route_id, req.body);
+    return result ? sendSuccess(res, result, 'Route updated successfully') : sendNotFound(res, 'Route not found');
   } catch (error) {
     return sendError(res, error.message, 500);
   }

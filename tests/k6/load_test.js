@@ -3,22 +3,22 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 20 }, // Ανέβασμα σε 20 χρήστες
-    { duration: '1m', target: 20 },  // Σταθερά 20 χρήστες
-    { duration: '30s', target: 0 },  // Κατέβασμα
+    { duration: '30s', target: 20 }, // Σταδιακή άνοδος σε 20 χρήστες
+    { duration: '1m', target: 20 },  // Σταθερή παραμονή
+    { duration: '30s', target: 0 },  // Σταδιακή κάθοδος
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'], // 95% των requests κάτω από 500ms
-    http_req_failed: ['rate<0.01'],   // Σφάλματα κάτω από 1%
+    'http_req_duration': ['p(95)<500'], // Το 95% των αιτημάτων κάτω από 500ms
+    'http_req_failed': ['rate<0.01'],   // Σφάλματα λιγότερα από 1%
   },
 };
 
 export default function () {
-  // Test Route A
+  // Test Route A: Health Check
   let res1 = http.get('http://localhost:3000/v1/health');
   check(res1, { 'status is 200': (r) => r.status === 200 });
 
-  // Test Route B
+  // Test Route B: Destinations (Public Route)
   let res2 = http.get('http://localhost:3000/v1/destinations');
   check(res2, { 'status is 200': (r) => r.status === 200 });
 
