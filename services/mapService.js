@@ -2,6 +2,7 @@ import Map from '../models/Map.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockMaps } from '../data/mockData.js';
 import { generateUniqueId } from '../utils/helpers.js';
+import { toNumber, now } from '../utils/helpers.js';
 
 /**
  * Map Service
@@ -15,10 +16,28 @@ import { generateUniqueId } from '../utils/helpers.js';
  */
 export const getFullMapById = async (mapId) => {
   if (isMockDataMode()) {
-    return mockMaps.find(m => m.mapId === Number(mapId)) || null;
+    return mockMaps.find(m => m.mapId === toNumber(mapId)) || null;
   }
   
-  return await Map.findOne({ mapId: Number(mapId) });
+  const map = await Map.findOne({ mapId: toNumber(mapId) });
+  if (!map) return null;
+  // Normalize MongoDB Map document to match mock data shape used by downloads
+  const obj = map.toObject();
+  return {
+    mapId: obj.mapId,
+    name: obj.title,
+    title: obj.title,
+    mapData: obj.mapData,
+    mapUrl: obj.mapUrl,
+    imageUrl: obj.mapUrl,
+    format: obj.format,
+    zoom: obj.zoom,
+    rotation: obj.rotation,
+    floor: obj.floor,
+    isOfflineAvailable: obj.isOfflineAvailable,
+    createdAt: obj.createdAt,
+    updatedAt: obj.updatedAt
+  };
 };
 
 /**
@@ -29,7 +48,7 @@ export const getFullMapById = async (mapId) => {
  */
 export const getMapById = async (mapId, options = {}) => {
   if (isMockDataMode()) {
-    const map = mockMaps.find(m => m.mapId === Number(mapId));
+    const map = mockMaps.find(m => m.mapId === toNumber(mapId));
     
     if (!map) return null;
     
@@ -39,12 +58,12 @@ export const getMapById = async (mapId, options = {}) => {
       map_url: map.mapUrl
     };
     
-    if (options.zoom !== undefined) {
-      response.zoom = Number(options.zoom);
+      if (options.zoom !== undefined) {
+        response.zoom = toNumber(options.zoom);
     }
     
-    if (options.rotation !== undefined) {
-      response.rotation = Number(options.rotation);
+      if (options.rotation !== undefined) {
+        response.rotation = toNumber(options.rotation);
     }
     
     if (options.mode === 'offline') {
@@ -54,7 +73,7 @@ export const getMapById = async (mapId, options = {}) => {
     return response;
   }
   
-  const map = await Map.findOne({ mapId: Number(mapId) });
+  const map = await Map.findOne({ mapId: toNumber(mapId) });
   
   if (!map) return null;
   
@@ -65,11 +84,11 @@ export const getMapById = async (mapId, options = {}) => {
   };
   
   if (options.zoom !== undefined) {
-    response.zoom = Number(options.zoom);
+    response.zoom = toNumber(options.zoom);
   }
   
   if (options.rotation !== undefined) {
-    response.rotation = Number(options.rotation);
+    response.rotation = toNumber(options.rotation);
   }
   
   if (options.mode === 'offline') {
@@ -95,8 +114,8 @@ export const uploadMap = async (mapData) => {
       zoom: 1,
       rotation: 0,
       isOfflineAvailable: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now(),
+      updatedAt: now()
     };
     
     mockMaps.push(newMap);
@@ -114,7 +133,7 @@ export const uploadMap = async (mapData) => {
     isOfflineAvailable: true
   });
   
-  const saved = await map.save();
+    const saved = await map.save();
   return { map_id: saved.mapId };
 };
 
@@ -139,14 +158,14 @@ export const getAllMaps = async () => {
  */
 export const deleteMap = async (mapId) => {
   if (isMockDataMode()) {
-    const index = mockMaps.findIndex(m => m.mapId === mapId);
+    const index = mockMaps.findIndex(m => m.mapId === toNumber(mapId));
     if (index === -1) return false;
     
     mockMaps.splice(index, 1);
     return true;
   }
   
-  const result = await Map.deleteOne({ mapId });
+  const result = await Map.deleteOne({ mapId: toNumber(mapId) });
   return result.deletedCount > 0;
 };
 
