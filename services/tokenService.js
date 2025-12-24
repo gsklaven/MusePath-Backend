@@ -42,6 +42,23 @@ export const isTokenRevoked = (token) => {
 export { tokenBlacklist };
 
 /**
+ * Helper to extract token from request for logout
+ * @param {Object} req 
+ * @returns {string|null}
+ */
+const getTokenFromRequest = (req) => {
+  if (!req) return null;
+  if (req.cookies && req.cookies.token) {
+    return req.cookies.token;
+  }
+  const authHeader = req.headers?.authorization || req.headers?.Authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+  return null;
+};
+
+/**
  * Logout helper: revoke token and optionally clear cookie via response
  * @param {Object} options
  * @param {string} [options.token] - JWT token string (if omitted, will try to read from req)
@@ -51,14 +68,9 @@ export { tokenBlacklist };
  */
 export const logoutUser = ({ token, req, res } = {}) => {
   try {
-    let t = token;
-    if (!t && req) {
-      const cookieToken = req.cookies?.token || null;
-      const authHeader = req.headers?.authorization || req.headers?.Authorization || null;
-      const headerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-      t = cookieToken || headerToken || null;
-    }
-    if (t) revokeToken(t);
+    const tokenToRevoke = token || getTokenFromRequest(req);
+    
+    if (tokenToRevoke) revokeToken(tokenToRevoke);
     if (res) try { res.clearCookie('token'); } catch (e) {}
     return true;
   } catch (err) { return false; }
