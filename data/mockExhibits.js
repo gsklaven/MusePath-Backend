@@ -1,9 +1,11 @@
 /**
  * Mock Exhibits Data
+ * Represents mock exhibit data, including metadata for filtering and display.
  */
 
 const BASE_DATE = new Date('2024-01-01');
 
+// Gallery Coordinates
 const GALLERY = {
   a: { lat: 40.7614, lng: -73.9776 },
   b: { lat: 40.7615, lng: -73.9775 },
@@ -12,8 +14,10 @@ const GALLERY = {
   e: { lat: 40.7618, lng: -73.9772 }
 };
 
+// Helper to generate audio guide paths
 const audioPath = (id) => `/audio/exhibits/${id}.mp3`;
 
+// Helper to generate feature list based on accessibility flags
 const buildFeatures = (wheelchair, braille) => {
   const features = ['Audio Guide Available'];
   if (wheelchair) features.unshift('Wheelchair Accessible');
@@ -21,6 +25,7 @@ const buildFeatures = (wheelchair, braille) => {
   return features;
 };
 
+// Factory function to create an exhibit entry
 const buildExhibit = (cfg) => {
   const { wheelchair = true, braille = false } = cfg.access || {};
   
@@ -50,6 +55,7 @@ const buildExhibit = (cfg) => {
   };
 };
 
+// Raw configuration data for exhibits
 const EXHIBITS = [
   {
     id: 1,
@@ -123,4 +129,8 @@ const EXHIBITS = [
   }
 ];
 
+/**
+ * Mock Exhibits Collection
+ * @type {Exhibit[]}
+ */
 export const mockExhibits = EXHIBITS.map(buildExhibit);
