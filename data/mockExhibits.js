@@ -31,58 +31,50 @@
  */
 
 /**
+ * Shared timestamp for data consistency.
+ */
+const CREATED_AT = new Date('2024-01-01');
+
+/**
+ * Factory function to create an exhibit entry.
+ * @param {Object} exhibit - The exhibit data.
+ * @returns {Exhibit}
+ */
+const createExhibit = (exhibit) => ({
+  ...exhibit,
+  createdAt: CREATED_AT,
+  updatedAt: CREATED_AT
+});
+
+/**
  * Mock Exhibits Collection
  * Represents mock exhibit data, including metadata for filtering and display.
  * @type {Exhibit[]}
  */
 export const mockExhibits = [
-  {
-    // Unique identifier for the exhibit.
+  createExhibit({
     exhibitId: 1,
-    // The name of the exhibit.
     name: 'The Starry Night',
-    // The title of the exhibit.
     title: 'The Starry Night',
-    // The artist of the exhibit.
     artist: 'Vincent van Gogh',
-    // The category of the exhibit.
     category: ['paintings', 'post-impressionism', 'modern art'],
-    // A short description of the exhibit.
     description: 'Vincent van Gogh\'s masterpiece depicting a swirling night sky over a French village. Created in June 1889, this iconic painting captures the view from his asylum room window.',
-    // Historical information about the exhibit.
     historicalInfo: 'Painted while Van Gogh was in the Saint-Paul-de-Mausole asylum in Saint-Rémy-de-Provence, France. The painting is one of the most recognized pieces in modern culture.',
-    // The location of the exhibit within the museum.
     location: 'Gallery A, Room 101',
-    // The geographical coordinates of the exhibit.
     coordinates: { lat: 40.7614, lng: -73.9776 },
-    // The status of the exhibit, e.g., 'open' or 'closed'.
     status: 'open',
-    // A flag indicating if the exhibit is available for visiting.
     visitingAvailability: true,
-    // A map of ratings given to the exhibit by users.
     ratings: new Map([[1, 5], [2, 5]]),
-    // The average rating of the exhibit.
     averageRating: 5,
-    // A flag indicating if the exhibit is wheelchair accessible.
     wheelchairAccessible: true,
-    // A flag indicating if the exhibit has braille support.
     brailleSupport: true,
-    // The path to the audio guide for the exhibit.
     audioGuide: '/audio/exhibits/1.mp3',
-    // The URL of the audio guide for the exhibit.
     audioGuideUrl: '/audio/exhibits/1.mp3',
-    // Keywords associated with the exhibit for searching.
     keywords: ['van gogh', 'starry', 'night', 'impressionism', 'oil painting'],
-    // A list of features available for the exhibit.
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
-    // The current crowd level at the exhibit.
-    crowdLevel: 'high',
-    // The date and time when the exhibit was created.
-    createdAt: new Date('2024-01-01'),
-    // The date and time when the exhibit was last updated.
-    updatedAt: new Date('2024-01-01')
-  },
-  {
+    crowdLevel: 'high'
+  }),
+  createExhibit({
     exhibitId: 2,
     name: 'Greek Amphora',
     title: 'Ancient Greek Amphora',
@@ -102,11 +94,9 @@ export const mockExhibits = [
     audioGuideUrl: '/audio/exhibits/2.mp3',
     keywords: ['greece', 'amphora', 'pottery', 'ancient', 'hercules'],
     features: ['Wheelchair Accessible', 'Audio Guide Available'],
-    crowdLevel: 'low',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
-  },
-  {
+    crowdLevel: 'low'
+  }),
+  createExhibit({
     exhibitId: 3,
     name: 'Renaissance Sculpture',
     title: 'David - Renaissance Masterpiece',
@@ -131,10 +121,8 @@ export const mockExhibits = [
     // - `keywords` and `category` are used for search and filtering
     // - `ratings` is a Map keyed by userId for quick updates in mock mode
     // - `audioGuideUrl` and `features` are used by frontend to enable UI elements
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
-  },
-  {
+  }),
+  createExhibit({
     exhibitId: 4,
     name: 'Egyptian Sarcophagus',
     title: 'Pharaoh\'s Sarcophagus',
@@ -154,11 +142,9 @@ export const mockExhibits = [
     audioGuideUrl: '/audio/exhibits/4.mp3',
     keywords: ['egypt', 'sarcophagus', 'pharaoh', 'hieroglyphics', 'ancient'],
     features: ['Wheelchair Accessible', 'Audio Guide Available'],
-    crowdLevel: 'medium',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
-  },
-  {
+    crowdLevel: 'medium'
+  }),
+  createExhibit({
     exhibitId: 5,
     name: 'Modern Abstract Art',
     title: 'Composition VIII',
@@ -178,8 +164,6 @@ export const mockExhibits = [
     audioGuideUrl: '/audio/exhibits/5.mp3',
     keywords: ['abstract', 'modern', 'geometric', 'kandinsky', 'composition'],
     features: ['Wheelchair Accessible', 'Audio Guide Available', 'Braille Support'],
-    crowdLevel: 'low',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
-  }
+    crowdLevel: 'low'
+  })
 ];
