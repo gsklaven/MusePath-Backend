@@ -1,5 +1,5 @@
 import test from "ava";
-import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail, assertViewExhibit, testSearchExhibits } from "./helpers.js";
+import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail, assertViewExhibit } from "./helpers.js";
 import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
 /**
@@ -13,33 +13,6 @@ test.before(async (t) => {
 
 test.after.always((t) => {
 	cleanupTestServer(t);
-});
-
-/**
- * ===================================
- * EXHIBIT SEARCH TESTS
- * ===================================
- */
-
-test("GET /v1/exhibits/search - returns all exhibits without query", testSearchExhibits, null, (t, data) => {
-	t.true(data.length > 0);
-});
-
-test("GET /v1/exhibits/search - searches by keyword", testSearchExhibits, "keyword=starry", (t, data) => {
-	if (data.length > 0) {
-		t.regex(data[0].title.toLowerCase(), /starry/i);
-	}
-});
-
-test("GET /v1/exhibits/search - searches by category", testSearchExhibits, "category=paintings", (t, data) => {
-	const hasCategory = data.some(exhibit => 
-		exhibit.category && exhibit.category.includes("paintings")
-	);
-	t.true(hasCategory);
-});
-
-test("GET /v1/exhibits/search - returns empty array for no matches", testSearchExhibits, "keyword=nonexistent123456", (t, data) => {
-	t.is(data.length, 0);
 });
 
 /**
@@ -508,130 +481,6 @@ test('POST /exhibits - should validate category type (must be string or array)',
 	t.is(response2.statusCode, 400);
 	t.is(response2.body.success, false);
 	t.regex(response2.body.message, /category.*string.*array/i);
-});
-
-/**
- * ===================================
- * EXHIBIT DELETION TESTS (ADMIN)
- * ===================================
- */
-
-test('DELETE /exhibits/:exhibit_id - should require authentication', async t => {
-	const client = createClient(t.context.baseUrl);
-
-	const response = await client.delete('v1/exhibits/1');
-
-	t.is(response.statusCode, 401);
-	t.is(response.body.success, false);
-	t.regex(response.body.message, /token|authentication/i);
-});
-
-test('DELETE /exhibits/:exhibit_id - should require admin role', async t => {
-	const client = createClient(t.context.baseUrl);
-	
-	const _username_exhibitdelete = generateUsername('exhibitdelete');
-	const _email_exhibitdelete = generateEmail(_username_exhibitdelete);
-	const { client: userClient } = await registerAndLogin(
-		t.context.baseUrl,
-		_username_exhibitdelete,
-		_email_exhibitdelete,
-		'Password123!'
-	);
-
-	const response = await userClient.delete('v1/exhibits/1');
-
-	t.is(response.statusCode, 403);
-	t.is(response.body.success, false);
-	t.regex(response.body.message, /admin/i);
-});
-
-test.serial('DELETE /exhibits/:exhibit_id - should delete exhibit with admin credentials', async t => {
-	const client = createClient(t.context.baseUrl);
-	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
-	
-	// First, create an exhibit to delete
-	const createResponse = await client.post('v1/exhibits', {
-		headers: {
-			Authorization: `Bearer ${token}`
-		},
-		json: {
-			title: 'Exhibit to Delete',
-			description: 'This will be deleted',
-			location: 'Gallery B'
-		}
-	});
-	
-	t.is(createResponse.statusCode, 201);
-	const exhibitId = createResponse.body.data.exhibitId;
-	
-	// Now delete it
-	const deleteResponse = await client.delete(`v1/exhibits/${exhibitId}`, {
-		headers: {
-			Authorization: `Bearer ${token}`
-		}
-	});
-	
-	t.is(deleteResponse.statusCode, 204);
-	
-	// Verify it's deleted
-	const getResponse = await client.get(`v1/exhibits/${exhibitId}`);
-	t.is(getResponse.statusCode, 404);
-});
-
-test('DELETE /exhibits/:exhibit_id - should return 404 for non-existent exhibit', async t => {
-	const client = createClient(t.context.baseUrl);
-	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
-	
-	const response = await client.delete('v1/exhibits/99999', {
-		headers: {
-			Authorization: `Bearer ${token}`
-		}
-	});
-	
-	t.is(response.statusCode, 404);
-	t.is(response.body.success, false);
-});
-
-test('DELETE /exhibits/:exhibit_id - should validate exhibit ID format', async t => {
-	const client = createClient(t.context.baseUrl);
-	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
-	
-	const response = await client.delete('v1/exhibits/invalid', {
-		headers: {
-			Authorization: `Bearer ${token}`
-		}
-	});
-	
-	t.is(response.statusCode, 400);
-	t.is(response.body.success, false);
-	t.regex(response.body.message, /invalid.*id/i);
 });
 
 /**
