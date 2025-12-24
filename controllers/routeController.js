@@ -86,7 +86,7 @@ export const updateRouteStops = withRouteOwnership(async (req, res, route_id) =>
  * Recalculate route
  * POST /routes/:route_id
  */
-export const recalculateRoute = withRouteOwnership(async (req, res, route_id) => {
+export const recalculateRoute = withRouteOwnership(async (_, res, route_id) => {
     const route = await routeService.recalculateRoute(route_id);
     if (!route) {
       return sendNotFound(res, 'Route not found');
@@ -98,7 +98,7 @@ export const recalculateRoute = withRouteOwnership(async (req, res, route_id) =>
  * Delete route
  * DELETE /routes/:route_id
  */
-export const deleteRoute = withRouteOwnership(async (req, res, route_id) => {
+export const deleteRoute = withRouteOwnership(async (_, res, route_id) => {
     const deleted = await routeService.deleteRoute(route_id);
     if (!deleted) {
       return sendNotFound(res, 'Route not found');
