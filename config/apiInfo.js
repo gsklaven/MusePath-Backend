@@ -1,4 +1,31 @@
 /**
+ * @typedef {Object} ApiEndpoints
+ * @property {string} authentication - Authentication endpoints.
+ * @property {string} health - Health check endpoint.
+ * @property {string} coordinates - User coordinates endpoints.
+ * @property {string} destinations - Destination endpoints.
+ * @property {string} exhibits - Exhibit endpoints.
+ * @property {string} maps - Map endpoints.
+ * @property {string} routes - Routing endpoints.
+ * @property {string} users - User management endpoints.
+ * @property {string} notifications - Notification endpoints.
+ * @property {string} sync - Offline synchronization endpoints.
+ * @property {string} downloads - Download endpoints.
+ */
+
+/**
+ * @typedef {Object} ApiInfoResponse
+ * @property {boolean} success - Indicates if the request was successful.
+ * @property {Object} data - The payload containing API details.
+ * @property {string} data.name - API name.
+ * @property {string} data.version - API version.
+ * @property {string} data.description - API description.
+ * @property {ApiEndpoints} data.endpoints - Dictionary of available endpoints.
+ * @property {string} message - Welcome message.
+ * @property {Object|null} error - Error object, if any.
+ */
+
+/**
  * API Information Configuration
  * Metadata returned by root endpoint (GET /).
  */
@@ -9,7 +36,7 @@ const API_DESCRIPTION = 'Interactive museum maps, exhibit details, and personali
 
 /**
  * Defines available API endpoints.
- * @returns {Object} Map of endpoint names to paths
+ * @returns {ApiEndpoints} Map of endpoint names to paths
  */
 const getEndpoints = () => ({
   authentication: '/v1/auth',
@@ -27,7 +54,7 @@ const getEndpoints = () => ({
 
 /**
  * Creates API info response object.
- * @returns {Object} Complete API metadata
+ * @returns {ApiInfoResponse} Complete API metadata
  */
 const createApiInfo = () => ({
   success: true,
@@ -41,4 +68,8 @@ const createApiInfo = () => ({
   error: null
 });
 
+/**
+ * The API information object.
+ * @type {ApiInfoResponse}
+ */
 export const API_INFO = createApiInfo();
