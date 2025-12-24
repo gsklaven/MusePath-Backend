@@ -3,7 +3,14 @@ import { setupTestServer, cleanupTestServer, createClient, generateUsername, gen
 
 /**
  * Authentication Endpoint Tests
- * Tests for /v1/auth endpoints: register, login, logout
+ * 
+ * This test suite covers the authentication endpoints of the API, including:
+ * - User registration (/v1/auth/register)
+ * - User login (/v1/auth/login)
+ * - User logout (/v1/auth/logout)
+ * 
+ * It verifies successful operations as well as various error conditions
+ * such as validation failures, duplicate users, and invalid credentials.
  */
 
 test.before(async (t) => {
@@ -20,6 +27,8 @@ test.after.always((t) => {
  * ===================================
  */
 
+// Test that a user can successfully register with valid data.
+// Verifies that the response contains the expected user data and role.
 test.serial("POST /v1/auth/register - successful registration with valid data", async (t) => {
 	const uniqueUsername = generateUsername();
 	const uniqueEmail = generateEmail(uniqueUsername);
@@ -36,6 +45,7 @@ test.serial("POST /v1/auth/register - successful registration with valid data", 
 	t.is(body.data.personalizationAvailable, false);
 });
 
+// Test that registration fails when the username is missing.
 test.serial("POST /v1/auth/register - fails with missing username", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		email: "test@example.com",
@@ -43,6 +53,7 @@ test.serial("POST /v1/auth/register - fails with missing username", async (t) =>
 	}, 400, /username.*required/i);
 });
 
+// Test that registration fails when the email is missing.
 test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -50,6 +61,7 @@ test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
 	}, 400, /email.*required/i);
 });
 
+// Test that registration fails when the password is missing.
 test.serial("POST /v1/auth/register - fails with missing password", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -57,6 +69,7 @@ test.serial("POST /v1/auth/register - fails with missing password", async (t) =>
 	}, 400, /password.*required/i);
 });
 
+// Test that registration fails with an invalid email format.
 test.serial("POST /v1/auth/register - fails with invalid email format", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -65,6 +78,7 @@ test.serial("POST /v1/auth/register - fails with invalid email format", async (t
 	}, 400, /invalid email|email must be a string/i);
 });
 
+// Test that registration fails with a weak password (no uppercase letters).
 test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -73,6 +87,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", 
 	}, 400, /uppercase/i);
 });
 
+// Test that registration fails with a weak password (no lowercase letters).
 test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -81,6 +96,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", 
 	}, 400, /lowercase/i);
 });
 
+// Test that registration fails with a weak password (no digits).
 test.serial("POST /v1/auth/register - fails with weak password (no digit)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -89,6 +105,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no digit)", asyn
 	}, 400, /digit/i);
 });
 
+// Test that registration fails with a weak password (no special characters).
 test.serial("POST /v1/auth/register - fails with weak password (no special character)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -97,6 +114,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no special chara
 	}, 400, /special character/i);
 });
 
+// Test that registration fails with a password that is too short.
 test.serial("POST /v1/auth/register - fails with short password", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -105,6 +123,7 @@ test.serial("POST /v1/auth/register - fails with short password", async (t) => {
 	}, 400, /at least 8 characters/i);
 });
 
+// Test that registration fails with an invalid username format (contains special characters).
 test.serial("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "test@user!",
@@ -113,6 +132,7 @@ test.serial("POST /v1/auth/register - fails with invalid username format (specia
 	}, 400, /username can only contain|username must be a string|username must be 3-30 characters/i);
 });
 
+// Test that registration fails when the username is too short.
 test("POST /v1/auth/register - fails with username too short", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "ab",
@@ -121,6 +141,7 @@ test("POST /v1/auth/register - fails with username too short", async (t) => {
 	}, 400, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
+// Test that registration fails when the username is too long.
 test("POST /v1/auth/register - fails with username too long", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "a".repeat(31),
@@ -129,6 +150,7 @@ test("POST /v1/auth/register - fails with username too long", async (t) => {
 	}, 400, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
+// Test that registration fails with non-string input types to prevent NoSQL injection.
 test("POST /v1/auth/register - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: { "$ne": null },
@@ -137,6 +159,7 @@ test("POST /v1/auth/register - fails with non-string input types (NoSQL injectio
 	}, 400, /username must be a string|invalid input types/i);
 });
 
+// Test that registration fails when the username is already taken.
 test.serial("POST /v1/auth/register - fails with duplicate username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("duplicate");
@@ -156,6 +179,7 @@ test.serial("POST /v1/auth/register - fails with duplicate username", async (t) 
 	}, 409, /already exists/i);
 });
 
+// Test that registration fails when the email is already taken.
 test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const email = generateEmail("duplicate");
@@ -181,6 +205,7 @@ test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => 
  * ===================================
  */
 
+// Test that a user can successfully log in with valid credentials.
 test.serial("POST /v1/auth/login - successful login with valid credentials", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("loginuser");
@@ -202,18 +227,21 @@ test.serial("POST /v1/auth/login - successful login with valid credentials", asy
 	t.falsy(body.data.password);
 });
 
+// Test that login fails when the username is missing.
 test("POST /v1/auth/login - fails with missing username", async (t) => {
 	await assertAuthFail(t, "v1/auth/login", {
 		password: "Test123!@#"
 	}, 400, /username.*required/i);
 });
 
+// Test that login fails when the password is missing.
 test("POST /v1/auth/login - fails with missing password", async (t) => {
 	await assertAuthFail(t, "v1/auth/login", {
 		username: "testuser"
 	}, 400, /password.*required/i);
 });
 
+// Test that login fails with a non-existent username.
 test("POST /v1/auth/login - fails with non-existent username", async (t) => {
 	await assertAuthFail(t, "v1/auth/login", {
 		username: "nonexistentuser123456",
@@ -221,6 +249,7 @@ test("POST /v1/auth/login - fails with non-existent username", async (t) => {
 	}, 401, /invalid credentials/i);
 });
 
+// Test that login fails with the wrong password.
 test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 	const username = generateUsername("wrongpw");
 	const client = createClient(t.context.baseUrl);
@@ -239,6 +268,7 @@ test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 	}, 401, /invalid credentials/i);
 });
 
+// Test that login fails with an invalid username format.
 test("POST /v1/auth/login - fails with invalid username format", async (t) => {
 	await assertAuthFail(t, "v1/auth/login", {
 		username: "invalid@user",
@@ -246,6 +276,7 @@ test("POST /v1/auth/login - fails with invalid username format", async (t) => {
 	}, 400, /username can only contain|invalid username format|username must be a string|username must be 3-30 characters/i);
 });
 
+// Test that login fails with non-string input types to prevent NoSQL injection.
 test("POST /v1/auth/login - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	await assertAuthFail(t, "v1/auth/login", {
 		username: { "$ne": null },
@@ -259,6 +290,7 @@ test("POST /v1/auth/login - fails with non-string input types (NoSQL injection p
  * ===================================
  */
 
+// Test that a user can successfully log out.
 test.serial("POST /v1/auth/logout - successful logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("logoutuser");
@@ -285,6 +317,7 @@ test.serial("POST /v1/auth/logout - successful logout", async (t) => {
 	t.is(body.message, "Logout successful");
 });
 
+// Test that logout works even without being logged in (idempotent).
 test("POST /v1/auth/logout - works even without being logged in", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -301,6 +334,7 @@ test("POST /v1/auth/logout - works even without being logged in", async (t) => {
  * ===================================
  */
 
+// Test the full authentication flow: register, login, and logout.
 test.serial("Full authentication flow: register -> login -> logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("fullflow");
@@ -324,6 +358,7 @@ test.serial("Full authentication flow: register -> login -> logout", async (t) =
 	t.is(logoutResponse.body.message, "Logout successful");
 });
 
+// Test that a user can register a new account while already logged in.
 test.serial("Can register while already logged in", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username1 = generateUsername("user1");
@@ -356,6 +391,7 @@ test.serial("Can register while already logged in", async (t) => {
 	t.is(body.data.username, username2);
 });
 
+// Test that a user can log in again while already logged in, which should refresh the session.
 test.serial("Can login again while already logged in (refreshes session)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("doublelogin");
@@ -385,6 +421,7 @@ test.serial("Can login again while already logged in (refreshes session)", async
 	t.is(secondLogin.body.data.username, username);
 });
 
+// Test that the session persists across multiple requests.
 test.serial("Session persists across multiple requests", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("session");
@@ -418,6 +455,7 @@ test.serial("Session persists across multiple requests", async (t) => {
 	t.is(firstRequest.statusCode, secondRequest.statusCode);
 });
 
+// Test that logging out invalidates the session.
 test.serial("Logout invalidates session", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("logout");
@@ -451,6 +489,7 @@ test.serial("Logout invalidates session", async (t) => {
 	t.is(afterLogout.statusCode, 401);
 });
 
+// Test that a user can log in again after logging out.
 test.serial("Can login again after logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("relogin");
@@ -488,6 +527,7 @@ test.serial("Can login again after logout", async (t) => {
  * ===================================
  */
 
+// Test that registration fails when the password is null.
 test("POST /v1/auth/register - fails with null password", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -496,6 +536,7 @@ test("POST /v1/auth/register - fails with null password", async (t) => {
 	}, 400);
 });
 
+// Test that registration fails when the password is a number.
 test("POST /v1/auth/register - fails with number as password", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -504,6 +545,7 @@ test("POST /v1/auth/register - fails with number as password", async (t) => {
 	}, 400, /Password must be a string/);
 });
 
+// Test that registration fails when the password contains invalid unicode characters.
 test("POST /v1/auth/register - fails with password containing invalid characters (unicode)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -512,6 +554,7 @@ test("POST /v1/auth/register - fails with password containing invalid characters
 	}, 400, /invalid characters/i);
 });
 
+// Test that registration fails when the password contains an emoji.
 test("POST /v1/auth/register - fails with password containing emoji", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "testuser",
@@ -520,6 +563,7 @@ test("POST /v1/auth/register - fails with password containing emoji", async (t) 
 	}, 400, /invalid characters/i);
 });
 
+// Test that registration fails when the username is too short (2 chars).
 test("POST /v1/auth/register - fails with username too short (2 chars)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "ab",
@@ -528,6 +572,7 @@ test("POST /v1/auth/register - fails with username too short (2 chars)", async (
 	}, 400, /username/i);
 });
 
+// Test that registration fails when the username is too long (31+ chars).
 test("POST /v1/auth/register - fails with username too long (31+ chars)", async (t) => {
 	await assertAuthFail(t, "v1/auth/register", {
 		username: "a".repeat(31),
@@ -536,6 +581,7 @@ test("POST /v1/auth/register - fails with username too long (31+ chars)", async 
 	}, 400, /username/i);
 });
 
+// Test that a revoked token cannot be used to access protected routes.
 test.serial("Logout with valid token, then try to use revoked token", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("revoked");
