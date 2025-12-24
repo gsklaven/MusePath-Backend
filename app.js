@@ -18,14 +18,20 @@ import { API_INFO } from './config/apiInfo.js';
 
 const app = express();
 
-// Security layer
+/**
+ * Applies security middleware to the Express application.
+ * @param {import('express').Application} app - The Express application instance.
+ */
 const applySecurity = (app) => {
   app.use(helmet());
   app.use(cors(corsOptions));
   app.use(rateLimit(rateLimitOptions));
 };
 
-// Request processing layer
+/**
+ * Applies request processing middleware (parsing, logging, sanitization).
+ * @param {import('express').Application} app - The Express application instance.
+ */
 const applyRequestProcessing = (app) => {
   app.use(compression());
   app.use(express.json(jsonParserOptions));
@@ -35,13 +41,19 @@ const applyRequestProcessing = (app) => {
   app.use(mongoSanitize());
 };
 
-// Routes layer
+/**
+ * Registers API routes and the root endpoint.
+ * @param {import('express').Application} app - The Express application instance.
+ */
 const applyRoutes = (app) => {
   app.use('/v1', routes);
   app.get('/', (_, res) => res.json(API_INFO));
 };
 
-// Error handling layer
+/**
+ * Applies error handling middleware.
+ * @param {import('express').Application} app - The Express application instance.
+ */
 const applyErrorHandling = (app) => {
   app.use(notFoundHandler);
   app.use(errorHandler);

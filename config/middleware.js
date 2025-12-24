@@ -29,13 +29,19 @@ const createRateLimitMessage = () => ({
   error: 'Rate limit exceeded'
 });
 
-// CORS configuration
+/**
+ * CORS configuration options.
+ * @type {import('cors').CorsOptions}
+ */
 export const corsOptions = Object.freeze({
   origin: getAllowedOrigins(),
   credentials: true
 });
 
-// Rate limiting configuration
+/**
+ * Rate limiting configuration options.
+ * @type {import('express-rate-limit').Options}
+ */
 export const rateLimitOptions = Object.freeze({
   windowMs: RATE_LIMIT.WINDOW_MS,
   max: RATE_LIMIT.MAX_REQUESTS,
@@ -44,11 +50,18 @@ export const rateLimitOptions = Object.freeze({
   legacyHeaders: false,
 });
 
-// Body parser configurations
+/**
+ * JSON body parser options.
+ * @type {import('body-parser').OptionsJson}
+ */
 export const jsonParserOptions = Object.freeze({ 
   limit: '10mb' 
 });
 
+/**
+ * URL-encoded body parser options.
+ * @type {import('body-parser').OptionsUrlencoded}
+ */
 export const urlEncodedOptions = Object.freeze({ 
   extended: true, 
   limit: '10mb' 
