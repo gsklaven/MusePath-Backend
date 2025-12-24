@@ -1,8 +1,7 @@
 import Map from '../models/Map.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockMaps } from '../data/mockData.js';
-import { generateUniqueId } from '../utils/helpers.js';
-import { toNumber, now } from '../utils/helpers.js';
+import { generateUniqueId, toNumber, now } from '../utils/helpers.js';
 
 /**
  * Map Service

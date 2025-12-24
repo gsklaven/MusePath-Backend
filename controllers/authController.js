@@ -8,10 +8,23 @@ import { validateEmailFormat, validateUsernameFormat, validatePasswordStrength }
  */
 
 /**
- * Register a new user
- * POST /auth/register
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Helper to generate standard cookie options.
+ * @returns {import('express').CookieOptions}
+ */
+const getCookieOptions = () => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: Number(process.env.JWT_COOKIE_MAX_AGE_MS) || 604800000 // 7 days
+});
+
+/**
+ * Register a new user.
+ * 
+ * @route POST /auth/register
+ * @param {import('express').Request} req - Express request object containing username, email, and password in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the created user or an error.
  */
 export const Register = async (req, res) => {
     const { username, email, password } = req.body;
@@ -22,23 +35,16 @@ export const Register = async (req, res) => {
             return sendError(res, 'Username, email, and password are required', 400);
         }
 
-
-        // Validate username format
-        const usernameCheck = validateUsernameFormat(username);
-        if (!usernameCheck.isValid) {
-            return sendError(res, usernameCheck.message, 400);
-        }
-
-        // Validate email format
-        const emailCheck = validateEmailFormat(email);
-        if (!emailCheck.isValid) {
-            return sendError(res, emailCheck.message, 400);
-        }
-
-        // Validate password strength (handles type checking internally)
-        const pwCheck = validatePasswordStrength(password);
-        if (!pwCheck.isValid) {
-            return sendError(res, pwCheck.message, 400);
+        // Group validations to reduce complexity
+        const validations = [
+            validateUsernameFormat(username),
+            validateEmailFormat(email),
+            validatePasswordStrength(password)
+        ];
+        
+        const failedValidation = validations.find(v => !v.isValid);
+        if (failedValidation) {
+            return sendError(res, failedValidation.message, 400);
         }
 
         // Register user via service
@@ -52,10 +58,12 @@ export const Register = async (req, res) => {
 };
 
 /**
- * Login user
- * POST /auth/login
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Login user.
+ * 
+ * @route POST /auth/login
+ * @param {import('express').Request} req - Express request object containing username and password in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response with user info and token, and sets a httpOnly cookie.
  */
 export const Login = async (req, res) => {
     const { username, password } = req.body;
@@ -74,30 +82,26 @@ export const Login = async (req, res) => {
         }
 
         // Login user via service (returns { user, token })
-        const result = await authService.loginUser({ username, password });
-        const { user, token } = result;
+        const { user, token } = await authService.loginUser({ username, password });
 
         // Set token as httpOnly cookie
-        const cookieMaxAge = Number(process.env.JWT_COOKIE_MAX_AGE_MS) || 1000 * 60 * 60 * 24 * 7; // default 7 days
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-domain in production
-            maxAge: cookieMaxAge
-        });
+        res.cookie('token', token, getCookieOptions());
 
         // Return user info AND token (for Authorization header support)
-        return sendSuccess(res, { ...user, token }, 'Login successful', 200);       } catch (err) {
+        return sendSuccess(res, { ...user, token }, 'Login successful', 200);
+    } catch (err) {
         console.error('Login error:', err);
         return sendError(res, err.message || 'Failed to login', err.status || 401);
     }
 };
 
 /**
- * Logout user
- * POST /auth/logout
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Logout user.
+ * 
+ * @route POST /auth/logout
+ * @param {import('express').Request} req - Express request object.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response confirming logout.
  */
 export const Logout = async (req, res) => {
     // Delegate logout actions to authService (revoke token, clear cookie)

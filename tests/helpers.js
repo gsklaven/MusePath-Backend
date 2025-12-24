@@ -3,8 +3,7 @@ import got from "got";
 import { CookieJar } from "tough-cookie";
 import dotenv from "dotenv";
 import app from "../app.js";
-import { connectDatabase } from "../config/database.js";
-import { isMockDataMode } from '../config/database.js';
+import { connectDatabase, isMockDataMode } from "../config/database.js";
 import { mockExhibits } from '../data/mockData.js';
 
 // Load environment variables
@@ -146,3 +145,33 @@ export const generateEmail = (prefix = "testuser") => {
 		const safeLocal = local.length > 30 ? local.slice(0, 30) : local;
 		return `${safeLocal}@example.com`;
 	};
+
+ export const testForbiddenUserAction = async (t, method, endpoint, body) => {
+	// Add delay to prevent timestamp collision
+	await new Promise(resolve => setTimeout(resolve, 5));
+	const username1 = generateUsername("user1");
+	const email1 = generateEmail("user1");
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		username1,
+		email1,
+		"Password123!"
+	);
+	
+	const username2 = generateUsername("user2");
+	const email2 = generateEmail("user2");
+	const { userId: userId2 } = await registerAndLogin(
+		t.context.baseUrl,
+		username2,
+		email2,
+		"Password123!"
+	);
+
+	const url = endpoint.replace(":user_id", userId2);
+	const options = body ? { json: body } : undefined;
+
+	const response = await client1[method](url, options);
+
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+};

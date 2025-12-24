@@ -1,8 +1,8 @@
 import Exhibit from '../models/Exhibit.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockExhibits } from '../data/mockData.js';
-import { sanitizeSearchTerm, calculateAverageRating } from '../utils/helpers.js';
-import { toNumber, now } from '../utils/helpers.js';
+import { calculateAverageRating, toNumber, now } from '../utils/helpers.js';
+export { searchExhibits } from './exhibitSearchService.js';
 
 /**
  * Exhibit Service
@@ -43,57 +43,6 @@ export const getExhibitById = async (exhibitId, mode = 'online') => {
   // Ensure artist field exists for compatibility with mock data
   if (!obj.artist) obj.artist = obj.name || null;
   return obj;
-};
-
-/**
- * Search exhibits
- * @param {string} term - Search term
- * @param {string} category - Category filter
- * @param {string} mode - Access mode
- * @returns {Promise<Array>} Array of exhibits
- */
-export const searchExhibits = async (term, category, mode = 'online') => {
-  const searchTerm = term ? sanitizeSearchTerm(term) : null;
-  
-  if (isMockDataMode()) {
-    let results = mockExhibits;
-    
-    if (searchTerm) {
-      results = results.filter(exhibit => 
-        exhibit.title.toLowerCase().includes(searchTerm) ||
-        exhibit.description.toLowerCase().includes(searchTerm) ||
-        exhibit.keywords.some(k => k.toLowerCase().includes(searchTerm)) ||
-        exhibit.category.some(c => c.toLowerCase().includes(searchTerm))
-      );
-    }
-    
-    if (category) {
-      const cat = category.toLowerCase();
-      results = results.filter(exhibit => 
-        exhibit.category.some(c => c.toLowerCase().includes(cat))
-      );
-    }
-    
-    // Return full exhibit objects, not just id and title
-    return results;
-  }
-  
-  const query = {};
-  
-  if (searchTerm) {
-    query.$or = [
-      { title: { $regex: searchTerm, $options: 'i' } },
-      { description: { $regex: searchTerm, $options: 'i' } },
-      { keywords: { $in: [new RegExp(searchTerm, 'i')] } }
-    ];
-  }
-  
-  if (category) {
-    query.category = { $in: [new RegExp(category, 'i')] };
-  }
-  
-  const exhibits = await Exhibit.find(query);
-  return exhibits;
 };
 
 /**
@@ -241,39 +190,48 @@ export const createExhibit = async (exhibitData) => {
     const saved = await exhibit.save();
 
     // Mirror to mockExhibits for tests that import mock data directly
-    try {
-      const newMock = {
-        exhibitId: saved.exhibitId,
-        name: saved.name,
-        title: saved.title,
-        artist: saved.artist || null,
-        category: saved.category || [],
-        description: saved.description,
-        historicalInfo: saved.historicalInfo || null,
-        location: saved.location,
-        coordinates: saved.coordinates || null,
-        status: saved.status || 'open',
-        visitingAvailability: saved.visitingAvailability ?? true,
-        ratings: new Map(),
-        averageRating: saved.averageRating || 0,
-        wheelchairAccessible: saved.wheelchairAccessible ?? false,
-        brailleSupport: saved.brailleSupport ?? false,
-        audioGuide: saved.audioGuideUrl || null,
-        audioGuideUrl: saved.audioGuideUrl || null,
-        keywords: saved.keywords || [],
-        features: saved.features || [],
-        crowdLevel: saved.crowdLevel || 'low',
-        createdAt: saved.createdAt || now(),
-        updatedAt: saved.updatedAt || now()
-      };
-      mockExhibits.push(newMock);
-    } catch (e) {
-      // ignore mock sync errors
-    }
+    mirrorToMockExhibits(saved);
 
     return saved;
+};
 
-  // Mirror to mockExhibits for tests that import mock data directly
+/**
+ * Delete an exhibit
+ * @param {number} exhibitId - Exhibit ID
+ * @returns {Promise<boolean>} True if deleted, false if not found
+ */
+export const deleteExhibit = async (exhibitId) => {
+  if (isMockDataMode()) {
+    const index = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
+    
+    if (index === -1) return false;
+    
+    mockExhibits.splice(index, 1);
+    return true;
+  }
+  
+  const result = await Exhibit.deleteOne({ exhibitId: Number(exhibitId) });
+  // Mirror deletion in mockExhibits for tests
+  const idx = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
+  if (idx !== -1) mockExhibits.splice(idx, 1);
+  return result.deletedCount > 0;
+};
+
+/**
+ * Generate next exhibit ID (for database mode)
+ * @returns {Promise<number>} Next ID
+ */
+const generateNextExhibitId = async () => {
+  // NOTE: Lines 179-181 - MongoDB only, not executed in mock data mode tests
+  const lastExhibit = await Exhibit.findOne().sort({ exhibitId: -1 });
+  return lastExhibit ? lastExhibit.exhibitId + 1 : 1;
+};
+
+/**
+ * Helper to mirror saved exhibit to mock data
+ * @param {Object} saved - Saved exhibit document
+ */
+const mirrorToMockExhibits = (saved) => {
   try {
     const newMock = {
       exhibitId: saved.exhibitId,
@@ -296,47 +254,11 @@ export const createExhibit = async (exhibitData) => {
       keywords: saved.keywords || [],
       features: saved.features || [],
       crowdLevel: saved.crowdLevel || 'low',
-      createdAt: saved.createdAt || new Date(),
-      updatedAt: saved.updatedAt || new Date()
+      createdAt: saved.createdAt || now(),
+      updatedAt: saved.updatedAt || now()
     };
     mockExhibits.push(newMock);
   } catch (e) {
     // ignore mock sync errors
   }
-
-  return saved;
-};
-
-/**
- * Delete an exhibit
- * @param {number} exhibitId - Exhibit ID
- * @returns {Promise<boolean>} True if deleted, false if not found
- */
-export const deleteExhibit = async (exhibitId) => {
-  if (isMockDataMode()) {
-    const index = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
-    
-    if (index === -1) return false;
-    
-    mockExhibits.splice(index, 1);
-    return true;
-  }
-  
-  const result = await Exhibit.deleteOne({ exhibitId: Number(exhibitId) });
-  // Mirror deletion in mockExhibits for tests
-  try {
-    const idx = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
-    if (idx !== -1) mockExhibits.splice(idx, 1);
-  } catch (e) {}
-  return result.deletedCount > 0;
-};
-
-/**
- * Generate next exhibit ID (for database mode)
- * @returns {Promise<number>} Next ID
- */
-const generateNextExhibitId = async () => {
-  // NOTE: Lines 179-181 - MongoDB only, not executed in mock data mode tests
-  const lastExhibit = await Exhibit.findOne().sort({ exhibitId: -1 });
-  return lastExhibit ? lastExhibit.exhibitId + 1 : 1;
 };
