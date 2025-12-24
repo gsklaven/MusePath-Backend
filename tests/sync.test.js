@@ -22,6 +22,7 @@ test.after.always(async t => {
 });
 
 // Run tests serially to avoid timestamp collision
+// Test case: Ensure synchronization endpoints are protected
 test.serial('POST /sync - should require authentication', async t => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -38,6 +39,7 @@ test.serial('POST /sync - should require authentication', async t => {
 	t.is(response.statusCode, 401);
 });
 
+// Test case: Verify synchronization of a single rating operation
 test.serial('POST /sync - should synchronize single rating operation', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -65,6 +67,7 @@ test.serial('POST /sync - should synchronize single rating operation', async t =
 	t.is(response.body.data.details.failed.length, 0);
 });
 
+// Test case: Verify synchronization of adding a favorite exhibit
 test.serial('POST /sync - should synchronize add_favorite operation', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -88,6 +91,7 @@ test.serial('POST /sync - should synchronize add_favorite operation', async t =>
 	t.is(response.body.data.failed, 0);
 });
 
+// Test case: Verify synchronization of removing a favorite exhibit
 test.serial('POST /sync - should synchronize remove_favorite operation', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -117,6 +121,7 @@ test.serial('POST /sync - should synchronize remove_favorite operation', async t
 	t.is(response.body.data.failed, 0);
 });
 
+// Test case: Verify synchronization of multiple mixed operations in one batch
 test.serial('POST /sync - should synchronize multiple operations', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -151,6 +156,7 @@ test.serial('POST /sync - should synchronize multiple operations', async t => {
 	t.is(response.body.data.details.successful.length, 3);
 });
 
+// Test case: Verify handling of an empty operations array
 test.serial('POST /sync - should handle empty operations array', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -170,6 +176,7 @@ test.serial('POST /sync - should handle empty operations array', async t => {
 	t.is(response.body.message, 'No operations to synchronize');
 });
 
+// Test case: Verify validation of the request payload format
 test.serial('POST /sync - should reject non-array payload', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -191,6 +198,7 @@ test.serial('POST /sync - should reject non-array payload', async t => {
 	t.regex(response.body.message, /array/i);
 });
 
+// Test case: Verify graceful handling of unknown operation types
 test.serial('POST /sync - should handle unknown operation type', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -216,6 +224,7 @@ test.serial('POST /sync - should handle unknown operation type', async t => {
 	t.regex(response.body.data.details.failed[0].reason, /unknown operation/i);
 });
 
+// Test case: Verify handling of operations on non-existent exhibits
 test.serial('POST /sync - should handle invalid exhibit ID in rating', async t => {
 	const username = generateUsername('syncinvex');
 	const { client } = await registerAndLogin(
@@ -244,6 +253,7 @@ test.serial('POST /sync - should handle invalid exhibit ID in rating', async t =
 	t.is(response.body.data.failed, 0);
 });
 
+// Test case: Verify partial success when some operations fail and others succeed
 test.serial('POST /sync - should handle mixed success and failure operations', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -279,6 +289,7 @@ test.serial('POST /sync - should handle mixed success and failure operations', a
 	t.is(response.body.data.details.failed.length, 1);
 });
 
+// Test case: Verify handling of invalid data values within operations
 test.serial('POST /sync - should handle invalid rating value', async t => {
 	const username = generateUsername('syncinvrat');
 	const { client } = await registerAndLogin(
@@ -305,6 +316,7 @@ test.serial('POST /sync - should handle invalid rating value', async t => {
 	t.true(response.body.success);
 });
 
+// Test case: Integration workflow simulating an offline user coming online
 test.serial('Sync workflow - offline user syncs multiple changes', async t => {
 	const { userId, client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -356,6 +368,7 @@ test.serial('Sync workflow - offline user syncs multiple changes', async t => {
 	t.truthy(exhibit1Response.body.data);
 });
 
+// Test case: Integration workflow for batch updates to favorites
 test.serial('Sync workflow - batch sync with add and remove favorites', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,
@@ -398,6 +411,7 @@ test.serial('Sync workflow - batch sync with add and remove favorites', async t 
 	t.is(response.body.data.failed, 0);
 });
 
+// Test case: Stress test with a larger batch of operations
 test.serial('Sync workflow - large batch of operations', async t => {
 	const { client } = await registerAndLogin(
 		t.context.baseUrl,

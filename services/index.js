@@ -1,3 +1,9 @@
+/**
+ * Service Layer Exports
+ * 
+ * Centralizes all service exports to provide a single entry point for imports.
+ * This pattern helps manage dependencies and simplifies import statements throughout the application.
+ */
 export { 
   registerUser, 
   loginUser, 
