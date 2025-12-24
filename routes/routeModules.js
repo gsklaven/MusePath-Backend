@@ -1,3 +1,10 @@
+/**
+ * Route Modules Exports
+ * 
+ * Aggregates all individual route modules into a single exportable object.
+ * Used by routes/index.js to mount routes dynamically or cleanly.
+ */
+
 export { default as auth } from './authentication.js';
 export { default as coordinates } from './coordinates.js';
 export { default as destinations } from './destinations.js';
