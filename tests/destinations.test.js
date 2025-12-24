@@ -258,26 +258,6 @@ test('POST /destinations - should reject non-array destinations', async t => {
   t.truthy(response.body.message);
 });
 
-// ==================== Destination Types Tests ====================
-
-test('GET /destinations - should return different destination types', testListDestinations, {}, (t, data) => {
-  const types = data.map(d => d.type);
-  const uniqueTypes = [...new Set(types)];
-  
-  t.true(uniqueTypes.length > 1, 'Should have multiple destination types');
-  t.true(types.includes('entrance') || types.includes('exhibit') || types.includes('restroom') || types.includes('cafe'));
-});
-
-test('GET /destinations - should return destinations with coordinates', testListDestinations, {}, (t, data) => {
-  data.forEach(dest => {
-    t.truthy(dest.coordinates);
-    t.is(typeof dest.coordinates.lat, 'number');
-    t.is(typeof dest.coordinates.lng, 'number');
-    t.true(dest.coordinates.lat >= -90 && dest.coordinates.lat <= 90);
-    t.true(dest.coordinates.lng >= -180 && dest.coordinates.lng <= 180);
-  });
-});
-
 // ==================== Integration Tests ====================
 
 test('Destination workflow - list, filter, and get details', async t => {

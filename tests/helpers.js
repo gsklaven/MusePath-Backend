@@ -3,8 +3,8 @@ import got from "got";
 import { CookieJar } from "tough-cookie";
 import dotenv from "dotenv";
 import app from "../app.js";
-import { connectDatabase, isMockDataMode } from "../config/database.js";
-import { mockExhibits } from '../data/mockData.js';
+import { connectDatabase } from "../config/database.js";
+import { seedTestData } from "./testSetup.js";
 
 // Load environment variables
 dotenv.config();
@@ -26,32 +26,9 @@ export const getTestServer = async () => {
 	if (!globalServer) {
 		// Initialize database connection (will use mock data if no MONGODB_URI)
 		await connectDatabase();
-
+		
 		// If connected to MongoDB, ensure exhibits collection matches mock data for tests
-		try {
-			if (!isMockDataMode()) {
-				const Exhibit = (await import('../models/Exhibit.js')).default;
-				// Clear existing exhibits and seed from mockExhibits
-				await Exhibit.deleteMany({});
-				const docs = mockExhibits.map(e => ({
-					exhibitId: e.exhibitId,
-					title: e.title,
-					name: e.name || e.title,
-					category: e.category || [],
-					description: e.description || '',
-					location: e.location || '',
-					ratings: Object.fromEntries(e.ratings || new Map()),
-					averageRating: e.averageRating || 0,
-					audioGuideUrl: e.audioGuideUrl || null,
-					keywords: e.keywords || [],
-					features: e.features || []
-				}));
-				if (docs.length > 0) await Exhibit.insertMany(docs);
-			}
-		} catch (seedErr) {
-			// eslint-disable-next-line no-console
-			console.warn('Warning: seeding exhibits failed', seedErr.message);
-		}
+		await seedTestData();
 		
 		globalServer = http.createServer(app);
 		const server = globalServer.listen();
