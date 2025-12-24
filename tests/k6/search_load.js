@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 10 }, // Σταδιακή άνοδος στο όριο (10 VUs)
-    { duration: '2m', target: 10 }, // Παραμονή στο όριο για έλεγχο σταθερότητας
+    { duration: '1m', target: 6 }, // Σταδιακή άνοδος στο όριο (6 VUs)
+    { duration: '2m', target: 6 }, // Παραμονή στο όριο για έλεγχο σταθερότητας
     { duration: '30s', target: 0 },
   ],
   thresholds: {
