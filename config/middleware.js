@@ -1,47 +1,55 @@
 /**
  * Middleware Configuration
- * Centralized configuration for Express middleware.
+ * Centralized settings for Express middleware components.
  */
 import { RATE_LIMIT } from './constants.js';
 
 /**
- * CORS (Cross-Origin Resource Sharing) configuration.
- * Defines allowed origins and credentials settings.
- * @type {import('cors').CorsOptions}
+ * Gets allowed CORS origins from environment.
+ * @returns {string[]} Array of allowed origin URLs
  */
+const getAllowedOrigins = () => {
+  const origins = [process.env.CLIENT_URL];
+  
+  if (process.env.NODE_ENV !== 'production') {
+    origins.push('http://localhost:3000', 'http://localhost:3001');
+  }
+  
+  return origins.filter(Boolean);
+};
+
+/**
+ * Creates rate limit error response.
+ * @returns {Object} Standardized error response
+ */
+const createRateLimitMessage = () => ({
+  success: false,
+  data: null,
+  message: 'Too many requests from this IP, please try again later.',
+  error: 'Rate limit exceeded'
+});
+
+// CORS configuration
 export const corsOptions = Object.freeze({
-  origin: [process.env.CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'],
+  origin: getAllowedOrigins(),
   credentials: true
 });
 
-/**
- * Rate limiting configuration.
- * Controls request throttling parameters to prevent abuse.
- * @type {import('express-rate-limit').Options}
- */
+// Rate limiting configuration
 export const rateLimitOptions = Object.freeze({
   windowMs: RATE_LIMIT.WINDOW_MS,
   max: RATE_LIMIT.MAX_REQUESTS,
-  message: {
-    success: false,
-    data: null,
-    message: 'Too many requests from this IP, please try again later.',
-    error: 'Rate limit exceeded'
-  },
+  message: createRateLimitMessage(),
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-/**
- * JSON body parser configuration.
- * Sets the maximum request body size.
- * @type {import('body-parser').OptionsJson}
- */
-export const jsonParserOptions = Object.freeze({ limit: '10mb' });
+// Body parser configurations
+export const jsonParserOptions = Object.freeze({ 
+  limit: '10mb' 
+});
 
-/**
- * URL-encoded body parser configuration.
- * Sets extended mode and maximum request body size.
- * @type {import('body-parser').OptionsUrlencoded}
- */
-export const urlEncodedOptions = Object.freeze({ extended: true, limit: '10mb' });
+export const urlEncodedOptions = Object.freeze({ 
+  extended: true, 
+  limit: '10mb' 
+});
