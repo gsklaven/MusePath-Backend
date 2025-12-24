@@ -22,6 +22,13 @@ import { API_INFO } from './config/apiInfo.js';
 const app = express();
 
 /**
+ * Root Endpoint Handler.
+ * @param {import('express').Request} _ - Express request object (unused).
+ * @param {import('express').Response} res - Express response object.
+ */
+const rootHandler = (_, res) => res.json(API_INFO);
+
+/**
  * Security Middleware Configuration
  * - Helmet: Sets various HTTP headers to secure the app.
  * - CORS: Configures Cross-Origin Resource Sharing based on options.
@@ -57,7 +64,7 @@ app.use('/v1', routes);
  * Returns API metadata including version and available endpoints.
  * @route GET /
  */
-app.get('/', (_, res) => res.json(API_INFO));
+app.get('/', rootHandler);
 
 /**
  * Error Handling Middleware
