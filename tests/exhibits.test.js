@@ -1,5 +1,5 @@
 import test from "ava";
-import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail, assertSearchExhibits, assertViewExhibit } from "./helpers.js";
+import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail, assertViewExhibit, testSearchExhibits } from "./helpers.js";
 import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
 /**
@@ -21,33 +21,25 @@ test.after.always((t) => {
  * ===================================
  */
 
-test("GET /v1/exhibits/search - returns all exhibits without query", async (t) => {
-	await assertSearchExhibits(t, null, (t, data) => {
-		t.true(data.length > 0);
-	});
+test("GET /v1/exhibits/search - returns all exhibits without query", testSearchExhibits, null, (t, data) => {
+	t.true(data.length > 0);
 });
 
-test("GET /v1/exhibits/search - searches by keyword", async (t) => {
-	await assertSearchExhibits(t, "keyword=starry", (t, data) => {
-		if (data.length > 0) {
-			t.regex(data[0].title.toLowerCase(), /starry/i);
-		}
-	});
+test("GET /v1/exhibits/search - searches by keyword", testSearchExhibits, "keyword=starry", (t, data) => {
+	if (data.length > 0) {
+		t.regex(data[0].title.toLowerCase(), /starry/i);
+	}
 });
 
-test("GET /v1/exhibits/search - searches by category", async (t) => {
-	await assertSearchExhibits(t, "category=paintings", (t, data) => {
-		const hasCategory = data.some(exhibit => 
-			exhibit.category && exhibit.category.includes("paintings")
-		);
-		t.true(hasCategory);
-	});
+test("GET /v1/exhibits/search - searches by category", testSearchExhibits, "category=paintings", (t, data) => {
+	const hasCategory = data.some(exhibit => 
+		exhibit.category && exhibit.category.includes("paintings")
+	);
+	t.true(hasCategory);
 });
 
-test("GET /v1/exhibits/search - returns empty array for no matches", async (t) => {
-	await assertSearchExhibits(t, "keyword=nonexistent123456", (t, data) => {
-		t.is(data.length, 0);
-	});
+test("GET /v1/exhibits/search - returns empty array for no matches", testSearchExhibits, "keyword=nonexistent123456", (t, data) => {
+	t.is(data.length, 0);
 });
 
 /**

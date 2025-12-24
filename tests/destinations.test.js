@@ -6,8 +6,8 @@ import {
   createClient,
   generateUsername,
   generateEmail,
-  assertListDestinations,
-  assertGetDestination
+  testListDestinations,
+  testGetDestination
 } from './helpers.js';
 import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
@@ -34,76 +34,60 @@ test.after.always(async t => {
 
 // ==================== List Destinations Tests ====================
 
-test('GET /destinations - should list all destinations', async t => {
-  const response = await assertListDestinations(t);
-  t.true(response.body.data.length > 0);
-  
-  // Verify destination structure
-  const destination = response.body.data[0];
+test('GET /destinations - should list all destinations', testListDestinations, {}, (t, data) => {
+  t.true(data.length > 0);
+  const destination = data[0];
   t.truthy(destination.destinationId);
   t.truthy(destination.name);
   t.truthy(destination.type);
   t.truthy(destination.coordinates);
 });
 
-test('GET /destinations - should filter by map_id', async t => {
-  const response = await assertListDestinations(t, { map_id: 1 });
-  
-  // All destinations should be for map_id 1
-  response.body.data.forEach(dest => {
+test('GET /destinations - should filter by map_id', testListDestinations, { map_id: 1 }, (t, data) => {
+  data.forEach(dest => {
     t.is(dest.mapId, 1);
   });
 });
 
-test('GET /destinations - should return empty array for non-existent map', async t => {
-  const response = await assertListDestinations(t, { map_id: 99999 });
-  t.is(response.body.data.length, 0);
+test('GET /destinations - should return empty array for non-existent map', testListDestinations, { map_id: 99999 }, (t, data) => {
+  t.is(data.length, 0);
 });
 
 // ==================== Get Destination Info Tests ====================
 
-test('GET /destinations/:destination_id - should get destination by ID', async t => {
-  const response = await assertGetDestination(t, 1);
-  t.truthy(response.body.data.name);
-  t.truthy(response.body.data.type);
-  t.truthy(response.body.data.coordinates);
-  t.truthy(response.body.data.coordinates.lat);
-  t.truthy(response.body.data.coordinates.lng);
+test('GET /destinations/:destination_id - should get destination by ID', testGetDestination, 1, {}, 200, (t, data) => {
+  t.truthy(data.name);
+  t.truthy(data.type);
+  t.truthy(data.coordinates);
 });
 
-test('GET /destinations/:destination_id - should return 404 for non-existent destination', async t => {
-  const response = await assertGetDestination(t, 99999, {}, 404);
-  t.false(response.body.success);
-  t.regex(response.body.message, /destination not found/i);
+test('GET /destinations/:destination_id - should return 404 for non-existent destination', testGetDestination, 99999, {}, 404, (t, body) => {
+  t.false(body.success);
+  t.regex(body.message, /destination not found/i);
 });
 
-test('GET /destinations/:destination_id - should include status when requested', async t => {
-  const response = await assertGetDestination(t, 1, { includeStatus: 'true' });
-  t.truthy(response.body.data.status);
-  t.truthy(response.body.data.crowdLevel);
-  t.truthy(response.body.data.lastUpdated);
+test('GET /destinations/:destination_id - should include status when requested', testGetDestination, 1, { includeStatus: 'true' }, 200, (t, data) => {
+  t.truthy(data.status);
+  t.truthy(data.crowdLevel);
+  t.truthy(data.lastUpdated);
 });
 
-test('GET /destinations/:destination_id - should exclude status by default', async t => {
-  const response = await assertGetDestination(t, 1);
-  t.is(response.body.data.status, undefined);
-  t.is(response.body.data.crowdLevel, undefined);
-  t.is(response.body.data.lastUpdated, undefined);
+test('GET /destinations/:destination_id - should exclude status by default', testGetDestination, 1, {}, 200, (t, data) => {
+  t.is(data.status, undefined);
+  t.is(data.crowdLevel, undefined);
+  t.is(data.lastUpdated, undefined);
 });
 
-test('GET /destinations/:destination_id - should include alternatives when requested and unavailable', async t => {
-  const response = await assertGetDestination(t, 7, { 
-    includeAlternatives: 'true',
-    includeStatus: 'true'
-  });
-  
-  // Should include alternatives for closed destination
-  t.is(response.body.data.status, 'closed');
-  t.truthy(response.body.data.alternatives);
-  t.true(Array.isArray(response.body.data.alternatives));
-  t.true(response.body.data.alternatives.length > 0);
-  t.truthy(response.body.data.suggestedTimes);
-  t.true(Array.isArray(response.body.data.suggestedTimes));
+test('GET /destinations/:destination_id - should include alternatives when requested and unavailable', testGetDestination, 7, { 
+  includeAlternatives: 'true',
+  includeStatus: 'true'
+}, 200, (t, data) => {
+  t.is(data.status, 'closed');
+  t.truthy(data.alternatives);
+  t.true(Array.isArray(data.alternatives));
+  t.true(data.alternatives.length > 0);
+  t.truthy(data.suggestedTimes);
+  t.true(Array.isArray(data.suggestedTimes));
 });
 
 // ==================== Upload Destinations Tests ====================
@@ -276,22 +260,16 @@ test('POST /destinations - should reject non-array destinations', async t => {
 
 // ==================== Destination Types Tests ====================
 
-test('GET /destinations - should return different destination types', async t => {
-  const response = await assertListDestinations(t);
-  
-  // Check for different types in mock data
-  const types = response.body.data.map(d => d.type);
+test('GET /destinations - should return different destination types', testListDestinations, {}, (t, data) => {
+  const types = data.map(d => d.type);
   const uniqueTypes = [...new Set(types)];
   
   t.true(uniqueTypes.length > 1, 'Should have multiple destination types');
   t.true(types.includes('entrance') || types.includes('exhibit') || types.includes('restroom') || types.includes('cafe'));
 });
 
-test('GET /destinations - should return destinations with coordinates', async t => {
-  const response = await assertListDestinations(t);
-  
-  // All destinations should have valid coordinates
-  response.body.data.forEach(dest => {
+test('GET /destinations - should return destinations with coordinates', testListDestinations, {}, (t, data) => {
+  data.forEach(dest => {
     t.truthy(dest.coordinates);
     t.is(typeof dest.coordinates.lat, 'number');
     t.is(typeof dest.coordinates.lng, 'number');
