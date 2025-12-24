@@ -119,7 +119,7 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-export const optionalAuth = async (req, res, next) => {
+export const optionalAuth = async (req, next) => {
   try {
     const cookieToken = req.cookies && req.cookies.token;
     const headerToken = req.headers?.authorization?.startsWith("Bearer ")

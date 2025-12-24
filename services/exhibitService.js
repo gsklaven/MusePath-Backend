@@ -52,7 +52,7 @@ export const getExhibitById = async (exhibitId, mode = 'online') => {
  * @param {string} mode - Access mode
  * @returns {Promise<Array>} Array of exhibits
  */
-export const searchExhibits = async (term, category, mode = 'online') => {
+export const searchExhibits = async (term, category, _ = 'online') => {
   const searchTerm = term ? sanitizeSearchTerm(term) : null;
   
   if (isMockDataMode()) {
@@ -241,70 +241,9 @@ export const createExhibit = async (exhibitData) => {
     const saved = await exhibit.save();
 
     // Mirror to mockExhibits for tests that import mock data directly
-    try {
-      const newMock = {
-        exhibitId: saved.exhibitId,
-        name: saved.name,
-        title: saved.title,
-        artist: saved.artist || null,
-        category: saved.category || [],
-        description: saved.description,
-        historicalInfo: saved.historicalInfo || null,
-        location: saved.location,
-        coordinates: saved.coordinates || null,
-        status: saved.status || 'open',
-        visitingAvailability: saved.visitingAvailability ?? true,
-        ratings: new Map(),
-        averageRating: saved.averageRating || 0,
-        wheelchairAccessible: saved.wheelchairAccessible ?? false,
-        brailleSupport: saved.brailleSupport ?? false,
-        audioGuide: saved.audioGuideUrl || null,
-        audioGuideUrl: saved.audioGuideUrl || null,
-        keywords: saved.keywords || [],
-        features: saved.features || [],
-        crowdLevel: saved.crowdLevel || 'low',
-        createdAt: saved.createdAt || now(),
-        updatedAt: saved.updatedAt || now()
-      };
-      mockExhibits.push(newMock);
-    } catch (e) {
-      // ignore mock sync errors
-    }
+    mirrorToMockExhibits(saved);
 
     return saved;
-
-  // Mirror to mockExhibits for tests that import mock data directly
-  try {
-    const newMock = {
-      exhibitId: saved.exhibitId,
-      name: saved.name,
-      title: saved.title,
-      artist: saved.artist || null,
-      category: saved.category || [],
-      description: saved.description,
-      historicalInfo: saved.historicalInfo || null,
-      location: saved.location,
-      coordinates: saved.coordinates || null,
-      status: saved.status || 'open',
-      visitingAvailability: saved.visitingAvailability ?? true,
-      ratings: new Map(),
-      averageRating: saved.averageRating || 0,
-      wheelchairAccessible: saved.wheelchairAccessible ?? false,
-      brailleSupport: saved.brailleSupport ?? false,
-      audioGuide: saved.audioGuideUrl || null,
-      audioGuideUrl: saved.audioGuideUrl || null,
-      keywords: saved.keywords || [],
-      features: saved.features || [],
-      crowdLevel: saved.crowdLevel || 'low',
-      createdAt: saved.createdAt || new Date(),
-      updatedAt: saved.updatedAt || new Date()
-    };
-    mockExhibits.push(newMock);
-  } catch (e) {
-    // ignore mock sync errors
-  }
-
-  return saved;
 };
 
 /**
@@ -339,4 +278,40 @@ const generateNextExhibitId = async () => {
   // NOTE: Lines 179-181 - MongoDB only, not executed in mock data mode tests
   const lastExhibit = await Exhibit.findOne().sort({ exhibitId: -1 });
   return lastExhibit ? lastExhibit.exhibitId + 1 : 1;
+};
+
+/**
+ * Helper to mirror saved exhibit to mock data
+ * @param {Object} saved - Saved exhibit document
+ */
+const mirrorToMockExhibits = (saved) => {
+  try {
+    const newMock = {
+      exhibitId: saved.exhibitId,
+      name: saved.name,
+      title: saved.title,
+      artist: saved.artist || null,
+      category: saved.category || [],
+      description: saved.description,
+      historicalInfo: saved.historicalInfo || null,
+      location: saved.location,
+      coordinates: saved.coordinates || null,
+      status: saved.status || 'open',
+      visitingAvailability: saved.visitingAvailability ?? true,
+      ratings: new Map(),
+      averageRating: saved.averageRating || 0,
+      wheelchairAccessible: saved.wheelchairAccessible ?? false,
+      brailleSupport: saved.brailleSupport ?? false,
+      audioGuide: saved.audioGuideUrl || null,
+      audioGuideUrl: saved.audioGuideUrl || null,
+      keywords: saved.keywords || [],
+      features: saved.features || [],
+      crowdLevel: saved.crowdLevel || 'low',
+      createdAt: saved.createdAt || now(),
+      updatedAt: saved.updatedAt || now()
+    };
+    mockExhibits.push(newMock);
+  } catch (e) {
+    // ignore mock sync errors
+  }
 };
