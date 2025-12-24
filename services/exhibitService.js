@@ -1,8 +1,7 @@
 import Exhibit from '../models/Exhibit.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockExhibits } from '../data/mockData.js';
-import { sanitizeSearchTerm, calculateAverageRating } from '../utils/helpers.js';
-import { toNumber, now } from '../utils/helpers.js';
+import { sanitizeSearchTerm, calculateAverageRating, toNumber, now } from '../utils/helpers.js';
 
 /**
  * Exhibit Service

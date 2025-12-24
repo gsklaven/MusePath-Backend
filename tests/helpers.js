@@ -3,8 +3,7 @@ import got from "got";
 import { CookieJar } from "tough-cookie";
 import dotenv from "dotenv";
 import app from "../app.js";
-import { connectDatabase } from "../config/database.js";
-import { isMockDataMode } from '../config/database.js';
+import { connectDatabase, isMockDataMode } from "../config/database.js";
 import { mockExhibits } from '../data/mockData.js';
 
 // Load environment variables

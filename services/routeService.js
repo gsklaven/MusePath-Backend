@@ -1,18 +1,12 @@
-import Route from '../models/Route.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockRoutes } from '../data/mockData.js';
-import { getDestinationById } from './destinationService.js';
-import { getUserById } from './userService.js';
-import { getAllExhibits } from './exhibitService.js';
-import { 
-  calculateDistance, 
-  calculateEstimatedTime, 
-  calculateArrivalTime,
-  generatePath,
-  generateInstructions,
-  generateUniqueId
-} from '../utils/helpers.js';
+import Route from '../models/Route.js';
 import { DEFAULT_WALKING_SPEED } from '../config/constants.js';
+
+import * as services from './index.js';
+
+// Ομαδοποιημένοι Helpers
+import * as helpers from '../utils/helpers.js';
 
 /**
  * Route Service
@@ -28,7 +22,7 @@ export const calculateRoute = async (routeData) => {
   const { user_id, destination_id, startLat, startLng } = routeData;
   
   // Get destination coordinates
-  const destination = await getDestinationById(destination_id);
+  const destination = await services.getDestinationById(destination_id);
   if (!destination) {
     throw new Error('Destination not found');
   }
@@ -36,7 +30,7 @@ export const calculateRoute = async (routeData) => {
   const startTime = Date.now();
   
   // Calculate distance
-  const distance = calculateDistance(
+  const distance = helpers.calculateDistance(
     startLat, 
     startLng, 
     destination.coordinates.lat, 
@@ -44,11 +38,11 @@ export const calculateRoute = async (routeData) => {
   );
   
   // Calculate estimated time
-  const estimatedTime = calculateEstimatedTime(distance, DEFAULT_WALKING_SPEED);
+  const estimatedTime = helpers.calculateEstimatedTime(distance, DEFAULT_WALKING_SPEED);
   
   // Generate route
   const routeId = isMockDataMode() 
-    ? generateUniqueId(mockRoutes, 'routeId')
+    ? helpers.generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
   
   const newRoute = {
@@ -57,12 +51,12 @@ export const calculateRoute = async (routeData) => {
     destinationId: Number(destination_id),
     startCoordinates: { lat: startLat, lng: startLng },
     endCoordinates: destination.coordinates,
-    path: generatePath({ lat: startLat, lng: startLng }, destination.coordinates),
-    instructions: generateInstructions(distance),
+    path: helpers.generatePath({ lat: startLat, lng: startLng }, destination.coordinates),
+    instructions: helpers.generateInstructions(distance),
     stops: [],
     distance: Math.round(distance * 10) / 10,
     estimatedTime,
-    arrivalTime: calculateArrivalTime(estimatedTime),
+    arrivalTime: helpers.calculateArrivalTime(estimatedTime),
     calculationTime: Math.round((Date.now() - startTime) / 1000),
     isPersonalized: false,
     mapUrl: '/maps/1/route.png',
@@ -98,13 +92,13 @@ export const getRouteDetails = async (routeId, walkingSpeed) => {
     
     let estimatedTime = route.estimatedTime;
     if (walkingSpeed) {
-      estimatedTime = calculateEstimatedTime(route.distance, Number(walkingSpeed));
+      estimatedTime = helpers.calculateEstimatedTime(route.distance, Number(walkingSpeed));
     }
     
     return {
       route_id: route.routeId,
       estimatedTime,
-      arrivalTime: calculateArrivalTime(estimatedTime),
+      arrivalTime: helpers.calculateArrivalTime(estimatedTime),
       distance: route.distance,
       path: route.path.map(p => `${p.lat},${p.lng}`),
       instructions: route.instructions
@@ -116,13 +110,13 @@ export const getRouteDetails = async (routeId, walkingSpeed) => {
   
   let estimatedTime = route.estimatedTime;
   if (walkingSpeed) {
-    estimatedTime = calculateEstimatedTime(route.distance, Number(walkingSpeed));
+    estimatedTime = helpers.calculateEstimatedTime(route.distance, Number(walkingSpeed));
   }
   
   return {
     route_id: route.routeId,
     estimatedTime,
-    arrivalTime: calculateArrivalTime(estimatedTime),
+    arrivalTime: helpers.calculateArrivalTime(estimatedTime),
     distance: route.distance,
     path: route.path.map(p => `${p.lat},${p.lng}`),
     instructions: route.instructions
@@ -219,14 +213,14 @@ export const deleteRoute = async (routeId) => {
  * @returns {Promise<Object>} Personalized route
  */
 export const generatePersonalizedRoute = async (userId) => {
-  const user = await getUserById(userId);
+  const user = await services.getUserById(userId);
   
   if (!user || !user.personalizationAvailable || !user.preferences || user.preferences.length === 0) {
     throw new Error('Cannot generate personalized route - missing user preferences');
   }
   
   // Get all exhibits
-  const exhibits = await getAllExhibits();
+  const exhibits = await services.getAllExhibits();
   
   // Filter exhibits based on user preferences
   const matchingExhibits = exhibits.filter(exhibit => 
@@ -245,7 +239,7 @@ export const generatePersonalizedRoute = async (userId) => {
   
   // NOTE: Lines 248-258 - MongoDB mode route generation, not executed in mock data tests.
   const routeId = isMockDataMode() 
-    ? generateUniqueId(mockRoutes, 'routeId')
+    ? helpers.generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
   
   // Calculate total estimated duration
