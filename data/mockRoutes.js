@@ -5,26 +5,30 @@
 
 /**
  * @typedef {Object} Route
- * @property {number} routeId
- * @property {number} userId
- * @property {number} destinationId
- * @property {{lat: number, lng: number}} startCoordinates
- * @property {{lat: number, lng: number}} endCoordinates
- * @property {{lat: number, lng: number}[]} path
- * @property {string[]} instructions
- * @property {any[]} stops
- * @property {number} distance - Distance in meters
- * @property {number} estimatedTime - Time in seconds
- * @property {string} arrivalTime
- * @property {number} calculationTime - Time in seconds
- * @property {boolean} isPersonalized
- * @property {string} mapUrl
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {number} routeId - Unique identifier.
+ * @property {number} userId - ID of the user requesting the route.
+ * @property {number} destinationId - ID of the target destination.
+ * @property {{lat: number, lng: number}} startCoordinates - Starting location.
+ * @property {{lat: number, lng: number}} endCoordinates - Target location.
+ * @property {{lat: number, lng: number}[]} path - Array of waypoints.
+ * @property {string[]} instructions - Navigation instructions.
+ * @property {any[]} stops - Intermediate stops.
+ * @property {number} distance - Total distance in meters.
+ * @property {number} estimatedTime - Estimated duration in seconds.
+ * @property {string} arrivalTime - Formatted arrival time string.
+ * @property {number} calculationTime - Time taken to calculate route in seconds.
+ * @property {boolean} isPersonalized - Whether route considers user preferences.
+ * @property {string} mapUrl - URL to the route visualization image.
+ * @property {Date} createdAt - Creation timestamp.
+ * @property {Date} updatedAt - Update timestamp.
  */
 
 const ROUTE_TIMESTAMP = new Date();
 
+/**
+ * Key locations used for route generation.
+ * @type {Object.<string, {lat: number, lng: number}>}
+ */
 const LOCATIONS = {
   entrance: { lat: 40.7610, lng: -73.9780 },
   galleryA: { lat: 40.7614, lng: -73.9776 },
@@ -84,7 +88,10 @@ const buildRoute = (config) => ({
   updatedAt: ROUTE_TIMESTAMP
 });
 
-// Route definitions
+/**
+ * Raw configuration data for routes.
+ * @type {Array<Object>}
+ */
 const ROUTES = [
   {
     id: 1,
@@ -123,4 +130,9 @@ const ROUTES = [
   }
 ];
 
+/**
+ * Mock Routes Collection.
+ * Exported array of processed Route objects.
+ * @type {Route[]}
+ */
 export const mockRoutes = ROUTES.map(buildRoute);

@@ -5,25 +5,32 @@
 
 /**
  * @typedef {Object} Destination
- * @property {number} destinationId
- * @property {string} name
- * @property {string} type
- * @property {{lat: number, lng: number}} coordinates
- * @property {number} mapId
- * @property {string} status
- * @property {string} crowdLevel
- * @property {Date} lastUpdated
- * @property {number[]} alternatives
- * @property {string[]} suggestedTimes
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {number} destinationId - Unique identifier for the destination.
+ * @property {string} name - Display name of the destination.
+ * @property {string} type - Category of the destination (e.g., 'exhibit', 'restroom').
+ * @property {{lat: number, lng: number}} coordinates - Geographical location (latitude, longitude).
+ * @property {number} mapId - ID of the map floor plan this destination belongs to.
+ * @property {string} status - Operational status (e.g., 'available', 'closed').
+ * @property {string} crowdLevel - Current crowd density estimation.
+ * @property {Date} lastUpdated - Timestamp of the last status update.
+ * @property {number[]} alternatives - IDs of alternative destinations if this one is crowded/closed.
+ * @property {string[]} suggestedTimes - Recommended visiting times.
+ * @property {Date} createdAt - Record creation timestamp.
+ * @property {Date} updatedAt - Record last modification timestamp.
  */
 
+/**
+ * Shared timestamps for data consistency.
+ */
 const TIMESTAMP = {
   now: new Date(),
   created: new Date('2024-01-01')
 };
 
+/**
+ * Predefined coordinates for museum locations.
+ * @type {Object.<string, {lat: number, lng: number}>}
+ */
 const COORDINATES = {
   mainEntrance: { lat: 40.7610, lng: -73.9780 },
   galleryA: { lat: 40.7614, lng: -73.9776 },
@@ -34,6 +41,10 @@ const COORDINATES = {
   cafe: { lat: 40.7613, lng: -73.9777 }
 };
 
+/**
+ * Common suggested visiting time slots.
+ * @type {Object.<string, string[]>}
+ */
 const SUGGESTED_TIMES = {
   standard: ['10:00 AM', '2:00 PM', '4:00 PM'],
   lunch: ['11:30 AM', '1:00 PM', '3:30 PM'],
@@ -62,7 +73,10 @@ const buildDestination = (config) => ({
   updatedAt: TIMESTAMP.created
 });
 
-// Destination definitions
+/**
+ * Raw configuration data for destinations.
+ * @type {Array<Object>}
+ */
 const DESTINATIONS = [
   { id: 1, name: 'Main Entrance', type: 'entrance', coords: COORDINATES.mainEntrance, crowd: 'medium', times: SUGGESTED_TIMES.standard },
   { id: 2, name: 'Gallery A - Modern Art', type: 'exhibit', coords: COORDINATES.galleryA, crowd: 'high', alternatives: [3, 5], times: SUGGESTED_TIMES.popular },
@@ -73,4 +87,9 @@ const DESTINATIONS = [
   { id: 7, name: 'Gallery D - Temporarily Closed', type: 'exhibit', coords: COORDINATES.galleryD, status: 'closed', crowd: 'none', alternatives: [2, 3, 6], times: SUGGESTED_TIMES.closed }
 ];
 
+/**
+ * Mock Destinations Collection.
+ * Exported array of processed Destination objects.
+ * @type {Destination[]}
+ */
 export const mockDestinations = DESTINATIONS.map(buildDestination);

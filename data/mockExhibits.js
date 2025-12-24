@@ -5,32 +5,36 @@
 
 /**
  * @typedef {Object} Exhibit
- * @property {number} exhibitId
- * @property {string} name
- * @property {string} title
- * @property {string} artist
- * @property {string[]} category
- * @property {string} description
- * @property {string} historicalInfo
- * @property {string} location
- * @property {{lat: number, lng: number}} coordinates
- * @property {string} status
- * @property {boolean} visitingAvailability
- * @property {Map<number, number>} ratings
- * @property {number} averageRating
- * @property {boolean} wheelchairAccessible
- * @property {boolean} brailleSupport
- * @property {string} audioGuide
- * @property {string} audioGuideUrl
- * @property {string[]} keywords
- * @property {string[]} features
- * @property {string} crowdLevel
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {number} exhibitId - Unique identifier for the exhibit.
+ * @property {string} name - Name of the exhibit.
+ * @property {string} title - Full title of the exhibit.
+ * @property {string} artist - Artist or creator name.
+ * @property {string[]} category - Classification tags.
+ * @property {string} description - Detailed description.
+ * @property {string} historicalInfo - Historical context.
+ * @property {string} location - Physical location string (e.g., "Gallery A").
+ * @property {{lat: number, lng: number}} coordinates - Geographical location.
+ * @property {string} status - Current status (e.g., 'open', 'closed').
+ * @property {boolean} visitingAvailability - Whether it can be visited currently.
+ * @property {Map<number, number>} ratings - User ratings map.
+ * @property {number} averageRating - Calculated average rating.
+ * @property {boolean} wheelchairAccessible - Accessibility flag.
+ * @property {boolean} brailleSupport - Braille support flag.
+ * @property {string} audioGuide - Path to audio guide file.
+ * @property {string} audioGuideUrl - Full URL to audio guide.
+ * @property {string[]} keywords - Search keywords.
+ * @property {string[]} features - List of available features.
+ * @property {string} crowdLevel - Current crowd level.
+ * @property {Date} createdAt - Creation timestamp.
+ * @property {Date} updatedAt - Update timestamp.
  */
 
 const BASE_DATE = new Date('2024-01-01');
 
+/**
+ * Coordinates for specific galleries.
+ * @type {Object.<string, {lat: number, lng: number}>}
+ */
 const GALLERY_COORDS = {
   a: { lat: 40.7614, lng: -73.9776 },
   b: { lat: 40.7615, lng: -73.9775 },
@@ -92,7 +96,10 @@ const buildExhibit = (config) => {
   };
 };
 
-// Exhibit definitions
+/**
+ * Raw configuration data for exhibits.
+ * @type {Array<Object>}
+ */
 const EXHIBITS = [
   {
     id: 1,
@@ -166,4 +173,9 @@ const EXHIBITS = [
   }
 ];
 
+/**
+ * Mock Exhibits Collection.
+ * Exported array of processed Exhibit objects.
+ * @type {Exhibit[]}
+ */
 export const mockExhibits = EXHIBITS.map(buildExhibit);
