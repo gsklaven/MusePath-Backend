@@ -75,6 +75,7 @@ const buildDestination = (config) => ({
 
 /**
  * Raw configuration data for destinations.
+ * Uses shorthand properties (e.g., 'coords' for 'coordinates') mapped by buildDestination.
  * @type {Array<Object>}
  */
 const DESTINATIONS = [
