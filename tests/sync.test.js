@@ -11,6 +11,13 @@ import {
 /**
  * Sync Endpoints Tests
  * Tests for offline data synchronization functionality
+ * 
+ * This suite verifies that the /sync endpoint correctly handles:
+ * - Authentication requirements
+ * - Single and batched operations
+ * - Different operation types (ratings, favorites)
+ * - Error handling for invalid data or unknown operations
+ * - Integration workflows simulating offline usage
  */
 
 test.before(async t => {
@@ -48,6 +55,8 @@ test.serial('POST /sync - should synchronize single rating operation', async t =
 		'Password123!'
 	);
 	
+	// Construct a batch of mixed operations to verify the server can process
+	// multiple actions in a single request. This is critical for offline-first functionality.
 	const response = await client.post('v1/sync', {
 		json: [
 			{
@@ -326,6 +335,8 @@ test.serial('Sync workflow - offline user syncs multiple changes', async t => {
 	);
 	
 	// Simulate offline operations queue
+	// Simulate offline operations queue accumulating actions while the user
+	// has no internet connection.
 	const offlineOperations = [
 		{
 			operation_type: 'rating',
@@ -353,6 +364,7 @@ test.serial('Sync workflow - offline user syncs multiple changes', async t => {
 	];
 	
 	// Sync all operations
+	// Sync all operations once connection is restored
 	const syncResponse = await client.post('v1/sync', {
 		json: offlineOperations
 	});
@@ -363,6 +375,7 @@ test.serial('Sync workflow - offline user syncs multiple changes', async t => {
 	t.is(syncResponse.body.data.failed, 0);
 	
 	// Verify exhibit can still be retrieved
+	// Verify exhibit can still be retrieved and data is consistent
 	const exhibit1Response = await client.get('v1/exhibits/1');
 	t.is(exhibit1Response.statusCode, 200);
 	t.truthy(exhibit1Response.body.data);
@@ -378,6 +391,7 @@ test.serial('Sync workflow - batch sync with add and remove favorites', async t 
 	);
 	
 	// Add some favorites first
+	// Add some favorites first to set up the initial state
 	await client.post('v1/sync', {
 		json: [
 			{
@@ -392,6 +406,8 @@ test.serial('Sync workflow - batch sync with add and remove favorites', async t 
 	});
 	
 	// Now sync operations that include removing one
+	// Now sync operations that include removing one of the previously added favorites
+	// This tests the order of operations and state consistency.
 	const response = await client.post('v1/sync', {
 		json: [
 			{
@@ -421,6 +437,7 @@ test.serial('Sync workflow - large batch of operations', async t => {
 	);
 	
 	// Create a large batch of operations
+	// Create a large batch of operations to test performance and limits
 	const operations = [];
 	for (let i = 1; i <= 5; i++) {
 		operations.push({
