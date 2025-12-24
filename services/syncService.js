@@ -38,6 +38,21 @@ const operationHandlers = {
 };
 
 /**
+ * Process a single sync operation.
+ * @param {number} userId - The user ID.
+ * @param {SyncOperation} operation - The operation to process.
+ * @returns {Promise<void>}
+ * @throws {Error} If operation type is unknown or handler fails.
+ */
+const processOperation = async (userId, operation) => {
+  const handler = operationHandlers[operation.operation_type];
+  if (!handler) {
+    throw new Error('Unknown operation type');
+  }
+  await handler(userId, operation);
+};
+
+/**
  * Synchronize offline operations.
  * 
  * @param {number} userId - The ID of the user performing the synchronization.
@@ -45,30 +60,20 @@ const operationHandlers = {
  * @returns {Promise<SyncResult>} The result of the synchronization process.
  */
 export const synchronizeOfflineData = async (userId, operations) => {
-  const conflicts = [];
   const successful = [];
   const failed = [];
   
   for (const operation of operations) {
     try {
-      const handler = operationHandlers[operation.operation_type];
-      
-      if (handler) {
-        await handler(userId, operation);
-        successful.push(operation);
-      } else {
-        failed.push({ operation, reason: 'Unknown operation type' });
-      }
+      await processOperation(userId, operation);
+      successful.push(operation);
     } catch (error) {
-      failed.push({
-        operation,
-        reason: error.message
-      });
+      failed.push({ operation, reason: error.message });
     }
   }
   
   return {
-    conflicts,
+    conflicts: [],
     successful: successful.length,
     failed: failed.length,
     details: {

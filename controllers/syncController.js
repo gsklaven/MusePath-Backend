@@ -7,6 +7,23 @@ import { sendSuccess, sendError } from '../utils/responses.js';
  */
 
 /**
+ * Standard empty response for sync operations.
+ */
+const EMPTY_SYNC_RESULT = {
+  conflicts: [],
+  successful: 0,
+  failed: 0,
+  details: { successful: [], failed: [] }
+};
+
+/**
+ * Helper to safely extract user ID from request.
+ * @param {import('express').Request} req
+ * @returns {number|string|undefined}
+ */
+const getUserId = (req) => req.user?.id || req.user?.userId || req.user?._id;
+
+/**
  * Synchronize offline changes.
  * 
  * Processes a batch of operations performed while the client was offline.
@@ -25,9 +42,7 @@ export const synchronizeOfflineData = async (req, res) => {
     // Extract operations from request body
     const operations = req.body;
     
-    // Extract user ID from the authenticated user object attached by middleware
-    // Supports various user object structures (id, userId, _id)
-    const userId = req.user?.id || req.user?.userId || req.user?._id;
+    const userId = getUserId(req);
     
     // Validate that the payload is an array
     if (!Array.isArray(operations)) {
@@ -36,12 +51,7 @@ export const synchronizeOfflineData = async (req, res) => {
     
     // Handle empty operations array immediately
     if (operations.length === 0) {
-      return sendSuccess(res, {
-        conflicts: [],
-        successful: 0,
-        failed: 0,
-        details: { successful: [], failed: [] }
-      }, 'No operations to synchronize');
+      return sendSuccess(res, EMPTY_SYNC_RESULT, 'No operations to synchronize');
     }
     
     // Delegate processing to the sync service
