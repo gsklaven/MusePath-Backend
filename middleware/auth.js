@@ -3,6 +3,19 @@ import { isTokenRevoked } from "../services/authService.js";
 import { getJwtSecret } from "../config/constants.js";
 
 /**
+ * Helper to extract token from request
+ * @param {Object} req - Express request object
+ * @returns {string|null} Token or null
+ */
+const extractToken = (req) => {
+  const cookieToken = req.cookies && req.cookies.token;
+  const headerToken = req.headers?.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : null;
+  return cookieToken || headerToken;
+};
+
+/**
  * Validate email format
  * Only allows standard email characters to prevent NoSQL injection
  * @param {string} email - Email address
@@ -70,22 +83,17 @@ export const validatePasswordStrength = (password) => {
     return { isValid: false, message: 'Password contains invalid characters. Use only latin letters, digits and common special characters' };
   }
 
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
+  const rules = [
+    { regex: /[A-Z]/, message: 'Password must contain at least one uppercase letter' },
+    { regex: /[a-z]/, message: 'Password must contain at least one lowercase letter' },
+    { regex: /[0-9]/, message: 'Password must contain at least one digit' },
+    { regex: /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/, message: 'Password must contain at least one special character' }
+  ];
 
-  if (!hasUpper) {
-    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-  }
-  if (!hasLower) {
-    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-  }
-  if (!hasDigit) {
-    return { isValid: false, message: 'Password must contain at least one digit' };
-  }
-  if (!hasSpecial) {
-    return { isValid: false, message: 'Password must contain at least one special character' };
+  for (const rule of rules) {
+    if (!rule.regex.test(password)) {
+      return { isValid: false, message: rule.message };
+    }
   }
 
   return { isValid: true, message: 'Password is strong' };
@@ -93,11 +101,7 @@ export const validatePasswordStrength = (password) => {
 
 export const verifyToken = async (req, res, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
     if (!token) {
       return res.status(401).json({ success: false, data: null, message: "Authentication token required" });
@@ -119,13 +123,9 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-export const optionalAuth = async (req, next) => {
+export const optionalAuth = async (req, res, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
     if (!token) {
       return next();
