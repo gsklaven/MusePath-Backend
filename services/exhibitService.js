@@ -262,10 +262,8 @@ export const deleteExhibit = async (exhibitId) => {
   
   const result = await Exhibit.deleteOne({ exhibitId: Number(exhibitId) });
   // Mirror deletion in mockExhibits for tests
-  try {
-    const idx = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
-    if (idx !== -1) mockExhibits.splice(idx, 1);
-  } catch (e) {}
+  const idx = mockExhibits.findIndex(e => e.exhibitId === Number(exhibitId));
+  if (idx !== -1) mockExhibits.splice(idx, 1);
   return result.deletedCount > 0;
 };
 
