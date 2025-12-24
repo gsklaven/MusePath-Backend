@@ -1,4 +1,3 @@
-import express from 'express';
 import { securityMiddleware } from './security.js';
 import { parsingMiddleware } from './parsing.js';
 import { getLogger } from './logger.js';
