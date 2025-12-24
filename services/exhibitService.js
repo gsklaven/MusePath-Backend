@@ -1,7 +1,8 @@
 import Exhibit from '../models/Exhibit.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockExhibits } from '../data/mockData.js';
-import { sanitizeSearchTerm, calculateAverageRating, toNumber, now } from '../utils/helpers.js';
+import { calculateAverageRating, toNumber, now } from '../utils/helpers.js';
+export { searchExhibits } from './exhibitSearchService.js';
 
 /**
  * Exhibit Service
@@ -42,57 +43,6 @@ export const getExhibitById = async (exhibitId, mode = 'online') => {
   // Ensure artist field exists for compatibility with mock data
   if (!obj.artist) obj.artist = obj.name || null;
   return obj;
-};
-
-/**
- * Search exhibits
- * @param {string} term - Search term
- * @param {string} category - Category filter
- * @param {string} mode - Access mode
- * @returns {Promise<Array>} Array of exhibits
- */
-export const searchExhibits = async (term, category, _ = 'online') => {
-  const searchTerm = term ? sanitizeSearchTerm(term) : null;
-  
-  if (isMockDataMode()) {
-    let results = mockExhibits;
-    
-    if (searchTerm) {
-      results = results.filter(exhibit => 
-        exhibit.title.toLowerCase().includes(searchTerm) ||
-        exhibit.description.toLowerCase().includes(searchTerm) ||
-        exhibit.keywords.some(k => k.toLowerCase().includes(searchTerm)) ||
-        exhibit.category.some(c => c.toLowerCase().includes(searchTerm))
-      );
-    }
-    
-    if (category) {
-      const cat = category.toLowerCase();
-      results = results.filter(exhibit => 
-        exhibit.category.some(c => c.toLowerCase().includes(cat))
-      );
-    }
-    
-    // Return full exhibit objects, not just id and title
-    return results;
-  }
-  
-  const query = {};
-  
-  if (searchTerm) {
-    query.$or = [
-      { title: { $regex: searchTerm, $options: 'i' } },
-      { description: { $regex: searchTerm, $options: 'i' } },
-      { keywords: { $in: [new RegExp(searchTerm, 'i')] } }
-    ];
-  }
-  
-  if (category) {
-    query.category = { $in: [new RegExp(category, 'i')] };
-  }
-  
-  const exhibits = await Exhibit.find(query);
-  return exhibits;
 };
 
 /**

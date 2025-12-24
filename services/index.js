@@ -6,13 +6,11 @@
  */
 export { 
   registerUser, 
-  loginUser, 
-  revokeToken, 
-  isTokenRevoked, 
-  logoutUser,
-  tokenBlacklist
+  loginUser
 } from './authService.js';
 
+export * from './tokenService.js';
+export * from './exhibitSearchService.js';
 export * from './coordinateService.js';
 export * from './destinationService.js';
 export * from './exhibitService.js';

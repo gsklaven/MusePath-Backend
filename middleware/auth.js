@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { isTokenRevoked } from "../services/authService.js";
+import { isTokenRevoked } from "../services/tokenService.js";
 import { getJwtSecret } from "../config/constants.js";
 
 /**
