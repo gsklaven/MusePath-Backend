@@ -90,6 +90,7 @@ const buildRoute = (config) => ({
 
 /**
  * Raw configuration data for routes.
+ * Uses shorthand properties (e.g., 'destId' for 'destinationId') mapped by buildRoute.
  * @type {Array<Object>}
  */
 const ROUTES = [
