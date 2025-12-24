@@ -3,6 +3,33 @@ import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/re
 import { validateRouteId, validateUserId } from '../utils/validators.js';
 
 /**
+ * Helper to handle route ownership verification and error catching
+ * Reduces cyclomatic complexity by centralizing validation logic
+ * @param {Function} handler - Async controller function (req, res, route_id)
+ */
+const withRouteOwnership = (handler) => async (req, res) => {
+  try {
+    const { route_id } = req.params;
+    if (!validateRouteId(route_id)) {
+      return sendError(res, 'Invalid route ID format', 400);
+    }
+    
+    const routeOwner = await routeService.getRouteOwner(route_id);
+    if (!routeOwner) {
+      return sendNotFound(res, 'Route not found');
+    }
+    
+    if (routeOwner !== Number(req.user.id)) {
+      return sendError(res, 'Forbidden: cannot access other user routes', 403);
+    }
+
+    await handler(req, res, route_id);
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
  * Route Controller
  * Handles HTTP requests for route operations
  */
@@ -33,112 +60,48 @@ export const calculateRoute = async (req, res) => {
  * Get route details
  * GET /routes/:route_id
  */
-export const getRouteDetails = async (req, res) => {
-  try {
-    const { route_id } = req.params;
+export const getRouteDetails = withRouteOwnership(async (req, res, route_id) => {
     const { walkingSpeed } = req.query;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
     const route = await routeService.getRouteDetails(route_id, walkingSpeed);
     if (!route) {
       return sendNotFound(res, 'Route not found');
     }
     return sendSuccess(res, route, 'Route details retrieved successfully');
-  } catch (error) {
-    return sendError(res, error.message, 500);
-  }
-};
+});
 
 /**
  * Update route stops
  * PUT /routes/:route_id
  */
-export const updateRouteStops = async (req, res) => {
-  try {
-    const { route_id } = req.params;
+export const updateRouteStops = withRouteOwnership(async (req, res, route_id) => {
     const updateData = req.body;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
     const result = await routeService.updateRouteStops(route_id, updateData);
     if (!result) {
       return sendNotFound(res, 'Route not found');
     }
     return sendSuccess(res, result, 'Route updated successfully');
-  } catch (error) {
-    return sendError(res, error.message, 500);
-  }
-};
+});
 
 /**
  * Recalculate route
  * POST /routes/:route_id
  */
-export const recalculateRoute = async (req, res) => {
-  try {
-    const { route_id } = req.params;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
+export const recalculateRoute = withRouteOwnership(async (req, res, route_id) => {
     const route = await routeService.recalculateRoute(route_id);
     if (!route) {
       return sendNotFound(res, 'Route not found');
     }
     return sendSuccess(res, route, 'Route recalculated successfully');
-  } catch (error) {
-    return sendError(res, error.message, 500);
-  }
-};
+});
 
 /**
  * Delete route
  * DELETE /routes/:route_id
  */
-export const deleteRoute = async (req, res) => {
-  try {
-    const { route_id } = req.params;
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    // Verify route ownership
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
+export const deleteRoute = withRouteOwnership(async (req, res, route_id) => {
     const deleted = await routeService.deleteRoute(route_id);
     if (!deleted) {
       return sendNotFound(res, 'Route not found');
     }
     return sendNoContent(res);
-  } catch (error) {
-    return sendError(res, error.message, 500);
-  }
-};
+});
