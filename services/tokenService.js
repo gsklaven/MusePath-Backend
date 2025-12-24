@@ -71,7 +71,11 @@ export const logoutUser = ({ token, req, res } = {}) => {
     const tokenToRevoke = token || getTokenFromRequest(req);
     
     if (tokenToRevoke) revokeToken(tokenToRevoke);
-    if (res) try { res.clearCookie('token'); } catch (e) {}
+    if (res) {
+      try {
+        res.clearCookie('token');
+      } catch (e) { /* ignore */ }
+    }
     return true;
   } catch (err) { return false; }
 };

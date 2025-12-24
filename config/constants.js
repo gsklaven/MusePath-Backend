@@ -37,62 +37,62 @@ export const ROUTE_CALCULATION_TIMEOUT = 5;
  * Exhibit status types.
  * @enum {string}
  */
-export const EXHIBIT_STATUS = Object.freeze({
+export const EXHIBIT_STATUS = {
   OPEN: 'open',
   CLOSED: 'closed',
   UNDER_MAINTENANCE: 'under_maintenance'
-});
+};
 
 /**
  * Destination status types.
  * @enum {string}
  */
-export const DESTINATION_STATUS = Object.freeze({
+export const DESTINATION_STATUS = {
   AVAILABLE: 'available',
   UNAVAILABLE: 'unavailable',
   CLOSED: 'closed'
-});
+};
 
 /**
  * Crowd level types.
  * Indicates the density of visitors at a location.
  * @enum {string}
  */
-export const CROWD_LEVEL = Object.freeze({
+export const CROWD_LEVEL = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high'
-});
+};
 
 /**
  * Notification types.
  * Categories for system alerts sent to users.
  * @enum {string}
  */
-export const NOTIFICATION_TYPE = Object.freeze({
+export const NOTIFICATION_TYPE = {
   ROUTE_DEVIATION: 'route_deviation',
   ARRIVAL: 'arrival',
   DESTINATION_CLOSED: 'destination_closed',
   CROWD_ALERT: 'crowd_alert',
   INFO: 'info'
-});
+};
 
 /**
  * Operation modes.
  * Defines if the application is running with live data or offline capabilities.
  * @enum {string}
  */
-export const MODE = Object.freeze({
+export const MODE = {
   ONLINE: 'online',
   OFFLINE: 'offline'
-});
+};
 
 /**
  * Destination types.
  * Classifies points of interest on the map.
  * @enum {string}
  */
-export const DESTINATION_TYPE = Object.freeze({
+export const DESTINATION_TYPE = {
   EXHIBIT: 'exhibit',
   RESTROOM: 'restroom',
   EXIT: 'exit',
@@ -100,18 +100,18 @@ export const DESTINATION_TYPE = Object.freeze({
   CAFE: 'cafe',
   SHOP: 'shop',
   INFORMATION: 'information'
-});
+};
 
 /**
  * Sync operation types.
  * Actions that can be synchronized from offline state.
  * @enum {string}
  */
-export const SYNC_OPERATION = Object.freeze({
+export const SYNC_OPERATION = {
   RATING: 'rating',
   ADD_FAVORITE: 'add_favorite',
   REMOVE_FAVORITE: 'remove_favorite'
-});
+};
 
 /**
  * API version string.
@@ -123,10 +123,10 @@ export const API_VERSION = process.env.API_VERSION || 'v1';
  * Rate limiting configuration.
  * Controls request throttling parameters.
  */
-export const RATE_LIMIT = Object.freeze({
+export const RATE_LIMIT = {
   WINDOW_MS: Number(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
   MAX_REQUESTS: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 500 // Increased for testing
-});
+};
 
 /**
  * Retrieves the JWT secret key.
