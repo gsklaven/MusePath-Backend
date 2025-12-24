@@ -1,14 +1,17 @@
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
-import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { getLogger } from './middleware/logger.js';
+import { 
+  cors, 
+  helmet, 
+  compression, 
+  rateLimit, 
+  cookieParser, 
+  mongoSanitize,
+  errorHandler, 
+  notFoundHandler, 
+  getLogger 
+} from './middleware/index.js';
 import { RATE_LIMIT } from './config/constants.js';
-import mongoSanitize from 'express-mongo-sanitize';
 
 /**
  * Express Application Setup
