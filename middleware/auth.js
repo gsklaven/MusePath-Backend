@@ -123,7 +123,7 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-export const optionalAuth = async (req, res, next) => {
+export const optionalAuth = async (req, _, next) => {
   try {
     const token = extractToken(req);
 
