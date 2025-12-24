@@ -1,14 +1,5 @@
 import express from 'express';
-import authRoutes from './authentication.js';
-import coordinatesRoutes from './coordinates.js';
-import destinationsRoutes from './destinations.js';
-import exhibitsRoutes from './exhibits.js';
-import mapsRoutes from './maps.js';
-import routesRoutes from './routes.js';
-import usersRoutes from './users.js';
-import notificationsRoutes from './notifications.js';
-import syncRoutes from './sync.js';
-import downloadsRoutes from './downloads.js';
+import * as routes from './routeModules.js';
 
 const router = express.Router();
 
@@ -28,20 +19,18 @@ router.get('/health', (_, res) => {
   });
 });
 
-
-
 /**
  * Mount all route modules
  */
-router.use('/auth', authRoutes);
-router.use('/coordinates', coordinatesRoutes);
-router.use('/destinations', destinationsRoutes);
-router.use('/exhibits', exhibitsRoutes);
-router.use('/maps', mapsRoutes);
-router.use('/routes', routesRoutes);
-router.use('/users', usersRoutes);
-router.use('/notifications', notificationsRoutes);
-router.use('/sync', syncRoutes);
-router.use('/downloads', downloadsRoutes);
+router.use('/auth', routes.auth);
+router.use('/coordinates', routes.coordinates);
+router.use('/destinations', routes.destinations);
+router.use('/exhibits', routes.exhibits);
+router.use('/maps', routes.maps);
+router.use('/routes', routes.routesModule);
+router.use('/users', routes.users);
+router.use('/notifications', routes.notifications);
+router.use('/sync', routes.sync);
+router.use('/downloads', routes.downloads);
 
 export default router;
