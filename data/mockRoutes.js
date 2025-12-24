@@ -1,6 +1,33 @@
 /**
+ * @typedef {Object} RouteCoordinates
+ * @property {number} lat - Latitude.
+ * @property {number} lng - Longitude.
+ */
+
+/**
+ * @typedef {Object} Route
+ * @property {number} routeId - Unique identifier for the route.
+ * @property {number} userId - The ID of the user who owns the route.
+ * @property {number} destinationId - The ID of the destination of the route.
+ * @property {RouteCoordinates} startCoordinates - The starting coordinates of the route.
+ * @property {RouteCoordinates} endCoordinates - The ending coordinates of the route.
+ * @property {RouteCoordinates[]} path - The path of the route.
+ * @property {string[]} instructions - The instructions for the route.
+ * @property {any[]} stops - A list of stops along the route.
+ * @property {number} distance - The distance of the route in meters.
+ * @property {number} estimatedTime - The estimated time to complete the route in seconds.
+ * @property {string} arrivalTime - The estimated arrival time.
+ * @property {number} calculationTime - The time taken to calculate the route in seconds.
+ * @property {boolean} isPersonalized - A flag indicating if the route is personalized.
+ * @property {string} mapUrl - The URL of the map image for the route.
+ * @property {Date} createdAt - The date and time when the route was created.
+ * @property {Date} updatedAt - The date and time when the route was last updated.
+ */
+
+/**
  * Mock Routes Collection
  * Defines pre-calculated routes between destinations.
+ * @type {Route[]}
  */
 export const mockRoutes = [
   {

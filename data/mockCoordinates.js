@@ -1,6 +1,16 @@
 /**
+ * @typedef {Object} Coordinate
+ * @property {number} userId - The ID of the user.
+ * @property {number} lat - The latitude of the user's location.
+ * @property {number} lng - The longitude of the user's location.
+ * @property {Date} timestamp - The timestamp of the location.
+ * @property {Date} updatedAt - The date and time when the location was last updated.
+ */
+
+/**
  * Mock Coordinates Collection
  * Records the geographical coordinates of users within the museum.
+ * @type {Coordinate[]}
  */
 export const mockCoordinates = [
   {

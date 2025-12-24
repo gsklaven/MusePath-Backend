@@ -1,6 +1,39 @@
 /**
+ * @typedef {Object} ExhibitCoordinates
+ * @property {number} lat - The latitude of the exhibit.
+ * @property {number} lng - The longitude of the exhibit.
+ */
+
+/**
+ * @typedef {Object} Exhibit
+ * @property {number} exhibitId - Unique identifier for the exhibit.
+ * @property {string} name - The name of the exhibit.
+ * @property {string} title - The title of the exhibit.
+ * @property {string} artist - The artist of the exhibit.
+ * @property {string[]} category - The category of the exhibit.
+ * @property {string} description - A short description of the exhibit.
+ * @property {string} historicalInfo - Historical information about the exhibit.
+ * @property {string} location - The location of the exhibit within the museum.
+ * @property {ExhibitCoordinates} coordinates - The geographical coordinates of the exhibit.
+ * @property {string} status - The status of the exhibit, e.g., 'open' or 'closed'.
+ * @property {boolean} visitingAvailability - A flag indicating if the exhibit is available for visiting.
+ * @property {Map<number, number>} ratings - A map of ratings given to the exhibit by users.
+ * @property {number} averageRating - The average rating of the exhibit.
+ * @property {boolean} wheelchairAccessible - A flag indicating if the exhibit is wheelchair accessible.
+ * @property {boolean} brailleSupport - A flag indicating if the exhibit has braille support.
+ * @property {string} audioGuide - The path to the audio guide for the exhibit.
+ * @property {string} audioGuideUrl - The URL of the audio guide for the exhibit.
+ * @property {string[]} keywords - Keywords associated with the exhibit for searching.
+ * @property {string[]} features - A list of features available for the exhibit.
+ * @property {string} crowdLevel - The current crowd level at the exhibit.
+ * @property {Date} createdAt - The date and time when the exhibit was created.
+ * @property {Date} updatedAt - The date and time when the exhibit was last updated.
+ */
+
+/**
  * Mock Exhibits Collection
  * Represents mock exhibit data, including metadata for filtering and display.
+ * @type {Exhibit[]}
  */
 export const mockExhibits = [
   {

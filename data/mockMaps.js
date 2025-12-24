@@ -1,6 +1,24 @@
 /**
+ * @typedef {Object} MuseumMap
+ * @property {number} mapId - Unique identifier for the map.
+ * @property {string} name - The name of the map.
+ * @property {string} title - The title of the map.
+ * @property {string} mapData - The base64 encoded map data.
+ * @property {string} mapUrl - The URL of the map image.
+ * @property {string} imageUrl - The URL of the map image.
+ * @property {string} format - The format of the map image.
+ * @property {number} zoom - The zoom level of the map.
+ * @property {number} rotation - The rotation of the map.
+ * @property {number} floor - The floor number of the map.
+ * @property {boolean} isOfflineAvailable - A flag indicating if the map is available for offline use.
+ * @property {Date} createdAt - The date and time when the map was created.
+ * @property {Date} updatedAt - The date and time when the map was last updated.
+ */
+
+/**
  * Mock Maps Collection
  * Mock map data, defining the museum's floor plans.
+ * @type {MuseumMap[]}
  */
 export const mockMaps = [
   {

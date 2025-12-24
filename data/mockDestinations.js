@@ -1,6 +1,29 @@
 /**
+ * @typedef {Object} DestinationCoordinates
+ * @property {number} lat - The latitude of the destination.
+ * @property {number} lng - The longitude of the destination.
+ */
+
+/**
+ * @typedef {Object} Destination
+ * @property {number} destinationId - Unique identifier for the destination.
+ * @property {string} name - The name of the destination.
+ * @property {string} type - The type of the destination.
+ * @property {DestinationCoordinates} coordinates - The geographical coordinates of the destination.
+ * @property {number} mapId - The ID of the map where the destination is located.
+ * @property {string} status - The status of the destination.
+ * @property {string} crowdLevel - The current crowd level at the destination.
+ * @property {Date} lastUpdated - The date and time when the destination was last updated.
+ * @property {number[]} alternatives - A list of alternative destinations.
+ * @property {string[]} suggestedTimes - A list of suggested times to visit the destination.
+ * @property {Date} createdAt - The date and time when the destination was created.
+ * @property {Date} updatedAt - The date and time when the destination was last updated.
+ */
+
+/**
  * Mock Destinations Collection
  * Mock destination points of interest within the museum.
+ * @type {Destination[]}
  */
 export const mockDestinations = [
   {

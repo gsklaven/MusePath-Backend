@@ -1,6 +1,23 @@
 /**
+ * @typedef {Object} User
+ * @property {number} userId - Unique identifier for the user.
+ * @property {string} username - The user's chosen username for login.
+ * @property {string} name - The user's full name.
+ * @property {string} email - The user's email address.
+ * @property {string} password - The user's hashed password.
+ * @property {string} role - The user's role, e.g., 'admin' or 'visitor'.
+ * @property {string[]} preferences - A list of the user's interests.
+ * @property {number[]} favourites - A list of the user's favorite exhibits.
+ * @property {Map<number, number>} ratings - A map of ratings the user has given to exhibits.
+ * @property {boolean} personalizationAvailable - A flag indicating if personalization is available for the user.
+ * @property {Date} createdAt - The date and time when the user was created.
+ * @property {Date} updatedAt - The date and time when the user was last updated.
+ */
+
+/**
  * Mock Users Collection
  * Represents mock user data for testing authentication and personalization.
+ * @type {User[]}
  */
 export const mockUsers = [
   {
