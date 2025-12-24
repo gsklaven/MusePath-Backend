@@ -1,5 +1,5 @@
 import test from "ava";
-import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail } from './helpers.js';
+import { setupTestServer, cleanupTestServer, createClient, generateUsername, generateEmail, assertRegisterSuccess, assertAuthFail, assertLoginSuccess } from './helpers.js';
 
 /**
  * Authentication Endpoint Tests
@@ -21,222 +21,120 @@ test.after.always((t) => {
  */
 
 test.serial("POST /v1/auth/register - successful registration with valid data", async (t) => {
-	const client = createClient(t.context.baseUrl);
 	const uniqueUsername = generateUsername();
 	const uniqueEmail = generateEmail(uniqueUsername);
 	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: uniqueUsername,
-			email: uniqueEmail,
-			password: "Test123!@#"
-		}
+	const body = await assertRegisterSuccess(t, {
+		username: uniqueUsername,
+		email: uniqueEmail,
+		password: "Test123!@#"
 	});
 
-	t.is(statusCode, 201);
-	t.is(body.success, true);
 	t.is(body.message, "User created successfully");
-	t.truthy(body.data);
-	t.is(body.data.username, uniqueUsername);
-	t.is(body.data.email, uniqueEmail);
 	t.is(body.data.role, "user");
 	t.falsy(body.data.password);
 	t.is(body.data.personalizationAvailable, false);
 });
 
 test.serial("POST /v1/auth/register - fails with missing username", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username.*required/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username.*required/i);
 });
 
 test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /email.*required/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		password: "Test123!@#"
+	}, 400, /email.*required/i);
 });
 
 test.serial("POST /v1/auth/register - fails with missing password", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /password.*required/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com"
+	}, 400, /password.*required/i);
 });
 
 test.serial("POST /v1/auth/register - fails with invalid email format", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "invalid-email",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /invalid email|email must be a string/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "invalid-email",
+		password: "Test123!@#"
+	}, 400, /invalid email|email must be a string/i);
 });
 
 test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /uppercase/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "test123!@#"
+	}, 400, /uppercase/i);
 });
 
 test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "TEST123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /lowercase/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "TEST123!@#"
+	}, 400, /lowercase/i);
 });
 
 test.serial("POST /v1/auth/register - fails with weak password (no digit)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "TestTest!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /digit/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "TestTest!@#"
+	}, 400, /digit/i);
 });
 
 test.serial("POST /v1/auth/register - fails with weak password (no special character)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "Test123456"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /special character/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "Test123456"
+	}, 400, /special character/i);
 });
 
 test.serial("POST /v1/auth/register - fails with short password", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "Test1!"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /at least 8 characters/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "Test1!"
+	}, 400, /at least 8 characters/i);
 });
 
 test.serial("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "test@user!",
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username can only contain|username must be a string|username must be 3-30 characters/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "test@user!",
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username can only contain|username must be a string|username must be 3-30 characters/i);
 });
 
 test("POST /v1/auth/register - fails with username too short", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "ab",
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "ab",
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
 test("POST /v1/auth/register - fails with username too long", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "a".repeat(31),
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "a".repeat(31),
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
 test("POST /v1/auth/register - fails with non-string input types (NoSQL injection prevention)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: { "$ne": null },
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username must be a string|invalid input types/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: { "$ne": null },
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username must be a string|invalid input types/i);
 });
 
 test.serial("POST /v1/auth/register - fails with duplicate username", async (t) => {
@@ -251,17 +149,11 @@ test.serial("POST /v1/auth/register - fails with duplicate username", async (t) 
 		}
 	});
 
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: username,
-			email: "different@example.com",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 409);
-	t.is(body.success, false);
-	t.regex(body.message, /already exists/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: username,
+		email: "different@example.com",
+		password: "Test123!@#"
+	}, 409, /already exists/i);
 });
 
 test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => {
@@ -276,17 +168,11 @@ test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => 
 		}
 	});
 
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: generateUsername("user2"),
-			email: email,
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 409);
-	t.is(body.success, false);
-	t.regex(body.message, /already exists/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: generateUsername("user2"),
+		email: email,
+		password: "Test123!@#"
+	}, 409, /already exists/i);
 });
 
 /**
@@ -307,73 +193,37 @@ test.serial("POST /v1/auth/login - successful login with valid credentials", asy
 		}
 	});
 
-	const { body, statusCode, headers } = await client.post("v1/auth/login", {
-		json: {
-			username: username,
-			password: "Test123!@#"
-		}
+	const { body } = await assertLoginSuccess(t, {
+		username: username,
+		password: "Test123!@#"
 	});
 
-	t.is(statusCode, 200);
-	t.is(body.success, true);
 	t.is(body.message, "Login successful");
-	t.truthy(body.data);
-	t.is(body.data.username, username);
 	t.falsy(body.data.password);
-	
-	t.truthy(headers["set-cookie"]);
-	const cookieHeader = Array.isArray(headers["set-cookie"]) 
-		? headers["set-cookie"][0] 
-		: headers["set-cookie"];
-	t.regex(cookieHeader, /token=/);
 });
 
 test("POST /v1/auth/login - fails with missing username", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username.*required/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		password: "Test123!@#"
+	}, 400, /username.*required/i);
 });
 
 test("POST /v1/auth/login - fails with missing password", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			username: "testuser"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /password.*required/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		username: "testuser"
+	}, 400, /password.*required/i);
 });
 
 test("POST /v1/auth/login - fails with non-existent username", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			username: "nonexistentuser123456",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 401);
-	t.is(body.success, false);
-	t.regex(body.message, /invalid credentials/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		username: "nonexistentuser123456",
+		password: "Test123!@#"
+	}, 401, /invalid credentials/i);
 });
 
 test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
-	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("wrongpw");
+	const client = createClient(t.context.baseUrl);
 	
 	await client.post("v1/auth/register", {
 		json: {
@@ -383,42 +233,24 @@ test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 		}
 	});
 
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			username: username,
-			password: "WrongPassword123!@#"
-		}
-	});
-
-	t.is(statusCode, 401);
-	t.is(body.success, false);
-	t.regex(body.message, /invalid credentials/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		username: username,
+		password: "WrongPassword123!@#"
+	}, 401, /invalid credentials/i);
 });
 
 test("POST /v1/auth/login - fails with invalid username format", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			username: "invalid@user",
-			password: "Test123!@#"
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username can only contain|invalid username format|username must be a string|username must be 3-30 characters/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		username: "invalid@user",
+		password: "Test123!@#"
+	}, 400, /username can only contain|invalid username format|username must be a string|username must be 3-30 characters/i);
 });
 
 test("POST /v1/auth/login - fails with non-string input types (NoSQL injection prevention)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client.post("v1/auth/login", {
-		json: {
-			username: { "$ne": null },
-			password: { "$ne": null }
-		}
-	});
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username must be a string|invalid input types/i);
+	await assertAuthFail(t, "v1/auth/login", {
+		username: { "$ne": null },
+		password: { "$ne": null }
+	}, 400, /username must be a string|invalid input types/i);
 });
 
 /**
@@ -657,98 +489,51 @@ test.serial("Can login again after logout", async (t) => {
  */
 
 test("POST /v1/auth/register - fails with null password", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: null
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: null
+	}, 400);
 });
 
 test("POST /v1/auth/register - fails with number as password", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: 12345678
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.is(body.message, 'Password must be a string');
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: 12345678
+	}, 400, /Password must be a string/);
 });
 
 test("POST /v1/auth/register - fails with password containing invalid characters (unicode)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "Test123!αβγ"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /invalid characters/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "Test123!αβγ"
+	}, 400, /invalid characters/i);
 });
 
 test("POST /v1/auth/register - fails with password containing emoji", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "testuser",
-			email: "test@example.com",
-			password: "Test123!😀"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /invalid characters/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "testuser",
+		email: "test@example.com",
+		password: "Test123!😀"
+	}, 400, /invalid characters/i);
 });
 
 test("POST /v1/auth/register - fails with username too short (2 chars)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "ab",
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "ab",
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username/i);
 });
 
 test("POST /v1/auth/register - fails with username too long (31+ chars)", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	
-	const { body, statusCode } = await client.post("v1/auth/register", {
-		json: {
-			username: "a".repeat(31),
-			email: "test@example.com",
-			password: "Test123!@#"
-		}
-	});
-
-	t.is(statusCode, 400);
-	t.is(body.success, false);
-	t.regex(body.message, /username/i);
+	await assertAuthFail(t, "v1/auth/register", {
+		username: "a".repeat(31),
+		email: "test@example.com",
+		password: "Test123!@#"
+	}, 400, /username/i);
 });
 
 test.serial("Logout with valid token, then try to use revoked token", async (t) => {
@@ -790,4 +575,3 @@ test.serial("Logout with valid token, then try to use revoked token", async (t) 
 		t.pass("Cookie handling not available in test environment");
 	}
 });
-

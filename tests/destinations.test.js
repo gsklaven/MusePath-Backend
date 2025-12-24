@@ -5,7 +5,9 @@ import {
   cleanupTestServer,
   createClient,
   generateUsername,
-  generateEmail
+  generateEmail,
+  assertListDestinations,
+  assertGetDestination
 } from './helpers.js';
 import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
@@ -33,13 +35,7 @@ test.after.always(async t => {
 // ==================== List Destinations Tests ====================
 
 test('GET /destinations - should list all destinations', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations');
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
-  t.true(Array.isArray(response.body.data));
+  const response = await assertListDestinations(t);
   t.true(response.body.data.length > 0);
   
   // Verify destination structure
@@ -51,15 +47,7 @@ test('GET /destinations - should list all destinations', async t => {
 });
 
 test('GET /destinations - should filter by map_id', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations', {
-    searchParams: { map_id: 1 }
-  });
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
-  t.true(Array.isArray(response.body.data));
+  const response = await assertListDestinations(t, { map_id: 1 });
   
   // All destinations should be for map_id 1
   response.body.data.forEach(dest => {
@@ -68,28 +56,14 @@ test('GET /destinations - should filter by map_id', async t => {
 });
 
 test('GET /destinations - should return empty array for non-existent map', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations', {
-    searchParams: { map_id: 99999 }
-  });
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
-  t.true(Array.isArray(response.body.data));
+  const response = await assertListDestinations(t, { map_id: 99999 });
   t.is(response.body.data.length, 0);
 });
 
 // ==================== Get Destination Info Tests ====================
 
 test('GET /destinations/:destination_id - should get destination by ID', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations/1');
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
-  t.is(response.body.data.destination_id, 1);
+  const response = await assertGetDestination(t, 1);
   t.truthy(response.body.data.name);
   t.truthy(response.body.data.type);
   t.truthy(response.body.data.coordinates);
@@ -98,54 +72,30 @@ test('GET /destinations/:destination_id - should get destination by ID', async t
 });
 
 test('GET /destinations/:destination_id - should return 404 for non-existent destination', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations/99999');
-
-  t.is(response.statusCode, 404);
+  const response = await assertGetDestination(t, 99999, {}, 404);
   t.false(response.body.success);
   t.regex(response.body.message, /destination not found/i);
 });
 
 test('GET /destinations/:destination_id - should include status when requested', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations/1', {
-    searchParams: { includeStatus: 'true' }
-  });
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
+  const response = await assertGetDestination(t, 1, { includeStatus: 'true' });
   t.truthy(response.body.data.status);
   t.truthy(response.body.data.crowdLevel);
   t.truthy(response.body.data.lastUpdated);
 });
 
 test('GET /destinations/:destination_id - should exclude status by default', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations/1');
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
+  const response = await assertGetDestination(t, 1);
   t.is(response.body.data.status, undefined);
   t.is(response.body.data.crowdLevel, undefined);
   t.is(response.body.data.lastUpdated, undefined);
 });
 
 test('GET /destinations/:destination_id - should include alternatives when requested and unavailable', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  // Destination 7 has status 'closed' with alternatives
-  const response = await client.get('v1/destinations/7', {
-    searchParams: { 
-      includeAlternatives: 'true',
-      includeStatus: 'true'
-    }
+  const response = await assertGetDestination(t, 7, { 
+    includeAlternatives: 'true',
+    includeStatus: 'true'
   });
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
   
   // Should include alternatives for closed destination
   t.is(response.body.data.status, 'closed');
@@ -327,12 +277,7 @@ test('POST /destinations - should reject non-array destinations', async t => {
 // ==================== Destination Types Tests ====================
 
 test('GET /destinations - should return different destination types', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations');
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
+  const response = await assertListDestinations(t);
   
   // Check for different types in mock data
   const types = response.body.data.map(d => d.type);
@@ -343,12 +288,7 @@ test('GET /destinations - should return different destination types', async t =>
 });
 
 test('GET /destinations - should return destinations with coordinates', async t => {
-  const client = createClient(t.context.baseUrl);
-
-  const response = await client.get('v1/destinations');
-
-  t.is(response.statusCode, 200);
-  t.true(response.body.success);
+  const response = await assertListDestinations(t);
   
   // All destinations should have valid coordinates
   response.body.data.forEach(dest => {
@@ -489,4 +429,3 @@ test('DELETE /destinations/:destination_id - should return 404 for non-existent 
   t.is(response.statusCode, 404);
   t.false(response.body.success);
 });
-

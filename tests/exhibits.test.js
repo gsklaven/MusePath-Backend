@@ -1,5 +1,5 @@
 import test from "ava";
-import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail } from "./helpers.js";
+import { setupTestServer, cleanupTestServer, createClient, registerAndLogin, generateUsername, generateEmail, assertSearchExhibits, assertViewExhibit } from "./helpers.js";
 import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
 
 /**
@@ -22,56 +22,32 @@ test.after.always((t) => {
  */
 
 test("GET /v1/exhibits/search - returns all exhibits without query", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	t.true(body.data.length > 0);
+	await assertSearchExhibits(t, null, (t, data) => {
+		t.true(data.length > 0);
+	});
 });
 
 test("GET /v1/exhibits/search - searches by keyword", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?keyword=starry");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	// Should find "The Starry Night"
-	if (body.data.length > 0) {
-		t.regex(body.data[0].title.toLowerCase(), /starry/i);
-	}
+	await assertSearchExhibits(t, "keyword=starry", (t, data) => {
+		if (data.length > 0) {
+			t.regex(data[0].title.toLowerCase(), /starry/i);
+		}
+	});
 });
 
 test("GET /v1/exhibits/search - searches by category", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?category=paintings");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	// Should find exhibits with "paintings" category
-	if (body.data.length > 0) {
-		const hasCategory = body.data.some(exhibit => 
+	await assertSearchExhibits(t, "category=paintings", (t, data) => {
+		const hasCategory = data.some(exhibit => 
 			exhibit.category && exhibit.category.includes("paintings")
 		);
 		t.true(hasCategory);
-	}
+	});
 });
 
 test("GET /v1/exhibits/search - returns empty array for no matches", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/search?keyword=nonexistent123456");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.true(Array.isArray(body.data));
-	t.is(body.data.length, 0);
+	await assertSearchExhibits(t, "keyword=nonexistent123456", (t, data) => {
+		t.is(data.length, 0);
+	});
 });
 
 /**
@@ -81,13 +57,7 @@ test("GET /v1/exhibits/search - returns empty array for no matches", async (t) =
  */
 
 test("GET /v1/exhibits/:exhibit_id - returns exhibit details with valid ID", async (t) => {
-	const client = createClient(t.context.baseUrl);
-	const { body, statusCode } = await client("v1/exhibits/1");
-	
-	t.is(statusCode, 200);
-	t.is(body.success, true);
-	t.truthy(body.data);
-	t.is(body.data.exhibitId, 1);
+	const body = await assertViewExhibit(t, 1);
 	t.truthy(body.data.title);
 	t.truthy(body.data.category);
 	t.truthy(body.data.location);
