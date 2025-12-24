@@ -7,8 +7,14 @@ import { sendSuccess, sendError } from '../utils/responses.js';
  */
 
 /**
- * Synchronize offline changes
- * POST /sync
+ * Synchronize offline changes.
+ * 
+ * Processes a batch of operations performed while the client was offline.
+ * 
+ * @route POST /sync
+ * @param {import('express').Request} req - Express request object containing an array of operations in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response with synchronization results (successes, failures, conflicts).
  */
 export const synchronizeOfflineData = async (req, res) => {
   try {

@@ -8,10 +8,12 @@ import { validateEmailFormat, validateUsernameFormat, validatePasswordStrength }
  */
 
 /**
- * Register a new user
- * POST /auth/register
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Register a new user.
+ * 
+ * @route POST /auth/register
+ * @param {import('express').Request} req - Express request object containing username, email, and password in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the created user or an error.
  */
 export const Register = async (req, res) => {
     const { username, email, password } = req.body;
@@ -52,10 +54,12 @@ export const Register = async (req, res) => {
 };
 
 /**
- * Login user
- * POST /auth/login
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Login user.
+ * 
+ * @route POST /auth/login
+ * @param {import('express').Request} req - Express request object containing username and password in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response with user info and token, and sets a httpOnly cookie.
  */
 export const Login = async (req, res) => {
     const { username, password } = req.body;
@@ -94,10 +98,12 @@ export const Login = async (req, res) => {
 };
 
 /**
- * Logout user
- * POST /auth/logout
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Logout user.
+ * 
+ * @route POST /auth/logout
+ * @param {import('express').Request} req - Express request object.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>} Sends a JSON response confirming logout.
  */
 export const Logout = async (req, res) => {
     // Delegate logout actions to authService (revoke token, clear cookie)
