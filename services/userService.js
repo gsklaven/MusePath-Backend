@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import { isMockDataMode } from '../config/database.js';
 import { mockUsers } from '../data/mockData.js';
-import { findExhibitObjectId, toNumber, now } from '../utils/helpers.js';
+import { findExhibitObjectId, now } from '../utils/helpers.js';
 
 /**
  * User Service
