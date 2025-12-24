@@ -7,10 +7,12 @@ import { setupTestServer, cleanupTestServer, createClient, generateUsername, gen
  */
 
 test.before(async (t) => {
+	// Initialize the test server and database connection before running tests
 	await setupTestServer(t);
 });
 
 test.after.always((t) => {
+	// Ensure the server is properly closed after tests complete
 	cleanupTestServer(t);
 });
 
@@ -20,6 +22,7 @@ test.after.always((t) => {
  * ===================================
  */
 
+// Verify that a new user can be registered with valid data and receives the expected response
 test.serial("POST /v1/auth/register - successful registration with valid data", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const uniqueUsername = generateUsername();
@@ -44,6 +47,7 @@ test.serial("POST /v1/auth/register - successful registration with valid data", 
 	t.is(body.data.personalizationAvailable, false);
 });
 
+// Ensure that the registration endpoint validates the presence of a username
 test.serial("POST /v1/auth/register - fails with missing username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -59,6 +63,7 @@ test.serial("POST /v1/auth/register - fails with missing username", async (t) =>
 	t.regex(body.message, /username.*required/i);
 });
 
+// Ensure that the registration endpoint validates the presence of an email address
 test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -74,6 +79,7 @@ test.serial("POST /v1/auth/register - fails with missing email", async (t) => {
 	t.regex(body.message, /email.*required/i);
 });
 
+// Ensure that the registration endpoint validates the presence of a password
 test.serial("POST /v1/auth/register - fails with missing password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -89,6 +95,7 @@ test.serial("POST /v1/auth/register - fails with missing password", async (t) =>
 	t.regex(body.message, /password.*required/i);
 });
 
+// Verify that invalid email formats are rejected
 test.serial("POST /v1/auth/register - fails with invalid email format", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -103,6 +110,7 @@ test.serial("POST /v1/auth/register - fails with invalid email format", async (t
 	t.regex(body.message, /invalid email|email must be a string/i);
 });
 
+// Password strength check: ensure uppercase characters are required
 test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -119,6 +127,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no uppercase)", 
 	t.regex(body.message, /uppercase/i);
 });
 
+// Password strength check: ensure lowercase characters are required
 test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -135,6 +144,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no lowercase)", 
 	t.regex(body.message, /lowercase/i);
 });
 
+// Password strength check: ensure digits are required
 test.serial("POST /v1/auth/register - fails with weak password (no digit)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -151,6 +161,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no digit)", asyn
 	t.regex(body.message, /digit/i);
 });
 
+// Password strength check: ensure special characters are required
 test.serial("POST /v1/auth/register - fails with weak password (no special character)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -167,6 +178,7 @@ test.serial("POST /v1/auth/register - fails with weak password (no special chara
 	t.regex(body.message, /special character/i);
 });
 
+// Password strength check: ensure minimum length is enforced
 test.serial("POST /v1/auth/register - fails with short password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -183,6 +195,7 @@ test.serial("POST /v1/auth/register - fails with short password", async (t) => {
 	t.regex(body.message, /at least 8 characters/i);
 });
 
+// Username validation: ensure special characters are not allowed
 test.serial("POST /v1/auth/register - fails with invalid username format (special chars)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -197,6 +210,7 @@ test.serial("POST /v1/auth/register - fails with invalid username format (specia
 	t.regex(body.message, /username can only contain|username must be a string|username must be 3-30 characters/i);
 });
 
+// Username validation: ensure minimum length is enforced
 test("POST /v1/auth/register - fails with username too short", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -211,6 +225,7 @@ test("POST /v1/auth/register - fails with username too short", async (t) => {
 	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
+// Username validation: ensure maximum length is enforced
 test("POST /v1/auth/register - fails with username too long", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -225,6 +240,7 @@ test("POST /v1/auth/register - fails with username too long", async (t) => {
 	t.regex(body.message, /username must be 3-30 characters|username must be a string|username can only contain/i);
 });
 
+// Security check: prevent NoSQL injection by validating input types
 test("POST /v1/auth/register - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/register", {
@@ -239,6 +255,7 @@ test("POST /v1/auth/register - fails with non-string input types (NoSQL injectio
 	t.regex(body.message, /username must be a string|invalid input types/i);
 });
 
+// Ensure that duplicate usernames are rejected
 test.serial("POST /v1/auth/register - fails with duplicate username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("duplicate");
@@ -264,6 +281,7 @@ test.serial("POST /v1/auth/register - fails with duplicate username", async (t) 
 	t.regex(body.message, /already exists/i);
 });
 
+// Ensure that duplicate emails are rejected
 test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const email = generateEmail("duplicate");
@@ -295,6 +313,7 @@ test.serial("POST /v1/auth/register - fails with duplicate email", async (t) => 
  * ===================================
  */
 
+// Verify that a registered user can login with correct credentials
 test.serial("POST /v1/auth/login - successful login with valid credentials", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("loginuser");
@@ -328,6 +347,7 @@ test.serial("POST /v1/auth/login - successful login with valid credentials", asy
 	t.regex(cookieHeader, /token=/);
 });
 
+// Ensure login requires a username
 test("POST /v1/auth/login - fails with missing username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -342,6 +362,7 @@ test("POST /v1/auth/login - fails with missing username", async (t) => {
 	t.regex(body.message, /username.*required/i);
 });
 
+// Ensure login requires a password
 test("POST /v1/auth/login - fails with missing password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -356,6 +377,7 @@ test("POST /v1/auth/login - fails with missing password", async (t) => {
 	t.regex(body.message, /password.*required/i);
 });
 
+// Verify that login fails for non-existent users
 test("POST /v1/auth/login - fails with non-existent username", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -371,6 +393,7 @@ test("POST /v1/auth/login - fails with non-existent username", async (t) => {
 	t.regex(body.message, /invalid credentials/i);
 });
 
+// Verify that login fails with incorrect password
 test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("wrongpw");
@@ -395,6 +418,7 @@ test.serial("POST /v1/auth/login - fails with wrong password", async (t) => {
 	t.regex(body.message, /invalid credentials/i);
 });
 
+// Username validation during login
 test("POST /v1/auth/login - fails with invalid username format", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/login", {
@@ -408,6 +432,7 @@ test("POST /v1/auth/login - fails with invalid username format", async (t) => {
 	t.regex(body.message, /username can only contain|invalid username format|username must be a string|username must be 3-30 characters/i);
 });
 
+// Security check: prevent NoSQL injection during login
 test("POST /v1/auth/login - fails with non-string input types (NoSQL injection prevention)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const { body, statusCode } = await client.post("v1/auth/login", {
@@ -427,6 +452,7 @@ test("POST /v1/auth/login - fails with non-string input types (NoSQL injection p
  * ===================================
  */
 
+// Verify that a logged-in user can logout successfully
 test.serial("POST /v1/auth/logout - successful logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("logoutuser");
@@ -453,6 +479,7 @@ test.serial("POST /v1/auth/logout - successful logout", async (t) => {
 	t.is(body.message, "Logout successful");
 });
 
+// Verify that logout works even if the user is not logged in (idempotent)
 test("POST /v1/auth/logout - works even without being logged in", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -469,6 +496,7 @@ test("POST /v1/auth/logout - works even without being logged in", async (t) => {
  * ===================================
  */
 
+// Test the complete authentication lifecycle
 test.serial("Full authentication flow: register -> login -> logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("fullflow");
@@ -492,6 +520,7 @@ test.serial("Full authentication flow: register -> login -> logout", async (t) =
 	t.is(logoutResponse.body.message, "Logout successful");
 });
 
+// Verify behavior when registering while already authenticated
 test.serial("Can register while already logged in", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username1 = generateUsername("user1");
@@ -524,6 +553,7 @@ test.serial("Can register while already logged in", async (t) => {
 	t.is(body.data.username, username2);
 });
 
+// Verify behavior when logging in while already authenticated
 test.serial("Can login again while already logged in (refreshes session)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("doublelogin");
@@ -553,6 +583,7 @@ test.serial("Can login again while already logged in (refreshes session)", async
 	t.is(secondLogin.body.data.username, username);
 });
 
+// Verify that the session cookie persists across requests
 test.serial("Session persists across multiple requests", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("session");
@@ -586,6 +617,7 @@ test.serial("Session persists across multiple requests", async (t) => {
 	t.is(firstRequest.statusCode, secondRequest.statusCode);
 });
 
+// Verify that logout effectively invalidates the session
 test.serial("Logout invalidates session", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("logout");
@@ -619,6 +651,7 @@ test.serial("Logout invalidates session", async (t) => {
 	t.is(afterLogout.statusCode, 401);
 });
 
+// Verify that a user can log in again after logging out
 test.serial("Can login again after logout", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("relogin");
@@ -656,6 +689,7 @@ test.serial("Can login again after logout", async (t) => {
  * ===================================
  */
 
+// Edge case: password is null
 test("POST /v1/auth/register - fails with null password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -671,6 +705,7 @@ test("POST /v1/auth/register - fails with null password", async (t) => {
 	t.is(body.success, false);
 });
 
+// Edge case: password is a number
 test("POST /v1/auth/register - fails with number as password", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -687,6 +722,7 @@ test("POST /v1/auth/register - fails with number as password", async (t) => {
 	t.is(body.message, 'Password must be a string');
 });
 
+// Edge case: password contains invalid characters
 test("POST /v1/auth/register - fails with password containing invalid characters (unicode)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -703,6 +739,7 @@ test("POST /v1/auth/register - fails with password containing invalid characters
 	t.regex(body.message, /invalid characters/i);
 });
 
+// Edge case: password contains emoji
 test("POST /v1/auth/register - fails with password containing emoji", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -719,6 +756,7 @@ test("POST /v1/auth/register - fails with password containing emoji", async (t) 
 	t.regex(body.message, /invalid characters/i);
 });
 
+// Edge case: username too short
 test("POST /v1/auth/register - fails with username too short (2 chars)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -735,6 +773,7 @@ test("POST /v1/auth/register - fails with username too short (2 chars)", async (
 	t.regex(body.message, /username/i);
 });
 
+// Edge case: username too long
 test("POST /v1/auth/register - fails with username too long (31+ chars)", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	
@@ -751,6 +790,7 @@ test("POST /v1/auth/register - fails with username too long (31+ chars)", async 
 	t.regex(body.message, /username/i);
 });
 
+// Security check: verify that revoked tokens cannot be used
 test.serial("Logout with valid token, then try to use revoked token", async (t) => {
 	const client = createClient(t.context.baseUrl);
 	const username = generateUsername("revoked");
@@ -790,4 +830,3 @@ test.serial("Logout with valid token, then try to use revoked token", async (t) 
 		t.pass("Cookie handling not available in test environment");
 	}
 });
-

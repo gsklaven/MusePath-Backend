@@ -24,15 +24,19 @@ import {
  */
 
 test.before(async t => {
+  // Initialize the test server and database connection before running tests
   await setupTestServer(t);
 });
 
 test.after.always(async t => {
+  // Ensure the server is properly closed after tests complete
   await cleanupTestServer(t);
 });
 
 // ==================== Route Calculation Tests ====================
 
+// Verify that a route can be calculated given a valid destination and start coordinates.
+// This is the primary success path for route generation.
 test.serial('POST /routes - should calculate route with valid data when authenticated', async t => {
   const { userId, client } = await registerAndLogin(
     t.context.baseUrl,
@@ -57,6 +61,7 @@ test.serial('POST /routes - should calculate route with valid data when authenti
   t.is(typeof response.body.data.calculationTime, 'number');
 });
 
+// Ensure that the route calculation endpoint requires a valid authentication token
 test('POST /routes - should require authentication', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -73,6 +78,7 @@ test('POST /routes - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that the API rejects requests missing the mandatory destination_id
 test.serial('POST /routes - should reject missing destination_id', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -92,6 +98,7 @@ test.serial('POST /routes - should reject missing destination_id', async t => {
   t.false(response.body.success);
 });
 
+// Verify that the API rejects requests missing start coordinates
 test.serial('POST /routes - should reject missing coordinates', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -110,6 +117,7 @@ test.serial('POST /routes - should reject missing coordinates', async t => {
   t.false(response.body.success);
 });
 
+// Verify that the API handles non-existent destination IDs gracefully
 test.serial('POST /routes - should reject invalid destination_id', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -131,6 +139,7 @@ test.serial('POST /routes - should reject invalid destination_id', async t => {
   t.regex(response.body.message, /destination not found/i);
 });
 
+// Verify that the API validates latitude range (-90 to 90)
 test.serial('POST /routes - should reject invalid start coordinates (latitude out of range)', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -152,6 +161,7 @@ test.serial('POST /routes - should reject invalid start coordinates (latitude ou
   t.regex(response.body.message, /invalid.*coordinates/i);
 });
 
+// Verify that the API validates longitude range (-180 to 180)
 test('POST /routes - should reject invalid start coordinates (longitude out of range)', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -175,6 +185,7 @@ test('POST /routes - should reject invalid start coordinates (longitude out of r
 
 // ==================== Route Retrieval Tests ====================
 
+// Verify that a created route can be retrieved by its ID
 test.serial('GET /routes/:route_id - should retrieve route details when authenticated', async t => {
   const { userId, client } = await registerAndLogin(
     t.context.baseUrl,
@@ -205,6 +216,7 @@ test.serial('GET /routes/:route_id - should retrieve route details when authenti
   t.truthy(response.body.data.instructions);
 });
 
+// Ensure that route retrieval requires authentication
 test('GET /routes/:route_id - should require authentication', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -215,6 +227,7 @@ test('GET /routes/:route_id - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that users cannot access routes belonging to other users (IDOR protection)
 test.serial('GET /routes/:route_id - should prevent access to other user routes', async t => {
   // Create route with user1
   const { userId: user1Id, client: client1 } = await registerAndLogin(
@@ -248,6 +261,7 @@ test.serial('GET /routes/:route_id - should prevent access to other user routes'
   t.regex(response.body.message, /forbidden/i);
 });
 
+// Verify that requesting a non-existent route ID returns a 404 error
 test.serial('GET /routes/:route_id - should return 404 for non-existent route', async t => {
   // Add delay to prevent timestamp collision
   await new Promise(resolve => setTimeout(resolve, 5));
@@ -265,6 +279,7 @@ test.serial('GET /routes/:route_id - should return 404 for non-existent route', 
   t.regex(response.body.message, /route not found/i);
 });
 
+// Verify that the walking speed parameter affects the estimated time calculation
 test.serial('GET /routes/:route_id - should accept walkingSpeed parameter', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -293,6 +308,7 @@ test.serial('GET /routes/:route_id - should accept walkingSpeed parameter', asyn
 
 // ==================== Route Update Tests ====================
 
+// Verify that a route can be updated with new stops
 test.serial('PUT /routes/:route_id - should update route stops when authenticated', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -323,6 +339,7 @@ test.serial('PUT /routes/:route_id - should update route stops when authenticate
   t.truthy(response.body.data.newEstimatedTime);
 });
 
+// Ensure that route updates require authentication
 test('PUT /routes/:route_id - should require authentication', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -337,6 +354,7 @@ test('PUT /routes/:route_id - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that users cannot update routes belonging to other users
 test.serial('PUT /routes/:route_id - should prevent updating other user routes', async t => {
   // Create route with user1
   const { client: client1 } = await registerAndLogin(
@@ -376,6 +394,7 @@ test.serial('PUT /routes/:route_id - should prevent updating other user routes',
 
 // ==================== Route Recalculation Tests ====================
 
+// Verify that a route can be recalculated (e.g., if user goes off-route)
 test.serial('POST /routes/:route_id - should recalculate route when authenticated', async t => {
   const { userId, client } = await registerAndLogin(
     t.context.baseUrl,
@@ -401,6 +420,7 @@ test.serial('POST /routes/:route_id - should recalculate route when authenticate
   t.truthy(response.body.data.calculationTime);
 });
 
+// Ensure that route recalculation requires authentication
 test('POST /routes/:route_id - should require authentication for recalculation', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -411,6 +431,7 @@ test('POST /routes/:route_id - should require authentication for recalculation',
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that users cannot recalculate routes belonging to other users
 test.serial('POST /routes/:route_id - should prevent recalculating other user routes', async t => {
   // Create route with user1
   const { client: client1 } = await registerAndLogin(
@@ -446,6 +467,7 @@ test.serial('POST /routes/:route_id - should prevent recalculating other user ro
 
 // ==================== Route Deletion Tests ====================
 
+// Verify that a route can be deleted by its owner
 test.serial('DELETE /routes/:route_id - should delete route when authenticated', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -472,6 +494,7 @@ test.serial('DELETE /routes/:route_id - should delete route when authenticated',
   t.is(getResponse.statusCode, 404);
 });
 
+// Ensure that route deletion requires authentication
 test('DELETE /routes/:route_id - should require authentication', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -482,6 +505,7 @@ test('DELETE /routes/:route_id - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that users cannot delete routes belonging to other users
 test.serial('DELETE /routes/:route_id - should prevent deleting other user routes', async t => {
   // Create route with user1
   const { client: client1 } = await registerAndLogin(
@@ -515,6 +539,7 @@ test.serial('DELETE /routes/:route_id - should prevent deleting other user route
   t.regex(response.body.message, /forbidden/i);
 });
 
+// Verify that deleting a non-existent route returns 404
 test.serial('DELETE /routes/:route_id - should return 404 for non-existent route', async t => {
   const { client } = await registerAndLogin(
     t.context.baseUrl,
@@ -531,6 +556,7 @@ test.serial('DELETE /routes/:route_id - should return 404 for non-existent route
 
 // ==================== Personalized Route Tests ====================
 
+// Verify that a personalized route is generated based on user preferences
 test.serial('GET /users/:user_id/routes - should generate personalized route for user with preferences', async t => {
   const { userId, client } = await registerAndLogin(
     t.context.baseUrl,
@@ -556,6 +582,7 @@ test.serial('GET /users/:user_id/routes - should generate personalized route for
   t.truthy(response.body.data.estimated_duration);
 });
 
+// Ensure that personalized route generation requires authentication
 test('GET /users/:user_id/routes - should require authentication', async t => {
   const client = createClient(t.context.baseUrl);
 
@@ -566,6 +593,7 @@ test('GET /users/:user_id/routes - should require authentication', async t => {
   t.is(response.body.message, 'Authentication token required');
 });
 
+// Verify that users cannot access personalized routes of other users
 test.serial('GET /users/:user_id/routes - should prevent accessing other user personalized routes', async t => {
   const { userId: user1Id, client: client1 } = await registerAndLogin(
     t.context.baseUrl,
@@ -588,6 +616,7 @@ test.serial('GET /users/:user_id/routes - should prevent accessing other user pe
   t.regex(response.body.message, /forbidden/i);
 });
 
+// Verify that personalized route generation fails if the user has no preferences set
 test.serial('GET /users/:user_id/routes - should fail for user without preferences', async t => {
   const { userId, client } = await registerAndLogin(
     t.context.baseUrl,
