@@ -5,7 +5,8 @@ import {
   cleanupTestServer,
   createClient,
   generateUsername,
-  generateEmail
+  generateEmail,
+  testForbiddenUserAction
 } from './helpers.js';
 
 /**
@@ -32,6 +33,39 @@ test.after.always(async t => {
   // Ensure the server is properly closed after tests complete
   await cleanupTestServer(t);
 });
+
+const testForbiddenRouteAction = async (t, method, body) => {
+  // Create route with user1
+  const { client: client1 } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('route1'),
+    generateEmail('route1'),
+    'Password123!'
+  );
+
+  const createResponse = await client1.post('v1/routes', {
+    json: {
+      destination_id: 1,
+      startLat: 40.7610,
+      startLng: -73.9780
+    }
+  });
+  const routeId = createResponse.body.data.route_id;
+
+  // Try to access with user2
+  const { client: client2 } = await registerAndLogin(
+    t.context.baseUrl,
+    generateUsername('route2'),
+    generateEmail('route2'),
+    'Password123!'
+  );
+
+  const response = await client2[method](`v1/routes/${routeId}`, body ? { json: body } : undefined);
+
+  t.is(response.statusCode, 403);
+  t.false(response.body.success);
+  t.regex(response.body.message, /forbidden/i);
+};
 
 // ==================== Route Calculation Tests ====================
 
@@ -229,36 +263,7 @@ test('GET /routes/:route_id - should require authentication', async t => {
 
 // Verify that users cannot access routes belonging to other users (IDOR protection)
 test.serial('GET /routes/:route_id - should prevent access to other user routes', async t => {
-  // Create route with user1
-  const { userId: user1Id, client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to access with user2
-  const { userId: user2Id, client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.get(`v1/routes/${routeId}`);
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+  await testForbiddenRouteAction(t, 'get');
 });
 
 // Verify that requesting a non-existent route ID returns a 404 error
@@ -356,40 +361,7 @@ test('PUT /routes/:route_id - should require authentication', async t => {
 
 // Verify that users cannot update routes belonging to other users
 test.serial('PUT /routes/:route_id - should prevent updating other user routes', async t => {
-  // Create route with user1
-  const { client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to update with user2
-  const { client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.put(`v1/routes/${routeId}`, {
-    json: {
-      addStops: [2]
-    }
-  });
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+  await testForbiddenRouteAction(t, 'put', { addStops: [2] });
 });
 
 // ==================== Route Recalculation Tests ====================
@@ -433,36 +405,7 @@ test('POST /routes/:route_id - should require authentication for recalculation',
 
 // Verify that users cannot recalculate routes belonging to other users
 test.serial('POST /routes/:route_id - should prevent recalculating other user routes', async t => {
-  // Create route with user1
-  const { client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to recalculate with user2
-  const { client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.post(`v1/routes/${routeId}`);
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+  await testForbiddenRouteAction(t, 'post');
 });
 
 // ==================== Route Deletion Tests ====================
@@ -507,36 +450,7 @@ test('DELETE /routes/:route_id - should require authentication', async t => {
 
 // Verify that users cannot delete routes belonging to other users
 test.serial('DELETE /routes/:route_id - should prevent deleting other user routes', async t => {
-  // Create route with user1
-  const { client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('routedel1'),
-    generateEmail('routedel1'),
-    'Password123!'
-  );
-
-  const createResponse = await client1.post('v1/routes', {
-    json: {
-      destination_id: 1,
-      startLat: 40.7610,
-      startLng: -73.9780
-    }
-  });
-  const routeId = createResponse.body.data.route_id;
-
-  // Try to delete with user2
-  const { client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('routedel2'),
-    generateEmail('routedel2'),
-    'Password123!'
-  );
-
-  const response = await client2.delete(`v1/routes/${routeId}`);
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+  await testForbiddenRouteAction(t, 'delete');
 });
 
 // Verify that deleting a non-existent route returns 404
@@ -595,25 +509,7 @@ test('GET /users/:user_id/routes - should require authentication', async t => {
 
 // Verify that users cannot access personalized routes of other users
 test.serial('GET /users/:user_id/routes - should prevent accessing other user personalized routes', async t => {
-  const { userId: user1Id, client: client1 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route1'),
-    generateEmail('route1'),
-    'Password123!'
-  );
-
-  const { userId: user2Id, client: client2 } = await registerAndLogin(
-    t.context.baseUrl,
-    generateUsername('route2'),
-    generateEmail('route2'),
-    'Password123!'
-  );
-
-  const response = await client2.get(`v1/users/${user1Id}/routes`);
-
-  t.is(response.statusCode, 403);
-  t.false(response.body.success);
-  t.regex(response.body.message, /forbidden/i);
+  await testForbiddenUserAction(t, 'get', 'v1/users/:user_id/routes');
 });
 
 // Verify that personalized route generation fails if the user has no preferences set
