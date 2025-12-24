@@ -70,12 +70,12 @@ jobs:
       - name: Run k6 Load Test - Health Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/health_load.js
+          path: tests/k6/search_load.js
 
       - name: Run k6 Spike Test - Health Route
         uses: grafana/run-k6-action@v1
         with:
-          path: tests/k6/health_spike.js
+          path: tests/k6/search_spike.js
 
       - name: Run k6 Load Test - Destinations Route
         uses: grafana/run-k6-action@v1

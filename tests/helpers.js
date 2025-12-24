@@ -142,7 +142,6 @@ export const generateUsername = (prefix = "testuser") => {
  * Generate unique test email
  */
 export const generateEmail = (prefix = "testuser") => {
-<<<<<<< HEAD
 	return `${prefix}_${Date.now()}@example.com`;
 };
 
@@ -180,9 +179,4 @@ export async function testForbiddenUserAction(t, method, endpoint, body) {
 	t.is(response.statusCode, 403);
 	t.false(response.body.success);
 }
-=======
-		const local = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-		const safeLocal = local.length > 30 ? local.slice(0, 30) : local;
-		return `${safeLocal}@example.com`;
-	};
->>>>>>> origin
+
