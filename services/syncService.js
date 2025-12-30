@@ -45,11 +45,11 @@ const operationHandlers = {
  * @throws {Error} If operation type is unknown or handler fails.
  */
 const processOperation = async (userId, operation) => {
-  const handler = operationHandlers[operation.operation_type];
-  if (!handler) {
+  // Validate that the operation type is a direct property of the handlers map
+  if (!operation.operation_type || !Object.prototype.hasOwnProperty.call(operationHandlers, operation.operation_type)) {
     throw new Error('Unknown operation type');
   }
-  await handler(userId, operation);
+  await operationHandlers[operation.operation_type](userId, operation);
 };
 
 /**
