@@ -6,7 +6,7 @@ export const options = {
     { duration: '10s', target: 10 },  // Κανονική κίνηση
     { duration: '20s', target: 1000 }, // Απότομο Spike (γνωστό σημείο αποτυχίας)
     { duration: '1m', target: 1000 },  // Διατήρηση πίεσης
-    { duration: '20s', target: 5 },  // Αποκλιμάκωση - Έλεγχος αν ανακάμπτει ο server
+    { duration: '20s', target: 10 },  // Αποκλιμάκωση - Έλεγχος αν ανακάμπτει ο server
     { duration: '10s', target: 0 },
   ],
   thresholds: {

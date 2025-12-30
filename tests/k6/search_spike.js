@@ -16,14 +16,14 @@ export const options = {
 };
 
 export default function () {
-  const keywords = ['art', 'ancient', 'modern', 'history'];
+  const keywords = ['ancient', 'art', 'greece', 'roman'];
   const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
   
   const res = http.get(`http://localhost:3000/v1/exhibits/search?keyword=${randomKeyword}`);
   
   check(res, {
     'status is 200': (r) => r.status === 200,
-    'has data': (r) => r.json().data.length >= 0,
+    'has data': (r) => r.json().data && r.json().data.length >= 0,
   });
   
   sleep(1);
