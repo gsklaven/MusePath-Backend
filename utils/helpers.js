@@ -1,3 +1,33 @@
+/**
+ * Validate an ID using a provided validator and send error if invalid.
+ * @param {any} id - The ID to validate
+ * @param {Function} validator - The validation function
+ * @param {import('express').Response} res - Express response object
+ * @param {string} [label] - Label for error message
+ * @returns {boolean} True if valid, false if response sent
+ */
+export const validateIdOrRespond = (id, validator, res, label = 'ID') => {
+  if (!validator(id)) {
+    res.status(400).json({ success: false, message: `Invalid ${label} format`, error: `Invalid ${label} format` });
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Handle async controller logic with error catching and optional custom error handler.
+ * @param {Function} fn - The async controller function
+ * @param {Function} [onError] - Optional custom error handler
+ * @returns {Function} Wrapped Express handler
+ */
+export const withErrorHandling = (fn, onError) => async (req, res, ...args) => {
+  try {
+    await fn(req, res, ...args);
+  } catch (error) {
+    if (onError) return onError(error, res);
+    res.status(500).json({ success: false, message: error.message, error: error.message });
+  }
+};
 import Exhibit from '../models/Exhibit.js';
 
 /** Utility helpers for service layer */

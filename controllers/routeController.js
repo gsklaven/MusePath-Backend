@@ -1,6 +1,7 @@
 import * as routeService from '../services/routeService.js';
 import { sendSuccess, sendError, sendNotFound, sendNoContent } from '../utils/responses.js';
 import { validateRouteId, validateUserId } from '../utils/validators.js';
+import { validateIdOrRespond, withErrorHandling } from '../utils/helpers.js';
 
 /**
  * A higher-order function that acts as a middleware to verify route ownership before executing a controller handler.
@@ -9,33 +10,14 @@ import { validateRouteId, validateUserId } from '../utils/validators.js';
  * @param {Function} handler - The async controller function to execute if ownership is verified. It receives `(req, res, route_id)`.
  * @returns {Function} An Express request handler `(req, res)` that wraps the original handler with the ownership check.
  */
-const withRouteOwnership = (handler) => async (req, res) => {
-  try {
-    const { route_id } = req.params;
-
-    // 1. Validate the format of the route ID from the URL parameters.
-    if (!validateRouteId(route_id)) {
-      return sendError(res, 'Invalid route ID format', 400);
-    }
-    
-    // 2. Fetch the owner of the route from the service layer.
-    const routeOwner = await routeService.getRouteOwner(route_id);
-    if (!routeOwner) {
-      return sendNotFound(res, 'Route not found');
-    }
-    
-    // 3. Check if the authenticated user (from `req.user.id`) is the owner of the route.
-    if (routeOwner !== Number(req.user.id)) {
-      return sendError(res, 'Forbidden: cannot access other user routes', 403);
-    }
-
-    // 4. If all checks pass, execute the original handler function.
-    await handler(req, res, route_id);
-  } catch (error) {
-    // Catch any unexpected errors during the process.
-    return sendError(res, error.message, 500);
-  }
-};
+const withRouteOwnership = (handler) => withErrorHandling(async (req, res) => {
+  const { route_id } = req.params;
+  if (!validateIdOrRespond(route_id, validateRouteId, res, 'route ID')) return;
+  const routeOwner = await routeService.getRouteOwner(route_id);
+  if (!routeOwner) return sendNotFound(res, 'Route not found');
+  if (routeOwner !== Number(req.user.id)) return sendError(res, 'Forbidden: cannot access other user routes', 403);
+  await handler(req, res, route_id);
+});
 
 /**
  * Route Controller
@@ -49,25 +31,16 @@ const withRouteOwnership = (handler) => async (req, res) => {
  * @param {import('express').Request} req - The Express request object, containing route data in the body.
  * @param {import('express').Response} res - The Express response object.
  */
-export const calculateRoute = async (req, res) => {
-  try {
-    const routeData = req.body;
-    // The user's ID is extracted from the authenticated request, not from the request body, for security.
-    routeData.user_id = req.user.id;
-    if (!validateUserId(routeData.user_id)) {
-      return sendError(res, 'Invalid user ID format', 400);
-    }
-    // Delegate the core logic to the route service.
-    const route = await routeService.calculateRoute(routeData);
-    return sendSuccess(res, route, 'Route calculated successfully');
-  } catch (error) {
-    // Handle specific errors, like a "not found" destination, with an appropriate status code.
-    if (error.message.includes('not found')) {
-      return sendNotFound(res, error.message);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+export const calculateRoute = withErrorHandling(async (req, res) => {
+  const routeData = req.body;
+  routeData.user_id = req.user.id;
+  if (!validateIdOrRespond(routeData.user_id, validateUserId, res, 'user ID')) return;
+  const route = await routeService.calculateRoute(routeData);
+  return sendSuccess(res, route, 'Route calculated successfully');
+}, (error, res) => {
+  if (error.message.includes('not found')) return sendNotFound(res, error.message);
+  return sendError(res, error.message, 500);
+});
 
 /**
  * Retrieves the details of a specific route.

@@ -1,5 +1,6 @@
 import * as syncService from '../services/syncService.js';
 import { sendSuccess, sendError } from '../utils/responses.js';
+import { withErrorHandling } from '../utils/helpers.js';
 
 /**
  * Sync Controller
@@ -37,28 +38,19 @@ const getUserId = (req) => req.user?.id || req.user?.userId || req.user?._id;
  *  - `data`: Object containing `successful` (count), `failed` (count), `conflicts` (array), and `details`.
  *  - `message`: Status message.
  */
-export const synchronizeOfflineData = async (req, res) => {
-  try {
-    // Extract operations from request body
-    const operations = req.body;
-    
-    const userId = getUserId(req);
-    
-    // Validate that the payload is an array
-    if (!Array.isArray(operations)) {
-      return sendError(res, 'Invalid operations payload. Expected an array of operations.', 400);
-    }
-    
-    // Handle empty operations array immediately
-    if (operations.length === 0) {
-      return sendSuccess(res, EMPTY_SYNC_RESULT, 'No operations to synchronize');
-    }
-    
-    // Delegate processing to the sync service
-    const result = await syncService.synchronizeOfflineData(userId, operations);
-    
-    return sendSuccess(res, result, 'Synchronization completed');
-  } catch (error) {
-    return sendError(res, error.message, 500);
+export const synchronizeOfflineData = withErrorHandling(async (req, res) => {
+  // Extract operations from request body
+  const operations = req.body;
+  const userId = getUserId(req);
+  // Validate that the payload is an array
+  if (!Array.isArray(operations)) {
+    return sendError(res, 'Invalid operations payload. Expected an array of operations.', 400);
   }
-};
+  // Handle empty operations array immediately
+  if (operations.length === 0) {
+    return sendSuccess(res, EMPTY_SYNC_RESULT, 'No operations to synchronize');
+  }
+  // Delegate processing to the sync service
+  const result = await syncService.synchronizeOfflineData(userId, operations);
+  return sendSuccess(res, result, 'Synchronization completed');
+});
