@@ -13,9 +13,10 @@ import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
  * Destination Deletion Tests
  * 
  * Test Coverage:
- * - Delete destinations (DELETE /destinations/:destination_id)
- * - Authentication and authorization (Admin roles)
- * - Error handling for deletion
+ * - Delete existing destinations (DELETE /destinations/:destination_id)
+ * - Admin authentication and authorization requirements
+ * - Successful deletion workflow
+ * - Error handling for non-existent destinations
  */
 
 test.before(async t => {

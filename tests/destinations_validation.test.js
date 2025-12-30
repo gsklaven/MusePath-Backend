@@ -10,9 +10,10 @@ import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
  * Destination Validation Tests
  * 
  * Test Coverage:
- * - Input validation for upload endpoints
- * - Missing required fields (map_id, destinations)
- * - Invalid data types
+ * - Input validation for destination creation
+ * - Required fields checks (map_id, destinations array)
+ * - Data type validation
+ * - Error response structure for validation failures
  */
 
 test.before(async t => {

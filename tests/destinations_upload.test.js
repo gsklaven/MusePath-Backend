@@ -13,9 +13,10 @@ import { MOCK_ADMIN_PASSWORD } from '../config/constants.js';
  * Destination Upload Tests
  * 
  * Test Coverage:
- * - Upload destinations (POST /destinations)
- * - Authentication and authorization (Admin roles)
- * - Successful upload workflow
+ * - Upload new destinations (POST /destinations)
+ * - Admin authentication and authorization requirements
+ * - Successful upload workflow with admin credentials
+ * - Response structure verification
  */
 
 test.before(async t => {
