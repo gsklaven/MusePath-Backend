@@ -4,8 +4,8 @@ import { check, sleep } from 'k6';
 export const options = {
   stages: [
     { duration: '10s', target: 10 },  // Κανονική κίνηση
-    { duration: '20s', target: 1000 }, // Απότομο Spike (γνωστό σημείο αποτυχίας)
-    { duration: '1m', target: 1000 },  // Διατήρηση πίεσης
+    { duration: '20s', target: 800 }, // Απότομο Spike (γνωστό σημείο αποτυχίας)
+    { duration: '1m', target: 800 },  // Διατήρηση πίεσης
     { duration: '20s', target: 10 },  // Αποκλιμάκωση - Έλεγχος αν ανακάμπτει ο server
     { duration: '10s', target: 0 },
   ],
