@@ -22,7 +22,6 @@ import {
  * - Route Tracking: Verifying notifications when users are on-route vs off-route.
  * - Deviation Detection: Checking if the system correctly identifies when a user strays from the path.
  * - Input Validation: Ensuring coordinates and route IDs are valid.
- * - Edge Cases: Boundary coordinates, empty routes, and concurrent users.
  */
 
 test.before(async t => {

@@ -1,3 +1,19 @@
+/**
+ * Search Endpoint Spike Test
+ * 
+ * Objective:
+ * Verify system stability and recovery under sudden traffic spikes for the search endpoint.
+ * 
+ * Scenarios:
+ * - Warmup: 10 VUs for 10s
+ * - Spike: Jump to 500 VUs in 30s
+ * - Sustain: Hold 500 VUs for 1m
+ * - Cooldown: Drop to 10 VUs in 20s
+ * 
+ * Thresholds:
+ * - 95% of requests < 1000ms
+ * - Error rate < 5%
+ */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 

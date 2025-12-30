@@ -17,7 +17,6 @@ import {
  * - Single and batched operations
  * - Different operation types (ratings, favorites)
  * - Error handling for invalid data or unknown operations
- * - Integration workflows simulating offline usage
  */
 
 test.before(async t => {

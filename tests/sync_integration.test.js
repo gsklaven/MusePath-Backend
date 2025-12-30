@@ -10,6 +10,11 @@ import {
 /**
  * Sync Integration Tests
  * Complex workflows and stress tests for synchronization
+ * 
+ * Test Coverage:
+ * - Offline-to-Online simulation (accumulated changes)
+ * - Batch synchronization consistency
+ * - Large batch stress testing
  */
 
 test.before(async t => {

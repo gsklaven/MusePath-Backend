@@ -1,3 +1,18 @@
+/**
+ * Search Endpoint Load Test
+ * 
+ * Objective:
+ * Verify search functionality performance under sustained load.
+ * 
+ * Scenarios:
+ * - Ramp up: To 100 VUs in 1m
+ * - Steady State: 100 VUs for 3m
+ * - Ramp down: To 0 VUs in 30s
+ * 
+ * Thresholds:
+ * - 95% of requests < 500ms
+ * - Error rate < 1%
+ */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 

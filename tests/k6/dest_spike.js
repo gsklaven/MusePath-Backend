@@ -1,3 +1,19 @@
+/**
+ * Destinations Endpoint Spike Test
+ * 
+ * Objective:
+ * Verify system resilience when facing a sudden surge in traffic for destinations.
+ * 
+ * Scenarios:
+ * - Normal traffic: 10 VUs for 10s
+ * - Spike: Jump to 400 VUs in 20s
+ * - Sustain: Hold 400 VUs for 1m
+ * - Recovery: Drop to 10 VUs in 20s
+ * 
+ * Thresholds:
+ * - 95% of requests < 1000ms
+ * - Error rate < 10%
+ */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 

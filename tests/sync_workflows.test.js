@@ -10,6 +10,12 @@ import {
 /**
  * Sync Workflows and Advanced Tests
  * Tests for batch operations, workflows, and edge cases
+ * 
+ * Test Coverage:
+ * - Mixed operation batches (ratings + favorites)
+ * - Unknown operation type handling
+ * - Partial success scenarios (some ops fail, others succeed)
+ * - Invalid data handling within batch operations
  */
 
 test.before(async t => {

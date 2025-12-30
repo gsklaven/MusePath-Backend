@@ -12,6 +12,13 @@ import {
 /**
  * Notifications Workflow Tests
  * Complex workflows and edge cases for notification functionality
+ * 
+ * Test Coverage:
+ * - Multiple notifications for the same route
+ * - Boundary coordinate handling (poles, date line)
+ * - Stateful user workflows (following a route)
+ * - Concurrent user scenarios
+ * - Robustness against empty or malformed paths
  */
 
 test.before(async t => {

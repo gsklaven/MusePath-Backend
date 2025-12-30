@@ -11,7 +11,7 @@ import {
 /**
  * Route Management Tests
  * 
- * Test Coverage:
+ * Test Coverage (Calculation):
  * - Route calculation (POST /routes)
  * - Authentication requirements
  * - Input validation

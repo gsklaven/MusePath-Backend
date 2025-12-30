@@ -12,6 +12,12 @@ import {
 /**
  * Route Retrieval Tests
  * Tests for GET /routes/:route_id
+ * 
+ * Test Coverage:
+ * - Route details retrieval
+ * - Authentication requirements
+ * - IDOR protection (prevent access to other users' routes)
+ * - Walking speed parameter handling
  */
 
 test.before(async t => {

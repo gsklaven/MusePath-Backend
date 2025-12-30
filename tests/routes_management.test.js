@@ -12,6 +12,12 @@ import {
 /**
  * Route Management Tests
  * Tests for Update, Recalculation, and Deletion of routes
+ * 
+ * Test Coverage:
+ * - Route updates (adding stops)
+ * - Route recalculation (off-route handling)
+ * - Route deletion
+ * - Authorization checks (ownership verification)
  */
 
 test.before(async t => {

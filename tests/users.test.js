@@ -12,6 +12,12 @@ import {
 /**
  * User Endpoints Tests
  * Tests for user preferences and personalized routes
+ * 
+ * Test Coverage:
+ * - User Preferences management (PUT)
+ * - Personalized Route generation (GET)
+ * - Authorization checks (prevent modifying other users)
+ * - Integration workflows (Preferences -> Personalized Route)
  */
 
 test.before(setupTestServer);

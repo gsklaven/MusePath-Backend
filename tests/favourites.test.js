@@ -12,6 +12,12 @@ import {
 /**
  * Favourites Endpoints Tests
  * Tests for user favourites management
+ * 
+ * Test Coverage:
+ * - Adding exhibits to favourites (POST)
+ * - Removing exhibits from favourites (DELETE)
+ * - Idempotency checks (duplicate adds/removes)
+ * - Authorization checks
  */
 
 test.before(setupTestServer);

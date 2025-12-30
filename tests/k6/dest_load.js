@@ -1,3 +1,18 @@
+/**
+ * Destinations Endpoint Load Test
+ * 
+ * Objective:
+ * Verify system performance under sustained normal load for the destinations endpoint.
+ * 
+ * Scenarios:
+ * - Ramp up: To 100 VUs in 1m
+ * - Steady State: 100 VUs for 3m
+ * - Ramp down: To 0 VUs in 30s
+ * 
+ * Thresholds:
+ * - 95% of requests < 600ms
+ * - Error rate < 1%
+ */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
