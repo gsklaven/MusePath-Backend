@@ -5,7 +5,10 @@
 
 const BASE_DATE = new Date('2024-01-01');
 
-// Gallery Coordinates
+/**
+ * Gallery Coordinates
+ * Mapping of gallery sections to their geographical coordinates.
+ */
 const GALLERY = {
   a: { lat: 40.7614, lng: -73.9776 },
   b: { lat: 40.7615, lng: -73.9775 },
@@ -14,10 +17,19 @@ const GALLERY = {
   e: { lat: 40.7618, lng: -73.9772 }
 };
 
-// Helper to generate audio guide paths
+/**
+ * Generates the audio guide URL path for a given exhibit ID.
+ * @param {number} id - The exhibit ID.
+ * @returns {string} The relative URL path to the audio file.
+ */
 const audioPath = (id) => `/audio/exhibits/${id}.mp3`;
 
-// Helper to generate feature list based on accessibility flags
+/**
+ * Generates a list of feature strings based on accessibility flags.
+ * @param {boolean} wheelchair - Whether the exhibit is wheelchair accessible.
+ * @param {boolean} braille - Whether the exhibit has Braille support.
+ * @returns {string[]} Array of feature descriptions.
+ */
 const buildFeatures = (wheelchair, braille) => {
   const features = ['Audio Guide Available'];
   if (wheelchair) features.unshift('Wheelchair Accessible');
@@ -25,9 +37,28 @@ const buildFeatures = (wheelchair, braille) => {
   return features;
 };
 
-// Factory function to create an exhibit entry
+/**
+ * Extracts accessibility settings from the configuration.
+ * Applies default values: wheelchair=true, braille=false.
+ * 
+ * @param {Object} [access] - The access configuration object.
+ * @returns {{wheelchair: boolean, braille: boolean}} Normalized access settings.
+ */
+const getAccessSettings = (access = {}) => {
+  const { wheelchair = true, braille = false } = access;
+  return { wheelchair, braille };
+};
+
+/**
+ * Factory function to create an exhibit entry.
+ * Maps raw configuration data to the application's Exhibit model structure.
+ * 
+ * @param {Object} cfg - The raw exhibit configuration.
+ * @returns {Object} The formatted exhibit object.
+ */
 const buildExhibit = (cfg) => {
-  const { wheelchair = true, braille = false } = cfg.access || {};
+  const { wheelchair, braille } = getAccessSettings(cfg.access);
+  const status = cfg.status || 'open';
   
   return {
     exhibitId: cfg.id,
@@ -39,8 +70,8 @@ const buildExhibit = (cfg) => {
     historicalInfo: cfg.history,
     location: cfg.location,
     coordinates: cfg.coords,
-    status: cfg.status || 'open',
-    visitingAvailability: cfg.status !== 'closed',
+    status: status,
+    visitingAvailability: status !== 'closed',
     ratings: cfg.ratings || new Map(),
     averageRating: cfg.avgRating || 0,
     wheelchairAccessible: wheelchair,
@@ -55,7 +86,11 @@ const buildExhibit = (cfg) => {
   };
 };
 
-// Raw configuration data for exhibits
+/**
+ * Raw configuration data for exhibits.
+ * Contains the source of truth for mock data generation.
+ * @type {Array<Object>}
+ */
 const EXHIBITS = [
   {
     id: 1,
