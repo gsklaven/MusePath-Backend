@@ -15,7 +15,7 @@ export const options = {
 
 export default function () {
   // Χρήση δυναμικών keywords για να στρεσάρουμε το φιλτράρισμα
-  const keywords = ['starry', 'mona', 'ancient', 'art'];
+  const keywords = ['ancient', 'art', 'greece', 'roman'];
   const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
   
   const res = http.get(`http://localhost:3000/v1/exhibits/search?keyword=${randomKeyword}`);
