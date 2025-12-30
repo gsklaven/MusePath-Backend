@@ -25,7 +25,18 @@ const app = express();
 const applySecurity = (app) => {
   app.use(helmet());
   app.use(cors(corsOptions));
-  app.use(rateLimit(rateLimitOptions));
+
+  // Αν η μεταβλητή TESTING_ENV είναι 'true', βάζουμε όριο
+  if (process.env.TESTING_ENV === 'true') {
+    app.use(rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 λεπτά
+      max: 100000,              // Τεράστιο όριο για να περνάνε τα k6 tests
+      message: { error: 'Rate limit exceeded (Testing Mode)' }
+    }));
+  } else {
+    // Κανονική λειτουργία (Production/Dev) με τις ρυθμίσεις από το config
+    app.use(rateLimit(rateLimitOptions));
+  }
 };
 
 /**

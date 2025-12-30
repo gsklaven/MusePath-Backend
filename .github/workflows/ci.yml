@@ -47,6 +47,7 @@ jobs:
           # Χρησιμοποιούμε dummy DATABASE_URL για να σηκωθεί ο server στο CI
           export DATABASE_URL="mongodb://localhost:27017/testDB"
           export SERVER_SECRET="performance_test_secret"
+          export TESTING_ENV="true"
           nohup node server.js > server.log 2>&1 & 
           echo "Server started with PID $!"
       
