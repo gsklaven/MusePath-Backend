@@ -208,3 +208,24 @@ export const testForbiddenRouteAction = async (t, method, body) => {
 	t.false(response.body.success);
 	t.regex(response.body.message, /forbidden/i);
 };
+
+export const createTestRoute = async (client, destinationId = 1, startLat = 40.7614, startLng = -73.9776) => {
+	const response = await client.post('v1/routes', {
+		json: {
+			destination_id: destinationId,
+			startLat,
+			startLng
+		}
+	});
+	return response.body.data.route_id;
+};
+
+export const sendNotification = (client, routeId, currentLat, currentLng) => {
+	return client.post('v1/notifications', {
+		json: {
+			route_id: routeId,
+			currentLat,
+			currentLng
+		}
+	});
+};
