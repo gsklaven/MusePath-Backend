@@ -175,3 +175,36 @@ export const generateEmail = (prefix = "testuser") => {
 	t.is(response.statusCode, 403);
 	t.false(response.body.success);
 };
+
+export const testForbiddenRouteAction = async (t, method, body) => {
+	// Create route with user1
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		generateUsername('route1'),
+		generateEmail('route1'),
+		'Password123!'
+	);
+
+	const createResponse = await client1.post('v1/routes', {
+		json: {
+			destination_id: 1,
+			startLat: 40.7610,
+			startLng: -73.9780
+		}
+	});
+	const routeId = createResponse.body.data.route_id;
+
+	// Try to access with user2
+	const { client: client2 } = await registerAndLogin(
+		t.context.baseUrl,
+		generateUsername('route2'),
+		generateEmail('route2'),
+		'Password123!'
+	);
+
+	const response = await client2[method](`v1/routes/${routeId}`, body ? { json: body } : undefined);
+
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+	t.regex(response.body.message, /forbidden/i);
+};
