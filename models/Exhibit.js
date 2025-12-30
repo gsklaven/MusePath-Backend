@@ -2,119 +2,120 @@ import mongoose from 'mongoose';
 
 /**
  * Exhibit Schema
- *
- * Purpose:
- * - Represent exhibits with metadata, accessibility flags, ratings and media
- * - Designed to match fields used by services and mock data for tests
- *
- * Notes:
- * - `exhibitId` is a stable numeric identifier used in mock mode
- * - Pre-save hook keeps `updatedAt` current when persisting to MongoDB
+ * 
+ * This schema defines the structure for an exhibit document in the database. It is a comprehensive model
+ * that includes descriptive metadata, location details, accessibility information, user ratings, and media links.
+ * It is designed to be the single source of truth for all information related to a museum exhibit.
  */
 const exhibitSchema = new mongoose.Schema({
-  // Unique numeric identifier for the exhibit
+  // A stable, public-facing numeric identifier for the exhibit, distinct from MongoDB's `_id`.
   exhibitId: {
     type: Number,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
-  // Short name of the exhibit
+  // The short, common name of the exhibit.
   name: {
     type: String,
     required: true
   },
-  // Full title of the exhibit
+  // The full, official title of the exhibit.
   title: {
     type: String,
     required: true
   },
-  // Categories for classification and search (e.g., "Modern Art")
+  // An array of categories for classification and searching (e.g., "Modern Art", "History").
   category: [{
     type: String
   }],
-  // Detailed description of the exhibit
+  // A detailed, descriptive text about the exhibit.
   description: {
     type: String,
     required: true
   },
-  // Historical context and background information
+  // Additional historical context or background information.
   historicalInfo: {
     type: String
   },
-  // Physical location description (e.g., "Gallery A")
+  // A human-readable description of the exhibit's physical location (e.g., "Gallery A, West Wing").
   location: {
     type: String,
     required: true
   },
-  // Geographical coordinates
+  // The precise geographical coordinates of the exhibit.
   coordinates: {
     lat: Number,
     lng: Number
   },
-  // Operational status
+  // The current operational status of the exhibit.
   status: {
     type: String,
     enum: ['open', 'closed', 'under_maintenance'],
     default: 'open'
   },
-  // Whether the exhibit allows visitors currently
+  // A boolean indicating if the exhibit is currently open to visitors.
   visitingAvailability: {
     type: Boolean,
     default: true
   },
-  // User ratings map (UserId -> Rating)
+  // A map storing individual user ratings, mapping a user's ID to their given rating.
   ratings: {
     type: Map,
     of: Number,
-    default: new Map()
+    default: () => new Map()
   },
-  // Cached average rating for performance
+  // A cached, calculated average of all ratings to improve performance on retrieval.
   averageRating: {
     type: Number,
     default: 0
   },
-  // Accessibility flag: Wheelchair access
+  // Flag indicating if the exhibit has wheelchair access.
   wheelchairAccessible: {
     type: Boolean,
     default: false
   },
-  // Accessibility flag: Braille support
+  // Flag indicating if the exhibit offers information in Braille.
   brailleSupport: {
     type: Boolean,
     default: false
   },
-  // URL to the audio guide media file
+  // A URL pointing to an audio guide file for the exhibit.
   audioGuideUrl: {
     type: String
   },
-  // Search keywords
+  // An array of keywords for enhanced search functionality.
   keywords: [{
     type: String
   }],
-  // List of features (e.g., "Interactive")
+  // A list of special features of the exhibit (e.g., "Interactive", "Audiovisual").
   features: [{
     type: String
   }],
-  // Current crowd level
+  // An estimate of the current crowd density around the exhibit.
   crowdLevel: {
     type: String,
     enum: ['low', 'medium', 'high'],
     default: 'low'
   },
-  // Record creation timestamp
+  // Timestamp for when the exhibit document was created.
   createdAt: {
     type: Date,
     default: Date.now
   },
-  // Record last update timestamp
+  // Timestamp for when the exhibit document was last updated.
   updatedAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// NOTE: Mongoose pre-save hook - only executes with MongoDB, not in mock data mode.
-// Uncovered in tests that use mock data, but essential for MongoDB operation.
+/**
+ * Mongoose pre-save hook.
+ * This function automatically updates the `updatedAt` field to the current timestamp
+ * every time an exhibit document is saved. This is crucial for tracking updates but is
+ * only active when using MongoDB, not in mock data mode.
+ */
 exhibitSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();

@@ -1,6 +1,9 @@
 /**
  * Express Application Setup
- * Entry point for request processing pipeline.
+ * 
+ * This file is the primary entry point for the Express application's request processing pipeline.
+ * It orchestrates the setup of all middleware, including security, request parsing, routing, and error handling.
+ * The configuration is modularized into separate functions for clarity and maintainability.
  */
 import express from 'express';
 import routes from './routes/index.js';
@@ -19,28 +22,30 @@ import { API_INFO } from './config/apiInfo.js';
 const app = express();
 
 /**
- * Applies security middleware to the Express application.
+ * Applies security-related middleware to the Express application.
+ * This includes setting security headers, enabling CORS, and configuring rate limiting.
  * @param {import('express').Application} app - The Express application instance.
  */
 const applySecurity = (app) => {
   app.use(helmet());
+  // Enables Cross-Origin Resource Sharing with configured options.
   app.use(cors(corsOptions));
 
-  // Αν η μεταβλητή TESTING_ENV είναι 'true', βάζουμε όριο
+  // If the TESTING_ENV variable is 'true', apply a more lenient rate limit.
   if (process.env.TESTING_ENV === 'true') {
     app.use(rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 λεπτά
-      max: 100000,              // Τεράστιο όριο για να περνάνε τα k6 tests
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100000,              // A very high limit to ensure performance tests (e.g., k6) can run without being blocked.
       message: { error: 'Rate limit exceeded (Testing Mode)' }
     }));
   } else {
-    // Κανονική λειτουργία (Production/Dev) με τις ρυθμίσεις από το config
+    // In production or development, use the standard rate limit options from the config.
     app.use(rateLimit(rateLimitOptions));
   }
 };
 
 /**
- * Applies request processing middleware (parsing, logging, sanitization).
+ * Applies middleware for request processing, such as body parsing, compression, logging, and data sanitization.
  * @param {import('express').Application} app - The Express application instance.
  */
 const applyRequestProcessing = (app) => {
@@ -53,7 +58,7 @@ const applyRequestProcessing = (app) => {
 };
 
 /**
- * Registers API routes and the root endpoint.
+ * Registers the main API routes and a root endpoint for basic API information.
  * @param {import('express').Application} app - The Express application instance.
  */
 const applyRoutes = (app) => {
@@ -62,7 +67,7 @@ const applyRoutes = (app) => {
 };
 
 /**
- * Applies error handling middleware.
+ * Applies the final layers of middleware for handling errors, such as 404 Not Found and other application errors.
  * @param {import('express').Application} app - The Express application instance.
  */
 const applyErrorHandling = (app) => {
@@ -70,7 +75,8 @@ const applyErrorHandling = (app) => {
   app.use(errorHandler);
 };
 
-// Initialize all layers
+// Initialize all middleware layers in the correct order.
+// The order of application is crucial: Security -> Processing -> Routing -> Error Handling.
 applySecurity(app);
 applyRequestProcessing(app);
 applyRoutes(app);

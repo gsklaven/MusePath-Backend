@@ -4,24 +4,29 @@ import Route from '../models/Route.js';
 import { DEFAULT_WALKING_SPEED } from '../config/constants.js';
 
 import * as services from './index.js';
-
-// Ομαδοποιημένοι Helpers
 import * as helpers from '../utils/helpers.js';
 
 /**
  * Route Service
- * Business logic for route operations
+ * This service encapsulates the business logic for creating, retrieving, and managing routes within the application.
+ * It handles both standard and personalized route calculations.
  */
 
 /**
- * Calculate route
- * @param {Object} routeData - Route request data
- * @returns {Promise<Object>} Calculated route
+ * Calculates a new route based on a user's starting location and a desired destination.
+ *
+ * @param {object} routeData - The necessary data to calculate the route.
+ * @param {number} routeData.user_id - The ID of the user requesting the route.
+ * @param {number} routeData.destination_id - The ID of the destination.
+ * @param {number} routeData.startLat - The starting latitude.
+ * @param {number} routeData.startLng - The starting longitude.
+ * @returns {Promise<object>} A promise that resolves to a summary of the calculated route.
+ * @throws {Error} If the destination is not found.
  */
 export const calculateRoute = async (routeData) => {
   const { user_id, destination_id, startLat, startLng } = routeData;
   
-  // Get destination coordinates
+  // Fetch the destination details to get its coordinates.
   const destination = await services.getDestinationById(destination_id);
   if (!destination) {
     throw new Error('Destination not found');
@@ -29,7 +34,7 @@ export const calculateRoute = async (routeData) => {
   
   const startTime = Date.now();
   
-  // Calculate distance
+  // Calculate the geographical distance between the start and end points.
   const distance = helpers.calculateDistance(
     startLat, 
     startLng, 
@@ -37,14 +42,15 @@ export const calculateRoute = async (routeData) => {
     destination.coordinates.lng
   );
   
-  // Calculate estimated time
+  // Estimate the travel time based on the distance and a default walking speed.
   const estimatedTime = helpers.calculateEstimatedTime(distance, DEFAULT_WALKING_SPEED);
   
-  // Generate route
+  // Generate a unique ID for the new route.
   const routeId = isMockDataMode() 
     ? helpers.generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
   
+  // Construct the new route object with all calculated details.
   const newRoute = {
     routeId,
     userId: Number(user_id),
@@ -59,11 +65,12 @@ export const calculateRoute = async (routeData) => {
     arrivalTime: helpers.calculateArrivalTime(estimatedTime),
     calculationTime: Math.round((Date.now() - startTime) / 1000),
     isPersonalized: false,
-    mapUrl: '/maps/1/route.png',
+    mapUrl: '/maps/1/route.png', // A mock URL for the map visual.
     createdAt: new Date(),
     updatedAt: new Date()
   };
   
+  // Save the new route to the appropriate data store.
   if (isMockDataMode()) {
     mockRoutes.push(newRoute);
   } else {
@@ -71,6 +78,7 @@ export const calculateRoute = async (routeData) => {
     await route.save();
   }
   
+  // Return a summary of the created route.
   return {
     route_id: routeId,
     user_id: Number(user_id),
@@ -80,39 +88,32 @@ export const calculateRoute = async (routeData) => {
 };
 
 /**
- * Get route details
- * @param {number} routeId - Route ID
- * @param {number} walkingSpeed - Optional walking speed
- * @returns {Promise<Object>} Route details
+ * Retrieves the details of a specific route.
+ * Optionally recalculates the estimated time based on a provided walking speed.
+ *
+ * @param {number} routeId - The ID of the route to retrieve.
+ * @param {number} [walkingSpeed] - An optional walking speed in km/h to adjust the time estimate.
+ * @returns {Promise<object|null>} A promise that resolves to the route details, or null if not found.
  */
 export const getRouteDetails = async (routeId, walkingSpeed) => {
+  let route;
   if (isMockDataMode()) {
-    const route = mockRoutes.find(r => r.routeId === Number(routeId));
-    if (!route) return null;
-    
-    let estimatedTime = route.estimatedTime;
-    if (walkingSpeed) {
-      estimatedTime = helpers.calculateEstimatedTime(route.distance, Number(walkingSpeed));
-    }
-    
-    return {
-      route_id: route.routeId,
-      estimatedTime,
-      arrivalTime: helpers.calculateArrivalTime(estimatedTime),
-      distance: route.distance,
-      path: route.path.map(p => `${p.lat},${p.lng}`),
-      instructions: route.instructions
-    };
+    // --- MOCK DATA MODE ---
+    route = mockRoutes.find(r => r.routeId === Number(routeId));
+  } else {
+    // --- MONGODB MODE ---
+    route = await Route.findOne({ routeId: Number(routeId) });
   }
-  
-  const route = await Route.findOne({ routeId: Number(routeId) });
+
   if (!route) return null;
   
   let estimatedTime = route.estimatedTime;
+  // If a custom walking speed is provided, recalculate the estimated travel time.
   if (walkingSpeed) {
     estimatedTime = helpers.calculateEstimatedTime(route.distance, Number(walkingSpeed));
   }
   
+  // Format and return the public-facing route details.
   return {
     route_id: route.routeId,
     estimatedTime,
@@ -124,30 +125,23 @@ export const getRouteDetails = async (routeId, walkingSpeed) => {
 };
 
 /**
- * Update route stops
- * @param {number} routeId - Route ID
- * @param {Object} updateData - Update data with stops
- * @returns {Promise<Object>} Update result
+ * Updates a route to include additional stops.
+ * NOTE: This is a simplified implementation for demonstration purposes.
+ *
+ * @param {number} routeId - The ID of the route to update.
+ * @param {object} updateData - The data for the update, including stops to add.
+ * @param {Array} [updateData.addStops] - An array of stops to add to the route.
+ * @returns {Promise<object|null>} A promise resolving to the result of the update, or null if the route is not found.
  */
 export const updateRouteStops = async (routeId, updateData) => {
-  if (isMockDataMode()) {
-    const route = mockRoutes.find(r => r.routeId === Number(routeId));
-    if (!route) return null;
-    
-    // Simple implementation: just acknowledge the update
-    const newEstimatedTime = route.estimatedTime + (updateData.addStops?.length || 0) * 120; // Add 2 min per stop
-    
-    return {
-      route_id: route.routeId,
-      stopsUpdated: true,
-      newEstimatedTime
-    };
-  }
-  
-  const route = await Route.findOne({ routeId: Number(routeId) });
+  const route = isMockDataMode()
+    ? mockRoutes.find(r => r.routeId === Number(routeId))
+    : await Route.findOne({ routeId: Number(routeId) });
+
   if (!route) return null;
   
-  const newEstimatedTime = route.estimatedTime + (updateData.addStops?.length || 0) * 120;
+  // A simple calculation to adjust estimated time. A real implementation would be more complex.
+  const newEstimatedTime = route.estimatedTime + (updateData.addStops?.length || 0) * 120; // Adds 2 minutes per stop.
   
   return {
     route_id: route.routeId,
@@ -157,41 +151,44 @@ export const updateRouteStops = async (routeId, updateData) => {
 };
 
 /**
- * Recalculate route
- * @param {number} routeId - Route ID
- * @returns {Promise<Object>} Recalculated route
+ * Recalculates an existing route.
+ * NOTE: This is a stub function. A real implementation would perform a full recalculation.
+ *
+ * @param {number} routeId - The ID of the route to recalculate.
+ * @returns {Promise<object|null>} A promise that resolves to the recalculated route summary, or null if the original route is not found.
  */
 export const recalculateRoute = async (routeId) => {
   const routeDetails = await getRouteDetails(routeId);
   if (!routeDetails) return null;
   
+  // This implementation returns a simplified, hardcoded response.
   return {
     route_id: Number(routeId),
     user_id: 1, // Default user
     destination_id: 1, // Default destination
-    calculationTime: 2
+    calculationTime: 2 // A static calculation time.
   };
 };
 
 /**
- * Get route owner (userId)
- * @param {number} routeId - Route ID
- * @returns {Promise<number|null>} User ID or null if not found
+ * Retrieves the user ID of the owner of a given route.
+ *
+ * @param {number} routeId - The ID of the route.
+ * @returns {Promise<number|null>} A promise that resolves to the user ID, or null if the route is not found.
  */
 export const getRouteOwner = async (routeId) => {
-  if (isMockDataMode()) {
-    const route = mockRoutes.find(r => r.routeId === Number(routeId));
-    return route ? Number(route.userId) : null;
-  }
+  const route = isMockDataMode()
+    ? mockRoutes.find(r => r.routeId === Number(routeId))
+    : await Route.findOne({ routeId: Number(routeId) });
   
-  const route = await Route.findOne({ routeId: Number(routeId) });
   return route ? Number(route.userId) : null;
 };
 
 /**
- * Delete route
- * @param {number} routeId - Route ID
- * @returns {Promise<boolean>} Deletion success
+ * Deletes a route from the system.
+ *
+ * @param {number} routeId - The ID of the route to delete.
+ * @returns {Promise<boolean>} A promise that resolves to true if deletion was successful, false otherwise.
  */
 export const deleteRoute = async (routeId) => {
   if (isMockDataMode()) {
@@ -208,59 +205,62 @@ export const deleteRoute = async (routeId) => {
 };
 
 /**
- * Generate personalized route
- * @param {number} userId - User ID
- * @returns {Promise<Object>} Personalized route
+ * Generates a personalized route for a user based on their preferences.
+ * The route includes exhibits that match the user's preferred categories.
+ *
+ * @param {number} userId - The ID of the user for whom to generate the route.
+ * @returns {Promise<object>} A promise that resolves to the personalized route object.
+ * @throws {Error} If the user has no preferences or if no matching exhibits can be found.
  */
 export const generatePersonalizedRoute = async (userId) => {
   const user = await services.getUserById(userId);
   
+  // Ensure the user exists and has preferences set for personalization.
   if (!user || !user.personalizationAvailable || !user.preferences || user.preferences.length === 0) {
     throw new Error('Cannot generate personalized route - missing user preferences');
   }
   
-  // Get all exhibits
   const exhibits = await services.getAllExhibits();
   
-  // Filter exhibits based on user preferences
+  // Filter exhibits to find those that match the user's preferences.
   const matchingExhibits = exhibits.filter(exhibit => 
     exhibit.category.some(cat => 
       user.preferences.some(pref => 
         cat.toLowerCase().includes(pref.toLowerCase())
       )
     )
-  ).slice(0, 5); // Limit to 5 exhibits
+  ).slice(0, 5); // Limit the number of stops to a reasonable amount.
   
-  // NOTE: Edge case: user has preferences but no matching exhibits exist.
-  // Unlikely in practice with current mock data as multiple exhibits match common preferences.
+  // Handle the edge case where no exhibits match the user's preferences.
   if (matchingExhibits.length === 0) {
     throw new Error('No matching exhibits found for user preferences');
   }
   
-  // NOTE: Lines 248-258 - MongoDB mode route generation, not executed in mock data tests.
   const routeId = isMockDataMode() 
     ? helpers.generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
   
-  // Calculate total estimated duration
-  const estimatedDuration = matchingExhibits.length * 10; // 10 minutes per exhibit
+  // Calculate a simple estimated duration for the personalized tour.
+  const estimatedDuration = matchingExhibits.length * 10; // e.g., 10 minutes per exhibit.
   
   return {
     route_id: routeId,
     exhibits: matchingExhibits.map(e => e.exhibitId),
     estimated_duration: `${estimatedDuration} minutes`,
     map_url: '/maps/1/personalized_route.png',
-    starting_point: 40.7610,
-    ending_point: 40.7618
+    starting_point: 40.7610, // Example coordinate
+    ending_point: 40.7618    // Example coordinate
   };
 };
 
 /**
- * Generate next route ID (for database mode)
- * NOTE: Lines 267-269 - MongoDB only, not executed in mock data mode tests.
- * @returns {Promise<number>} Next ID
+ * Generates the next sequential route ID for a new route in the database.
+ * This is only used when not in mock data mode.
+ *
+ * @returns {Promise<number>} The next available route ID.
  */
 const generateNextRouteId = async () => {
+  // Find the last route and increment its ID.
   const lastRoute = await Route.findOne().sort({ routeId: -1 });
   return lastRoute ? lastRoute.routeId + 1 : 1;
 };

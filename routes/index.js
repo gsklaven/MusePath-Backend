@@ -4,7 +4,16 @@ import * as routeModules from './routeModules.js';
 const router = express.Router();
 
 /**
- * API Health Check
+ * Main API Router
+ * 
+ * This file serves as the central router for the entire v1 API. It aggregates all the
+ * individual route modules from the `routeModules.js` file and mounts them on their
+ * respective URL prefixes. It also provides a basic health check endpoint.
+ */
+
+/**
+ * Provides a simple health check endpoint to verify that the API is running and responsive.
+ * @route GET /health
  */
 router.get('/health', (_, res) => {
   res.json({
@@ -19,10 +28,9 @@ router.get('/health', (_, res) => {
   });
 });
 
-
-
 /**
- * Mount all route modules
+ * Mount all the individual route modules.
+ * Each module defines the endpoints for a specific API resource (e.g., auth, exhibits, routes).
  */
 router.use('/auth', routeModules.auth);
 router.use('/coordinates', routeModules.coordinates);
