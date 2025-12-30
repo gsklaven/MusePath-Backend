@@ -1,6 +1,19 @@
 import jwt from "jsonwebtoken";
-import { isTokenRevoked } from "../services/authService.js";
+import { isTokenRevoked } from "../services/tokenService.js";
 import { getJwtSecret } from "../config/constants.js";
+
+/**
+ * Helper to extract token from request
+ * @param {Object} req - Express request object
+ * @returns {string|null} Token or null
+ */
+const extractToken = (req) => {
+  const cookieToken = req.cookies && req.cookies.token;
+  const headerToken = req.headers?.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : null;
+  return cookieToken || headerToken;
+};
 
 /**
  * Validate email format
@@ -43,6 +56,38 @@ export const validateUsernameFormat = (username) => {
 };
 
 /**
+ * Check if password contains only allowed characters
+ * @param {string} password
+ * @returns {boolean}
+ */
+const hasAllowedCharacters = (password) => {
+  // Allowed characters: A-Z a-z 0-9 and common ASCII special characters
+  const allowedChars = /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/;
+  return allowedChars.test(password);
+};
+
+/**
+ * Check if password meets complexity rules
+ * @param {string} password
+ * @returns {string|null} Error message or null if valid
+ */
+const checkComplexityRules = (password) => {
+  const rules = [
+    { regex: /[A-Z]/, message: 'Password must contain at least one uppercase letter' },
+    { regex: /[a-z]/, message: 'Password must contain at least one lowercase letter' },
+    { regex: /[0-9]/, message: 'Password must contain at least one digit' },
+    { regex: /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/, message: 'Password must contain at least one special character' }
+  ];
+
+  for (const rule of rules) {
+    if (!rule.regex.test(password)) {
+      return rule.message;
+    }
+  }
+  return null;
+};
+
+/**
  * Validate password strength
  * Requirements:
  * - Minimum 8 characters
@@ -64,28 +109,13 @@ export const validatePasswordStrength = (password) => {
     return { isValid: false, message: 'Password must be at least 8 characters long' };
   }
 
-  // Allowed characters: A-Z a-z 0-9 and common ASCII special characters
-  const allowedChars = /^[A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+$/;
-  if (!allowedChars.test(password)) {
+  if (!hasAllowedCharacters(password)) {
     return { isValid: false, message: 'Password contains invalid characters. Use only latin letters, digits and common special characters' };
   }
 
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
-
-  if (!hasUpper) {
-    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-  }
-  if (!hasLower) {
-    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-  }
-  if (!hasDigit) {
-    return { isValid: false, message: 'Password must contain at least one digit' };
-  }
-  if (!hasSpecial) {
-    return { isValid: false, message: 'Password must contain at least one special character' };
+  const complexityError = checkComplexityRules(password);
+  if (complexityError) {
+    return { isValid: false, message: complexityError };
   }
 
   return { isValid: true, message: 'Password is strong' };
@@ -93,11 +123,7 @@ export const validatePasswordStrength = (password) => {
 
 export const verifyToken = async (req, res, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
     if (!token) {
       return res.status(401).json({ success: false, data: null, message: "Authentication token required" });
@@ -119,13 +145,9 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-export const optionalAuth = async (req, res, next) => {
+export const optionalAuth = async (req, _, next) => {
   try {
-    const cookieToken = req.cookies && req.cookies.token;
-    const headerToken = req.headers?.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.split(" ")[1]
-      : null;
-    const token = cookieToken || headerToken;
+    const token = extractToken(req);
 
     if (!token) {
       return next();

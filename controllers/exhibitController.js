@@ -8,6 +8,15 @@ import { validateExhibitId, validateMode } from '../utils/validators.js';
  */
 
 /**
+ * Helper to escape special characters for RegExp to prevent injection
+ * @param {string} string 
+ * @returns {string}
+ */
+const escapeRegExp = (string) => {
+  return string ? String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : string;
+};
+
+/**
  * View exhibit information
  * GET /exhibits/:exhibit_id
  */
@@ -106,9 +115,13 @@ export const searchExhibits = async (req, res) => {
     const { keyword, exhibit_term, category, mode } = req.query;
     
     // Support both 'keyword' and 'exhibit_term' parameters
-    const searchTerm = keyword || exhibit_term;
+    const rawSearchTerm = keyword || exhibit_term;
     
-    const exhibits = await exhibitService.searchExhibits(searchTerm, category, mode);
+    // Sanitize inputs to prevent Regex Injection
+    const searchTerm = escapeRegExp(rawSearchTerm);
+    const sanitizedCategory = escapeRegExp(category);
+    
+    const exhibits = await exhibitService.searchExhibits(searchTerm, sanitizedCategory, mode);
     
     return sendSuccess(res, exhibits, 'Exhibits retrieved successfully');
   } catch (error) {

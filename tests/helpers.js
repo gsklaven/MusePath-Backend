@@ -3,8 +3,7 @@ import got from "got";
 import { CookieJar } from "tough-cookie";
 import dotenv from "dotenv";
 import app from "../app.js";
-import { connectDatabase } from "../config/database.js";
-import { isMockDataMode } from '../config/database.js';
+import { connectDatabase, isMockDataMode } from "../config/database.js";
 import { mockExhibits } from '../data/mockData.js';
 
 // Load environment variables
@@ -146,3 +145,118 @@ export const generateEmail = (prefix = "testuser") => {
 		const safeLocal = local.length > 30 ? local.slice(0, 30) : local;
 		return `${safeLocal}@example.com`;
 	};
+
+/**
+ * Helper to test forbidden actions on user-specific endpoints
+ * Creates two users and tries to access user2's resource with user1's credentials
+ * @param {Object} t - AVA test execution object
+ * @param {string} method - HTTP method (get, post, put, delete)
+ * @param {string} endpoint - Endpoint URL pattern (with :user_id placeholder)
+ * @param {Object} [body] - Optional request body
+ */
+export const testForbiddenUserAction = async (t, method, endpoint, body) => {
+	// Add delay to prevent timestamp collision
+	await new Promise(resolve => setTimeout(resolve, 5));
+	const username1 = generateUsername("user1");
+	const email1 = generateEmail("user1");
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		username1,
+		email1,
+		"Password123!"
+	);
+	
+	const username2 = generateUsername("user2");
+	const email2 = generateEmail("user2");
+	const { userId: userId2 } = await registerAndLogin(
+		t.context.baseUrl,
+		username2,
+		email2,
+		"Password123!"
+	);
+
+	const url = endpoint.replace(":user_id", userId2);
+	const options = body ? { json: body } : undefined;
+
+	const response = await client1[method](url, options);
+
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+};
+
+/**
+ * Helper to test forbidden actions on route endpoints
+ * Creates a route with user1 and tries to access it with user2
+ * @param {Object} t - AVA test execution object
+ * @param {string} method - HTTP method (get, post, put, delete)
+ * @param {Object} [body] - Optional request body
+ */
+export const testForbiddenRouteAction = async (t, method, body) => {
+	// Create route with user1
+	const { client: client1 } = await registerAndLogin(
+		t.context.baseUrl,
+		generateUsername('route1'),
+		generateEmail('route1'),
+		'Password123!'
+	);
+
+	const createResponse = await client1.post('v1/routes', {
+		json: {
+			destination_id: 1,
+			startLat: 40.7610,
+			startLng: -73.9780
+		}
+	});
+	const routeId = createResponse.body.data.route_id;
+
+	// Try to access with user2
+	const { client: client2 } = await registerAndLogin(
+		t.context.baseUrl,
+		generateUsername('route2'),
+		generateEmail('route2'),
+		'Password123!'
+	);
+
+	const response = await client2[method](`v1/routes/${routeId}`, body ? { json: body } : undefined);
+
+	t.is(response.statusCode, 403);
+	t.false(response.body.success);
+	t.regex(response.body.message, /forbidden/i);
+};
+
+/**
+ * Helper to create a test route
+ * @param {Object} client - HTTP client
+ * @param {number} [destinationId=1] - Destination ID
+ * @param {number} [startLat=40.7614] - Start Latitude
+ * @param {number} [startLng=-73.9776] - Start Longitude
+ * @returns {Promise<number>} Created route ID
+ */
+export const createTestRoute = async (client, destinationId = 1, startLat = 40.7614, startLng = -73.9776) => {
+	const response = await client.post('v1/routes', {
+		json: {
+			destination_id: destinationId,
+			startLat,
+			startLng
+		}
+	});
+	return response.body.data.route_id;
+};
+
+/**
+ * Helper to send a notification
+ * @param {Object} client - HTTP client
+ * @param {number} routeId - Route ID
+ * @param {number} currentLat - Current Latitude
+ * @param {number} currentLng - Current Longitude
+ * @returns {Promise<Object>} Response object
+ */
+export const sendNotification = (client, routeId, currentLat, currentLng) => {
+	return client.post('v1/notifications', {
+		json: {
+			route_id: routeId,
+			currentLat,
+			currentLng
+		}
+	});
+};

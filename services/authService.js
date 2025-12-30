@@ -4,8 +4,13 @@ import { mockUsers } from '../data/mockData.js';
 import { isMockDataMode } from '../config/database.js';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret, BCRYPT_SALT_ROUNDS } from '../config/constants.js';
+import { logoutUser as logoutUserToken, revokeToken as revokeTokenService, isTokenRevoked as isTokenRevokedService } from './tokenService.js';
 
-// Simple service-level error with HTTP status
+/**
+ * Custom error class for service-level errors.
+ * This allows for returning specific HTTP status codes from the service layer.
+ * @extends Error
+ */
 class ServiceError extends Error {
   constructor(message, status = 500) {
     super(message);
@@ -14,41 +19,44 @@ class ServiceError extends Error {
 }
 
 /**
- * Authentication Service
- * Handles user registration, login, and authentication logic
+ * Handles user registration, login, and authentication logic.
+ * This service abstracts away the data source (mock data or MongoDB) and provides a consistent interface for authentication-related operations.
  */
 
 /**
- * Register a new user
+ * Registers a new user in the system.
+ * It hashes the password and then, based on the application's mode, either adds the user to a mock dataset or saves them to the database.
  * 
- * @param {Object} userData - User registration data
- * @param {string} userData.username - Username
- * @param {string} userData.email - Email address
- * @param {string} userData.password - Plain text password
- * @returns {Promise<Object>} Created user (without password)
+ * @param {Object} userData - The user's registration data.
+ * @param {string} userData.username - The chosen username.
+ * @param {string} userData.email - The user's email address.
+ * @param {string} userData.password - The user's plain text password.
+ * @returns {Promise<Object>} A promise that resolves to the newly created user object, excluding the password.
+ * @throws {ServiceError} Throws an error if the user already exists or if user creation fails.
  */
 export const registerUser = async ({ username, email, password }) => {
-  // Hash the password
+  // Hash the password for secure storage.
   const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
   if (isMockDataMode()) {
-    // Mock data mode - check if user exists
+    // --- MOCK DATA MODE ---
+    // Check if a user with the same email or username already exists.
     const existingUser = mockUsers.find(
       u => u.email === email || u.username === username
     );
 
     if (existingUser) {
-      throw new ServiceError('User already exists', 409);
+      throw new ServiceError('User already exists', 409); // 409 Conflict
     }
 
-    // Create mock user following the User schema
+    // Create a new user object that adheres to the User schema.
     const newUser = {
       userId: mockUsers.length + 1,
       username,
       email,
       password: hashedPassword,
       avatar: null,
-      role: 'user', // Default role
+      role: 'user', // Assign a default role.
       preferences: [],
       favourites: [],
       ratings: new Map(),
@@ -59,18 +67,19 @@ export const registerUser = async ({ username, email, password }) => {
 
     mockUsers.push(newUser);
 
-    // Return user without password
+    // Return the user object without the password.
     const { password: _, ...userWithoutPassword } = newUser;
     return userWithoutPassword;
   } else {
-    // MongoDB mode - check existing user first
+    // --- MONGODB MODE ---
+    // Check if a user with the same email or username already exists in the database.
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      throw new ServiceError('User already exists', 409);
+      throw new ServiceError('User already exists', 409); // 409 Conflict
     }
 
-    // Create new user following the User schema
-    // Use retry loop to avoid rare duplicate `userId` collisions when tests run quickly
+    // The following block attempts to create a user with a unique `userId`.
+    // A retry loop is used to prevent rare race conditions where concurrent operations might assign the same `userId`.
     const maxAttempts = 5;
     let created = null;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -83,13 +92,12 @@ export const registerUser = async ({ username, email, password }) => {
           password: hashedPassword
         });
         created = newUser;
-        break;
+        break; // Exit loop on success
       } catch (err) {
-        // If duplicate key on userId, retry; otherwise propagate
+        // If it's a duplicate key error on `userId`, we'll retry. Otherwise, re-throw the error.
         if (err && err.code === 11000 && err.keyPattern && err.keyPattern.userId) {
-          // small delay to allow other inserts to complete
           // eslint-disable-next-line no-await-in-loop
-          await new Promise(r => setTimeout(r, 20));
+          await new Promise(r => setTimeout(r, 20)); // Small delay before retrying
           continue;
         }
         throw err;
@@ -97,7 +105,8 @@ export const registerUser = async ({ username, email, password }) => {
     }
 
     if (!created) {
-      // Final fallback: generate a high-entropy userId to avoid collisions in fast test environments
+      // As a final fallback, generate a high-entropy userId to minimize collision probability,
+      // especially in rapid test environments.
       const fallbackId = Date.now() % 1000000000 + Math.floor(Math.random() * 10000);
       try {
         const finalUser = await User.create({
@@ -112,7 +121,7 @@ export const registerUser = async ({ username, email, password }) => {
       }
     }
 
-    // Convert to object and remove password
+    // Convert the Mongoose document to a plain object and remove the password.
     const userObject = created.toObject();
     delete userObject.password;
     return userObject;
@@ -120,11 +129,13 @@ export const registerUser = async ({ username, email, password }) => {
 };
 
 /**
- * Login user
- * @param {Object} credentials - Login credentials
- * @param {string} credentials.username - Username
- * @param {string} credentials.password - Plain text password
- * @returns {Promise<Object>} User object (without password)
+ * Authenticates a user and provides a JWT token upon successful login.
+ * 
+ * @param {Object} credentials - The user's login credentials.
+ * @param {string} credentials.username - The username to authenticate.
+ * @param {string} credentials.password - The plain text password to verify.
+ * @returns {Promise<Object>} A promise that resolves to an object containing the user details (without password) and a JWT token.
+ * @throws {Error} Throws an "Invalid credentials" error if authentication fails.
  */
 export const loginUser = async ({ username, password }) => {
   if (isMockDataMode()) {
@@ -188,9 +199,11 @@ export const loginUser = async ({ username, password }) => {
 };
 
 /**
- * Get user by ID
- * @param {number} userId - User ID
- * @returns {Promise<Object>} User object (without password)
+ * Retrieves a user by their unique ID.
+ * 
+ * @param {number} userId - The ID of the user to retrieve.
+ * @returns {Promise<Object>} A promise that resolves to the user object (password excluded).
+ * @throws {Error} Throws a "User not found" error if the user cannot be found.
  * 
  * NOTE: This function removes the password field for security.
  * Consider if userService.getUserById should also remove password,
@@ -219,94 +232,25 @@ export const getUserById = async (userId) => {
 };
 
 /**
- * Get next available userId for MongoDB
- * @returns {Promise<number>} Next userId
+ * Calculates the next available user ID for new users in MongoDB.
+ * Finds the user with the highest `userId` and increments it.
+ * @returns {Promise<number>} The next sequential userId. Returns 1 if no users exist.
  */
 const getNextUserId = async () => {
   const lastUser = await User.findOne().sort({ userId: -1 });
   return lastUser ? lastUser.userId + 1 : 1;
 };
 
+// Re-exporting token management functions from tokenService to provide a unified auth interface.
+export const logoutUser = logoutUserToken;
+export const revokeToken = revokeTokenService;
+export const isTokenRevoked = isTokenRevokedService;
+
 export default {
   registerUser,
   loginUser,
-  getUserById
-};
-
-// --- Token revocation (simple in-memory blacklist) ---
-// Note: In-memory blacklist is suitable only for single-instance dev setups.
-// For production use a shared store (Redis) so revocations propagate across instances.
-const tokenBlacklist = new Map(); // token -> expiry (epoch seconds)
-
-/**
- * Revoke a JWT token until its expiry
- * @param {string} token
- */
-export const revokeToken = (token) => {
-  if (!token) return;
-  try {
-    const decoded = jwt.decode(token);
-    if (!decoded || !decoded.exp) return;
-    // store expiry time (seconds)
-    tokenBlacklist.set(token, decoded.exp);
-  } catch (e) {
-    // ignore
-  }
-};
-
-/**
- * Check whether a token has been revoked
- * @param {string} token
- * @returns {boolean}
- */
-export const isTokenRevoked = (token) => {
-  if (!token) return false;
-  const exp = tokenBlacklist.get(token);
-  if (!exp) return false;
-  const now = Math.floor(Date.now() / 1000);
-  if (exp <= now) {
-    // token already expired; remove from blacklist
-    tokenBlacklist.delete(token);
-    return false;
-  }
-  return true;
-};
-
-export { tokenBlacklist };
-
-/**
- * Logout helper: revoke token and optionally clear cookie via response
- * @param {Object} options
- * @param {string} [options.token] - JWT token string (if omitted, will try to read from req)
- * @param {Object} [options.req] - Express request object (used to find token if not provided)
- * @param {Object} [options.res] - Express response object (used to clear cookie)
- * @returns {boolean} true when logout actions performed
- */
-export const logoutUser = ({ token, req, res } = {}) => {
-  try {
-    let t = token;
-    if (!t && req) {
-      const cookieToken = req.cookies?.token || null;
-      const authHeader = req.headers?.authorization || req.headers?.Authorization || null;
-      const headerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-      t = cookieToken || headerToken || null;
-    }
-
-    if (t) {
-      revokeToken(t);
-    }
-
-    if (res) {
-      try {
-        res.clearCookie('token');
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    return true;
-  } catch (err) {
-    // best-effort
-    return false;
-  }
+  getUserById,
+  logoutUser,
+  revokeToken,
+  isTokenRevoked
 };

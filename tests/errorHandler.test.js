@@ -3,16 +3,25 @@ import express from "express";
 import supertest from "supertest";
 import { errorHandler } from "../middleware/errorHandler.js";
 
+/**
+ * Unit tests for the centralized error handler middleware.
+ *
+ * The suite covers common error shapes (generic Error, ValidationError,
+ * CastError and duplicate key errors) and verifies status codes and
+ * normalized response payloads consumed by clients.
+ */
+
 // Create a test app with a route that throws an error
 const createTestApp = (errorToThrow) => {
   const app = express();
-  app.get("/error", (req, res, next) => {
+  app.get('/error', (req, res, next) => {
     next(errorToThrow);
   });
   app.use(errorHandler);
   return app;
 };
 
+// Test case: Verify that generic errors result in a 500 Internal Server Error
 test("errorHandler returns 500 and error message for generic error", async (t) => {
   const error = new Error("Test error");
   const app = createTestApp(error);
@@ -23,6 +32,7 @@ test("errorHandler returns 500 and error message for generic error", async (t) =
   t.truthy(response.body.error);
 });
 
+// Test case: Verify that Mongoose validation errors result in a 400 Bad Request
 test("errorHandler returns 400 for ValidationError", async (t) => {
   const error = new Error("Validation failed");
   error.name = "ValidationError";
@@ -35,6 +45,7 @@ test("errorHandler returns 400 for ValidationError", async (t) => {
   t.regex(response.body.error, /Field1 is invalid.*Field2 is invalid/);
 });
 
+// Test case: Verify that Mongoose cast errors (invalid IDs) result in a 400 Bad Request
 test("errorHandler returns 400 for CastError", async (t) => {
   const error = new Error("Cast to ObjectId failed");
   error.name = "CastError";
@@ -46,6 +57,7 @@ test("errorHandler returns 400 for CastError", async (t) => {
   t.is(response.body.error, "Cast to ObjectId failed");
 });
 
+// Test case: Verify that MongoDB duplicate key errors result in a 409 Conflict
 test("errorHandler returns 409 for duplicate key error", async (t) => {
   const error = new Error("Duplicate key");
   error.code = 11000;
