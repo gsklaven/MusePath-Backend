@@ -4,8 +4,8 @@ import { check, sleep } from 'k6';
 export const options = {
   stages: [
     { duration: '10s', target: 10 },  // Προθέρμανση
-    { duration: '30s', target: 1000 }, // Spike στους 1000 χρήστες
-    { duration: '1m', target: 1000 },  // Διατήρηση πίεσης
+    { duration: '30s', target: 2000 }, // Spike στους 2000 χρήστες
+    { duration: '1m', target: 2000 },  // Διατήρηση πίεσης
     { duration: '20s', target: 10 },  // Αποκλιμάκωση
     { duration: '10s', target: 0 },
   ],
