@@ -28,16 +28,6 @@ import { SYNC_OPERATION } from '../config/constants.js';
  */
 
 /**
- * Strategy map for handling different sync operations.
- * @type {Map<string, Function>}
- */
-const operationHandlers = new Map([
-  [SYNC_OPERATION.RATING, (userId, op) => rateExhibit(op.exhibit_id, userId, op.rating)],
-  [SYNC_OPERATION.ADD_FAVORITE, (userId, op) => addFavorite(userId, op.exhibit_id)],
-  [SYNC_OPERATION.REMOVE_FAVORITE, (userId, op) => removeFavorite(userId, op.exhibit_id)]
-]);
-
-/**
  * Process a single sync operation.
  * @param {number} userId - The user ID.
  * @param {SyncOperation} operation - The operation to process.
@@ -45,11 +35,19 @@ const operationHandlers = new Map([
  * @throws {Error} If operation type is unknown or handler fails.
  */
 const processOperation = async (userId, operation) => {
-  const handler = operationHandlers.get(operation.operation_type);
-  if (!handler) {
-    throw new Error('Unknown operation type');
+  switch (operation.operation_type) {
+    case SYNC_OPERATION.RATING:
+      await rateExhibit(operation.exhibit_id, userId, operation.rating);
+      break;
+    case SYNC_OPERATION.ADD_FAVORITE:
+      await addFavorite(userId, operation.exhibit_id);
+      break;
+    case SYNC_OPERATION.REMOVE_FAVORITE:
+      await removeFavorite(userId, operation.exhibit_id);
+      break;
+    default:
+      throw new Error('Unknown operation type');
   }
-  await handler(userId, operation);
 };
 
 /**
