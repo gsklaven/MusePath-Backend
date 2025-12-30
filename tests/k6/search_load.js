@@ -14,15 +14,25 @@ export const options = {
 };
 
 export default function () {
-  // Χρήση δυναμικών keywords για να στρεσάρουμε το φιλτράρισμα
   const keywords = ['ancient', 'art', 'greece', 'roman'];
   const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
   
   const res = http.get(`http://localhost:3000/v1/exhibits/search?keyword=${randomKeyword}`);
   
+  if (res.status !== 200) {
+      console.log(`❌ Failed request! Status: ${res.status}, Body: ${res.body}, Keyword: ${randomKeyword}`);
+  }
+
   check(res, {
     'is status 200': (r) => r.status === 200,
-    'has data': (r) => r.json().data && r.json().data.length >= 0,
+    'has data': (r) => {
+        try {
+            const json = r.json();
+            return json.data && json.data.length >= 0;
+        } catch (e) {
+            return false;
+        }
+    },
   });
   
   sleep(1);
