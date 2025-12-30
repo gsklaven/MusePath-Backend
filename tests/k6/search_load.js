@@ -22,7 +22,7 @@ export default function () {
   
   check(res, {
     'is status 200': (r) => r.status === 200,
-    'has data': (r) => r.json().data.length >= 0,
+    'has data': (r) => r.json().data && r.json().data.length >= 0,
   });
   
   sleep(1);
