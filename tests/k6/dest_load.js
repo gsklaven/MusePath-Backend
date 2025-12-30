@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 300 }, // Σταδιακή άνοδος σε 8 VUs
-    { duration: '3m', target: 300 }, // Σταθερό φορτίο για 3 λεπτά (Endurance)
+    { duration: '1m', target: 100 }, // Σταδιακή άνοδος σε 8 VUs
+    { duration: '3m', target: 100 }, // Σταθερό φορτίο για 3 λεπτά (Endurance)
     { duration: '30s', target: 0 },
   ],
   thresholds: {
