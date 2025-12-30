@@ -28,7 +28,6 @@ const app = express();
  */
 const applySecurity = (app) => {
   app.use(helmet());
-  // Enables Cross-Origin Resource Sharing with configured options.
   app.use(cors(corsOptions));
 
   // If the TESTING_ENV variable is 'true', apply a more lenient rate limit.
