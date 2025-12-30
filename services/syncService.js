@@ -29,13 +29,13 @@ import { SYNC_OPERATION } from '../config/constants.js';
 
 /**
  * Strategy map for handling different sync operations.
- * @type {Object.<string, Function>}
+ * @type {Map<string, Function>}
  */
-const operationHandlers = {
-  [SYNC_OPERATION.RATING]: (userId, op) => rateExhibit(op.exhibit_id, userId, op.rating),
-  [SYNC_OPERATION.ADD_FAVORITE]: (userId, op) => addFavorite(userId, op.exhibit_id),
-  [SYNC_OPERATION.REMOVE_FAVORITE]: (userId, op) => removeFavorite(userId, op.exhibit_id)
-};
+const operationHandlers = new Map([
+  [SYNC_OPERATION.RATING, (userId, op) => rateExhibit(op.exhibit_id, userId, op.rating)],
+  [SYNC_OPERATION.ADD_FAVORITE, (userId, op) => addFavorite(userId, op.exhibit_id)],
+  [SYNC_OPERATION.REMOVE_FAVORITE, (userId, op) => removeFavorite(userId, op.exhibit_id)]
+]);
 
 /**
  * Process a single sync operation.
@@ -45,11 +45,11 @@ const operationHandlers = {
  * @throws {Error} If operation type is unknown or handler fails.
  */
 const processOperation = async (userId, operation) => {
-  // Validate that the operation type is a direct property of the handlers map
-  if (!operation.operation_type || !Object.prototype.hasOwnProperty.call(operationHandlers, operation.operation_type)) {
+  const handler = operationHandlers.get(operation.operation_type);
+  if (!handler) {
     throw new Error('Unknown operation type');
   }
-  await operationHandlers[operation.operation_type](userId, operation);
+  await handler(userId, operation);
 };
 
 /**
