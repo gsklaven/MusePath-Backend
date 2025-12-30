@@ -21,6 +21,23 @@ test.after.always((t) => {
 });
 
 /**
+ * Helper function to authenticate as an admin user.
+ * Reduces code duplication in tests requiring admin privileges.
+ * 
+ * @param {Object} client - The HTTP client instance
+ * @returns {Promise<string>} The authentication token
+ */
+const loginAsAdmin = async (client) => {
+	const loginResponse = await client.post('v1/auth/login', {
+		json: {
+			username: 'john_smith',
+			password: MOCK_ADMIN_PASSWORD
+		}
+	});
+	return loginResponse.body.data.token;
+};
+
+/**
  * ===================================
  * EXHIBIT CREATION TESTS (ADMIN)
  * ===================================
@@ -70,15 +87,7 @@ test('POST /exhibits - should require admin role', async t => {
 test.serial('POST /exhibits - should create exhibit with admin credentials', async t => {
 	const client = createClient(t.context.baseUrl);
 	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
+	const token = await loginAsAdmin(client);
 	
 	const response = await client.post('v1/exhibits', {
 		headers: {
@@ -108,21 +117,16 @@ test.serial('POST /exhibits - should create exhibit with admin credentials', asy
 	t.is(getResponse.body.data.description, 'A test exhibit created by admin');
 });
 
-test('POST /exhibits - should validate required fields', async t => {
+/**
+ * Validation Tests
+ * Ensure that the API correctly rejects invalid input
+ */
+
+test('POST /exhibits - should reject missing title', async t => {
 	const client = createClient(t.context.baseUrl);
+	const token = await loginAsAdmin(client);
 	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
-	
-	// Missing title
-	const response1 = await client.post('v1/exhibits', {
+	const response = await client.post('v1/exhibits', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
@@ -131,11 +135,16 @@ test('POST /exhibits - should validate required fields', async t => {
 			location: 'Room 1'
 		}
 	});
-	t.is(response1.statusCode, 400);
-	t.is(response1.body.success, false);
 	
-	// Missing description
-	const response2 = await client.post('v1/exhibits', {
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
+});
+
+test('POST /exhibits - should reject missing description', async t => {
+	const client = createClient(t.context.baseUrl);
+	const token = await loginAsAdmin(client);
+	
+	const response = await client.post('v1/exhibits', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
@@ -144,11 +153,16 @@ test('POST /exhibits - should validate required fields', async t => {
 			location: 'Room 1'
 		}
 	});
-	t.is(response2.statusCode, 400);
-	t.is(response2.body.success, false);
 	
-	// Missing location
-	const response3 = await client.post('v1/exhibits', {
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
+});
+
+test('POST /exhibits - should reject missing location', async t => {
+	const client = createClient(t.context.baseUrl);
+	const token = await loginAsAdmin(client);
+	
+	const response = await client.post('v1/exhibits', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
@@ -157,25 +171,16 @@ test('POST /exhibits - should validate required fields', async t => {
 			description: 'Description'
 		}
 	});
-	t.is(response3.statusCode, 400);
-	t.is(response3.body.success, false);
+	
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
 });
 
-test('POST /exhibits - should validate category type (must be string or array)', async t => {
+test('POST /exhibits - should reject numeric category', async t => {
 	const client = createClient(t.context.baseUrl);
+	const token = await loginAsAdmin(client);
 	
-	// Login as admin
-	const loginResponse = await client.post('v1/auth/login', {
-		json: {
-			username: 'john_smith',
-			password: MOCK_ADMIN_PASSWORD
-		}
-	});
-	
-	const { token } = loginResponse.body.data;
-	
-	// Invalid category type (number)
-	const response1 = await client.post('v1/exhibits', {
+	const response = await client.post('v1/exhibits', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
@@ -186,12 +191,17 @@ test('POST /exhibits - should validate category type (must be string or array)',
 			category: 12345
 		}
 	});
-	t.is(response1.statusCode, 400);
-	t.is(response1.body.success, false);
-	t.regex(response1.body.message, /category.*string.*array/i);
 	
-	// Invalid category type (object)
-	const response2 = await client.post('v1/exhibits', {
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /category.*string.*array/i);
+});
+
+test('POST /exhibits - should reject object category', async t => {
+	const client = createClient(t.context.baseUrl);
+	const token = await loginAsAdmin(client);
+	
+	const response = await client.post('v1/exhibits', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
@@ -202,7 +212,8 @@ test('POST /exhibits - should validate category type (must be string or array)',
 			category: { type: 'paintings' }
 		}
 	});
-	t.is(response2.statusCode, 400);
-	t.is(response2.body.success, false);
-	t.regex(response2.body.message, /category.*string.*array/i);
+	
+	t.is(response.statusCode, 400);
+	t.is(response.body.success, false);
+	t.regex(response.body.message, /category.*string.*array/i);
 });
