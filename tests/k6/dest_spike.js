@@ -19,15 +19,15 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '10s', target: 10 },  // Κανονική κίνηση
-    { duration: '20s', target: 400 }, // Απότομο Spike
-    { duration: '1m', target: 400 },  // Διατήρηση πίεσης
-    { duration: '20s', target: 10 },  // Αποκλιμάκωση - Έλεγχος αν ανακάμπτει ο server
+    { duration: '10s', target: 10 },  // Normal traffic
+    { duration: '20s', target: 400 }, // Sudden Spike
+    { duration: '1m', target: 400 },  // Sustain load
+    { duration: '20s', target: 10 },  // Ramp down - Check if server recovers
     { duration: '10s', target: 0 },
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<1000'], // Πιο χαλαρό όριο στο spike
-    'http_req_failed': ['rate<0.10'],   // Επιτρέπουμε έως 10% σφάλματα στο spike για να μην κοπεί το CI
+    'http_req_duration': ['p(95)<1000'], // Looser limit during spike
+    'http_req_failed': ['rate<0.10'],   // Allow up to 10% errors during spike to avoid CI failure
   },
 };
 

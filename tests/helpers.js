@@ -146,7 +146,15 @@ export const generateEmail = (prefix = "testuser") => {
 		return `${safeLocal}@example.com`;
 	};
 
- export const testForbiddenUserAction = async (t, method, endpoint, body) => {
+/**
+ * Helper to test forbidden actions on user-specific endpoints
+ * Creates two users and tries to access user2's resource with user1's credentials
+ * @param {Object} t - AVA test execution object
+ * @param {string} method - HTTP method (get, post, put, delete)
+ * @param {string} endpoint - Endpoint URL pattern (with :user_id placeholder)
+ * @param {Object} [body] - Optional request body
+ */
+export const testForbiddenUserAction = async (t, method, endpoint, body) => {
 	// Add delay to prevent timestamp collision
 	await new Promise(resolve => setTimeout(resolve, 5));
 	const username1 = generateUsername("user1");
@@ -176,6 +184,13 @@ export const generateEmail = (prefix = "testuser") => {
 	t.false(response.body.success);
 };
 
+/**
+ * Helper to test forbidden actions on route endpoints
+ * Creates a route with user1 and tries to access it with user2
+ * @param {Object} t - AVA test execution object
+ * @param {string} method - HTTP method (get, post, put, delete)
+ * @param {Object} [body] - Optional request body
+ */
 export const testForbiddenRouteAction = async (t, method, body) => {
 	// Create route with user1
 	const { client: client1 } = await registerAndLogin(
@@ -209,6 +224,14 @@ export const testForbiddenRouteAction = async (t, method, body) => {
 	t.regex(response.body.message, /forbidden/i);
 };
 
+/**
+ * Helper to create a test route
+ * @param {Object} client - HTTP client
+ * @param {number} [destinationId=1] - Destination ID
+ * @param {number} [startLat=40.7614] - Start Latitude
+ * @param {number} [startLng=-73.9776] - Start Longitude
+ * @returns {Promise<number>} Created route ID
+ */
 export const createTestRoute = async (client, destinationId = 1, startLat = 40.7614, startLng = -73.9776) => {
 	const response = await client.post('v1/routes', {
 		json: {
@@ -220,6 +243,14 @@ export const createTestRoute = async (client, destinationId = 1, startLat = 40.7
 	return response.body.data.route_id;
 };
 
+/**
+ * Helper to send a notification
+ * @param {Object} client - HTTP client
+ * @param {number} routeId - Route ID
+ * @param {number} currentLat - Current Latitude
+ * @param {number} currentLng - Current Longitude
+ * @returns {Promise<Object>} Response object
+ */
 export const sendNotification = (client, routeId, currentLat, currentLng) => {
 	return client.post('v1/notifications', {
 		json: {

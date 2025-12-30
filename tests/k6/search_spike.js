@@ -19,15 +19,15 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '10s', target: 10 },  // Προθέρμανση
-    { duration: '30s', target: 500 }, // Spike στους 500 χρήστες
-    { duration: '1m', target: 500 },  // Διατήρηση πίεσης
-    { duration: '20s', target: 10 },  // Αποκλιμάκωση
+    { duration: '10s', target: 10 },  // Warm up
+    { duration: '30s', target: 500 }, // Spike to 500 users
+    { duration: '1m', target: 500 },  // Sustain load
+    { duration: '20s', target: 10 },  // Ramp down
     { duration: '10s', target: 0 },
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<1000'], // 95% των αναζητήσεων κάτω από 1 δευτερόλεπτο
-    'http_req_failed': ['rate<0.05'],    // Ανοχή σφάλματος έως 5% λόγω spike
+    'http_req_duration': ['p(95)<1000'], // 95% of requests under 1 second
+    'http_req_failed': ['rate<0.05'],    // Error tolerance up to 5% due to spike
   },
 };
 

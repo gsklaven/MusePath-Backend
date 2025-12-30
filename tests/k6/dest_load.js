@@ -18,13 +18,13 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 100 }, // Σταδιακή άνοδος σε 8 VUs
-    { duration: '3m', target: 100 }, // Σταθερό φορτίο για 3 λεπτά (Endurance)
+    { duration: '1m', target: 100 }, // Ramp up to 100 VUs
+    { duration: '3m', target: 100 }, // Steady load for 3 minutes (Endurance)
     { duration: '30s', target: 0 },
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<600'], // Αυστηρότερο όριο για κανονικό φορτίο
-    'http_req_failed': ['rate<0.01'],   // Σφάλματα λιγότερα από 1%
+    'http_req_duration': ['p(95)<600'], // Stricter limit for normal load
+    'http_req_failed': ['rate<0.01'],   // Errors less than 1%
   },
 };
 
@@ -36,6 +36,6 @@ export default function () {
     'correct payload': (r) => r.json().success === true
   });
   
-  // Τυχαίο sleep για να μην "χτυπάνε" όλοι οι χρήστες ταυτόχρονα στο millisecond
+  // Random sleep to avoid thundering herd
   sleep(1 + Math.random());
 }

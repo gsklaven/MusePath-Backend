@@ -18,13 +18,13 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 100 }, // Σταδιακή άνοδος στο όριο (300 VUs)
-    { duration: '3m', target: 100 }, // Παραμονή στο όριο για έλεγχο σταθερότητας
+    { duration: '1m', target: 100 }, // Ramp up to target (100 VUs)
+    { duration: '3m', target: 100 }, // Stay at target to check stability
     { duration: '30s', target: 0 },
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<500'], // NFR: 95% των αναζητήσεων < 500ms
-    'http_req_failed': ['rate<0.01'],   // NFR: Λιγότερο από 1% σφάλματα
+    'http_req_duration': ['p(95)<500'], // NFR: 95% of searches < 500ms
+    'http_req_failed': ['rate<0.01'],   // NFR: Less than 1% errors
   },
 };
 
