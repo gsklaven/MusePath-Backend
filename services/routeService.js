@@ -212,37 +212,65 @@ export const deleteRoute = async (routeId) => {
  * @returns {Promise<object>} A promise that resolves to the personalized route object.
  * @throws {Error} If the user has no preferences or if no matching exhibits can be found.
  */
+
+/**
+ * Helper to check if an exhibit matches user preferences.
+ * @param {object} exhibit - Exhibit object
+ * @param {Array<string>} preferences - User preferences
+ * @returns {boolean} True if exhibit matches preferences
+ */
+/**
+ * Checks if an exhibit matches any of the user's preferences.
+ * @param {object} exhibit - Exhibit object
+ * @param {Array<string>} preferences - User preferences
+ * @returns {boolean} True if exhibit matches preferences
+ */
+const doesExhibitMatchPreferences = (exhibit, preferences) => {
+  return exhibit.category.some(cat =>
+    preferences.some(pref =>
+      cat.toLowerCase().includes(pref.toLowerCase())
+    )
+  );
+};
+
+/**
+ * Helper to get up to 5 exhibits matching user preferences.
+ * @param {Array<object>} exhibits - All exhibits
+ * @param {Array<string>} preferences - User preferences
+ * @returns {Array<object>} Matching exhibits (max 5)
+ */
+/**
+ * Returns up to 5 exhibits matching user preferences.
+ * @param {Array<object>} exhibits - All exhibits
+ * @param {Array<string>} preferences - User preferences
+ * @returns {Array<object>} Matching exhibits (max 5)
+ */
+const getMatchingExhibits = (exhibits, preferences) => {
+  return exhibits.filter(exhibit => doesExhibitMatchPreferences(exhibit, preferences)).slice(0, 5);
+};
+
+/**
+ * Generates a personalized route for a user based on their preferences.
+ * The route includes exhibits that match the user's preferred categories.
+ *
+ * @param {number} userId - The ID of the user for whom to generate the route.
+ * @returns {Promise<object>} A promise that resolves to the personalized route object.
+ * @throws {Error} If the user has no preferences or if no matching exhibits can be found.
+ */
 export const generatePersonalizedRoute = async (userId) => {
   const user = await services.getUserById(userId);
-  
-  // Ensure the user exists and has preferences set for personalization.
   if (!user || !user.personalizationAvailable || !user.preferences || user.preferences.length === 0) {
     throw new Error('Cannot generate personalized route - missing user preferences');
   }
-  
   const exhibits = await services.getAllExhibits();
-  
-  // Filter exhibits to find those that match the user's preferences.
-  const matchingExhibits = exhibits.filter(exhibit => 
-    exhibit.category.some(cat => 
-      user.preferences.some(pref => 
-        cat.toLowerCase().includes(pref.toLowerCase())
-      )
-    )
-  ).slice(0, 5); // Limit the number of stops to a reasonable amount.
-  
-  // Handle the edge case where no exhibits match the user's preferences.
+  const matchingExhibits = getMatchingExhibits(exhibits, user.preferences);
   if (matchingExhibits.length === 0) {
     throw new Error('No matching exhibits found for user preferences');
   }
-  
-  const routeId = isMockDataMode() 
+  const routeId = isMockDataMode()
     ? helpers.generateUniqueId(mockRoutes, 'routeId')
     : await generateNextRouteId();
-  
-  // Calculate a simple estimated duration for the personalized tour.
   const estimatedDuration = matchingExhibits.length * 10; // e.g., 10 minutes per exhibit.
-  
   return {
     route_id: routeId,
     exhibits: matchingExhibits.map(e => e.exhibitId),

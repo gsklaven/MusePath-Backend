@@ -106,27 +106,40 @@ export const removeExhibitFromFavourites = async (req, res) => {
  * @param {import('express').Request} req - The Express request object, with user ID in params.
  * @param {import('express').Response} res - The Express response object.
  */
+
+/**
+ * Handles errors from personalized route generation and sends the appropriate response.
+ * @param {Error} error - The error object
+ * @param {import('express').Response} res - The Express response object
+ */
+const handlePersonalizedRouteError = (error, res) => {
+  if (error.message.includes('preferences')) {
+    // e.g., "Cannot generate personalized route - missing user preferences"
+    return sendError(res, error.message, 400);
+  }
+  if (error.message.includes('not found')) {
+    // e.g., "No matching exhibits found for user preferences"
+    return sendNotFound(res, error.message);
+  }
+  // Generic error for anything else.
+  return sendError(res, error.message, 500);
+};
+
+/**
+ * Generates and retrieves a personalized route for a user based on their preferences.
+ * @route GET /users/:user_id/routes
+ * @param {import('express').Request} req - The Express request object, with user ID in params.
+ * @param {import('express').Response} res - The Express response object.
+ */
 export const getPersonalizedRoute = async (req, res) => {
   try {
     const { user_id } = req.params;
     if (!validateUserId(user_id)) {
       return sendError(res, 'Invalid user ID format', 400);
     }
-
-    // The route service handles the logic for generating the personalized route.
     const route = await routeService.generatePersonalizedRoute(user_id);
     return sendSuccess(res, route, 'Personalized route generated successfully');
   } catch (error) {
-    // Handle specific error cases from the service layer with appropriate responses.
-    if (error.message.includes('preferences')) {
-      // e.g., "Cannot generate personalized route - missing user preferences"
-      return sendError(res, error.message, 400);
-    }
-    if (error.message.includes('not found')) {
-      // e.g., "No matching exhibits found for user preferences"
-      return sendNotFound(res, error.message);
-    }
-    // Generic error for anything else.
-    return sendError(res, error.message, 500);
+    return handlePersonalizedRouteError(error, res);
   }
 };
