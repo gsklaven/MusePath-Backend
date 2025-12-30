@@ -3,10 +3,10 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '20s', target: 5 },  // Κανονική ροή
-    { duration: '30s', target: 15 }, // Απότομο Spike (γνωστό όριο δυσκολίας του runner)
-    { duration: '1m', target: 15 },  // Διατήρηση του Spike για έλεγχο αντοχής
-    { duration: '20s', target: 5 },  // Αποκλιμάκωση
+    { duration: '10s', target: 10 },  // Προθέρμανση
+    { duration: '30s', target: 100 }, // Spike στους 100 χρήστες
+    { duration: '1m', target: 100 },  // Διατήρηση πίεσης
+    { duration: '20s', target: 10 },  // Αποκλιμάκωση
     { duration: '10s', target: 0 },
   ],
   thresholds: {
