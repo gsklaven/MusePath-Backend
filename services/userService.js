@@ -74,11 +74,19 @@ export const createUser = async (userData) => {
  * @returns {Promise<Object|null>} A promise that resolves to the updated user object, or null if the user was not found.
  */
 export const updateUserPreferences = async (userId, preferences) => {
+  // Normalize and sanitize the interests array to avoid injecting unexpected objects/operators.
+  let normalizedInterests = [];
+  if (preferences && Array.isArray(preferences.interests)) {
+    normalizedInterests = preferences.interests
+      .map((interest) => String(interest).trim())
+      .filter((interest) => interest.length > 0);
+  }
+
   if (isMockDataMode()) {
     // --- MOCK DATA MODE ---
     const user = mockUsers.find(u => u.userId === Number(userId));
     if (user) {
-      user.preferences = preferences.interests || [];
+      user.preferences = normalizedInterests;
       user.personalizationAvailable = true; // Enable personalization once preferences are set.
       user.updatedAt = new Date();
     }
@@ -89,7 +97,7 @@ export const updateUserPreferences = async (userId, preferences) => {
   return await User.findOneAndUpdate(
     { userId: Number(userId) },
     {
-      preferences: preferences.interests || [],
+      preferences: normalizedInterests,
       personalizationAvailable: true,
       updatedAt: new Date()
     },
