@@ -22,5 +22,5 @@ export default function () {
   });
   
   // Τυχαίο sleep για να μην "χτυπάνε" όλοι οι χρήστες ταυτόχρονα στο millisecond
-  sleep(1.5 + Math.random());
+  sleep(1 + Math.random());
 }

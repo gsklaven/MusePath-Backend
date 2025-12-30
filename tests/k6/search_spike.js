@@ -26,5 +26,5 @@ export default function () {
     'has data': (r) => r.json().data && r.json().data.length >= 0,
   });
   
-  sleep(1);
+  sleep(1 + Math.random());
 }

@@ -18,5 +18,6 @@ export const options = {
 export default function () {
   const res = http.get('http://localhost:3000/v1/destinations');
   check(res, { 'status is 200': (r) => r.status === 200 });
-  sleep(0.5); // Ταχύτερα requests για περισσότερο stress
+  
+  sleep(1 + Math.random());
 }
