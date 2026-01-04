@@ -1,7 +1,20 @@
 /**
  * API Information Configuration
+ * 
+ * Provides metadata about the MusePath API including version, description,
+ * and available endpoint base paths. Returned by the root endpoint (GET /).
+ * 
+ * @module config/apiInfo
+ * @constant {Object} API_INFO
+ * @property {boolean} success - Request success indicator
+ * @property {Object} data - API metadata
+ * @property {string} data.name - API name
+ * @property {string} data.version - API version (semantic versioning)
+ * @property {string} data.description - Brief API description
+ * @property {Object} data.endpoints - Base paths for all endpoint groups
+ * @property {string} message - Welcome message for API consumers
+ * @property {null} error - Error information (null when successful)
  */
-
 export const API_INFO = {
   success: true,
   data: {
