@@ -1,12 +1,19 @@
 /**
  * Mock Destinations Data
- * Represents points of interest within the museum.
+ * 
+ * Provides sample destination data for museum points of interest.
+ * Used when database is unavailable for testing and development.
+ * 
+ * @module data/mockDestinations
  */
 
 const NOW = new Date();
 const CREATED = new Date('2024-01-01');
 
-// Predefined coordinates for destinations
+/**
+ * Predefined coordinate locations for museum destinations.
+ * @constant {Object}
+ */
 const COORDS = {
   entrance: { lat: 40.7610, lng: -73.9780 },
   galleryA: { lat: 40.7614, lng: -73.9776 },
@@ -17,7 +24,10 @@ const COORDS = {
   cafe: { lat: 40.7613, lng: -73.9777 }
 };
 
-// Common time slots for suggestions
+/**
+ * Common time slot suggestions for different destination types.
+ * @constant {Object}
+ */
 const TIMES = {
   standard: ['10:00 AM', '2:00 PM', '4:00 PM'],
   lunch: ['11:30 AM', '1:00 PM', '3:30 PM'],
@@ -27,10 +37,11 @@ const TIMES = {
 };
 
 /**
- * Mock Destinations Collection
- * @type {Destination[]}
+ * Raw destination definitions with minimal structure.
+ * Each entry contains only essential properties.
+ * @private
  */
-export const mockDestinations = [
+const RAW_DESTINATIONS = [
   {
     id: 1,
     name: 'Main Entrance',
@@ -89,18 +100,37 @@ export const mockDestinations = [
     alternatives: [2, 3, 6],
     times: TIMES.closed
   }
-].map(c => ({
-  // Map raw data to Destination structure
-  destinationId: c.id,
-  name: c.name,
-  type: c.type,
-  coordinates: c.coords,
-  mapId: c.mapId || 1,
-  status: c.status || 'available',
-  crowdLevel: c.crowd || 'low',
-  lastUpdated: NOW,
-  alternatives: c.alternatives || [],
-  suggestedTimes: c.times || [],
-  createdAt: CREATED,
-  updatedAt: CREATED
-}));
+];
+
+/**
+ * Transforms a raw destination object into the full Destination schema.
+ * Applies defaults for optional fields and normalizes property names.
+ * 
+ * @param {Object} raw - Raw destination data
+ * @returns {Object} Fully structured destination object
+ * @private
+ */
+function transformToDestination(raw) {
+  return {
+    destinationId: raw.id,
+    name: raw.name,
+    type: raw.type,
+    coordinates: raw.coords,
+    mapId: raw.mapId || 1,
+    status: raw.status || 'available',
+    crowdLevel: raw.crowd || 'low',
+    lastUpdated: NOW,
+    alternatives: raw.alternatives || [],
+    suggestedTimes: raw.times || [],
+    createdAt: CREATED,
+    updatedAt: CREATED
+  };
+}
+
+/**
+ * Mock Destinations Collection.
+ * Complete destination objects ready for use in controllers and tests.
+ * 
+ * @constant {Array<Object>}
+ */
+export const mockDestinations = RAW_DESTINATIONS.map(transformToDestination);
